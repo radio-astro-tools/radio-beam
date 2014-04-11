@@ -85,6 +85,25 @@ class Beam(object):
 
         return cls(major=major, minor=minor, pa=pa)
 
+
+    @classmethod
+    def from_aips_header(cls, hdr):
+        """
+        Extract the beam from an old AIPS header. Returns true if
+        successful?
+        """
+        # a line looks like
+        # HISTORY AIPS   CLEAN BMAJ=  1.7599E-03 BMIN=  1.5740E-03 BPA=   2.61
+        for line in hdr['HISTORY']:
+            if 'BMAJ' in line:
+                aipsline = line
+
+        bmaj = aipsline.split()[3]
+        bmin = aipsline.split()[5]
+        bpa = aipsline.split()[7]
+
+        return cls(major=bmaj, minor=bmin, pa=bpa)
+
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     # Operators
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
