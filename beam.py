@@ -221,8 +221,10 @@ class Beam(u.Quantity):
     # Methods
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    def ellipse(self):
+    def ellipse_to_plot(self, xcen, ycen):
         """
         Return a matplotlib ellipse
         """
-        pass
+        import matplotlib
+        raise NotImplementedError("Let's finish this later, k?")
+        return matplotlib.Patches.Ellipse(self.major, self.minor, self.pa)
