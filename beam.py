@@ -2,6 +2,11 @@
 # IMPORTS
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+# Astropy required or not?
+from astropy.io import fits
+from math import sqrt, pi
+import numpy as np
+
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 # OBJECT
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -15,14 +20,151 @@ class Beam(object):
     # Attributes
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=    
 
+    major = None
+    minor = None
+    pa = None    
+
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     # Constructor
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    def __init__(
+        self,
+        major=None,
+        minor=None,
+        pa = None,
+        area = None,
+        fname = None,
+        hdr = None,
+        ):
+        """
+        """
+        
+        # improve to some kwargs magic later
+
+        # error checking
+
+        # ... given an area make a round beam        
+        if area != None:
+            rad = sqrt(area/pi)
+            self.major = rad
+            self.minor = rad
+            self.pa = 0.0
+            return
+            
+        # ... given a file try to make a fits header
+        if fname != None:
+            hdr = fits.getheader(fname)
+
+        if hdr != None:
+            if hdr.has_key("BMAJ"):
+                self.major = hdr["BMAJ"]
+            else:
+                if self.from_aips_header(hdr) == False:
+                    print "No keyword BMAJ or AIPS convention."
+                    # ... exit with blank object
+                    return
+
+            if hdr.has_key("BMIN"):
+                self.minor = hdr["BMIN"]
+            if hdr.has_key("BPA"):
+                self.pa = hdr["BPA"]
+            # ... logic for case of no keyword
+            # ... get AIPS?
+                
+        # give specified values priority
+        if major != None:
+            self.major = major
+        if minor != None:
+            self.minor = minor
+        if pa != None:
+            self.pa = pa
+
+        # some sensible defaults
+        if self.minor == None:
+            self.minor = self.major
+
+        if self.pa == None:
+            self.pa = 0.0
+
+        pass
+
+    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    # Functions to get the beam
+    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    def from_aips_header(
+        self,
+        hdr):
+        """
+        Extract the beam from an old AIPS header. Returns true if
+        successful?
+        """
+
+        # logic to crawl the history here
+
+        # a line looks like 
+        # HISTORY AIPS   CLEAN BMAJ=  1.7599E-03 BMIN=  1.5740E-03 BPA=   2.61
+
+        # multiple cleans can be in there, so you need to work
+        # BACKWARDS to get the last line that has this.
+
+        return False
+
+    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    # Operators
+    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    def __add__(
+        self,
+        other):
+        """
+        Addition convolves.
+        """
+        # math.
+        pass
+
+    # Does multiplication do the same? Or what?
+    
+    def __sub__(
+        self,
+        other):
+        """
+        Addition deconvolves.
+        """
+        # math.
+        pass
+
+    # Does division do the same? Or what? Doesn't have to be defined.
+
+    def __eq__(
+        self,
+        other):
+        """
+        Equality operator.
+        """
+
+        # Right now it's loose, just check major, minor, pa.
+
+        if self.major != other.major:
+            return False
+
+        if self.minor != other.minor:
+            return False
+
+        if self.pa != other.pa:
+            return False
+
+        return True
 
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     # Property Access
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+    # Is it astropy convention to access properties through methods?
+
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     # Methods
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    
