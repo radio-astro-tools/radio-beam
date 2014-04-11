@@ -10,3 +10,7 @@ class Beam(object):
     @property
     def major():
         ...
+
+    @property
+    def area():
+        return self.minor * self.major
