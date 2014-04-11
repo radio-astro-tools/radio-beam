@@ -1,10 +1,15 @@
 # Astropy required or not?
 from astropy import units as u
 from astropy.io import fits
-from math import sqrt, pi, cos, sin, abs, atan2
 import numpy as np
+import warnings
 
-class Beam(object):
+FWHM_TO_AREA = 2*np.pi*(8*np.log(2))
+
+def _to_area(major,minor):
+    return (major * minor * FWHM_TO_AREA).to(u.sr)
+
+class Beam(u.Quantity):
     """
     An object to handle radio beams.
     """
@@ -18,8 +23,7 @@ class Beam(object):
     # Constructor
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    def __init__(self, major=None, minor=None, pa=None, area=None, fname=None,
-                 hdr=None,):
+    def __new__(cls, major=None, minor=None, pa=None, area=None, hdr=None,):
         """
 
         Parameters
@@ -32,71 +36,92 @@ class Beam(object):
 
         # ... given an area make a round beam
         if area is not None:
-            rad = sqrt(area/pi)
-            self.major = rad
-            self.minor = rad
-            self.pa = 0.0
+            rad = np.sqrt(area/np.pi) * u.deg
+            major = rad
+            minor = rad
+            pa = 0.0 * u.deg
             
-        # ... given a file try to make a fits header
-        if fname is not None:
-            hdr = fits.getheader(fname)
-
-        if hdr is not None:
-            if "BMAJ" in hdr:
-                self.major = hdr["BMAJ"]
-            else:
-                if not self.from_aips_header(hdr):
-                    print "No keyword BMAJ or AIPS convention."
-                    # ... exit with blank object
-                    return
-
-            if "BMIN" in hdr:
-                self.minor = hdr["BMIN"]
-            if "BPA" in hdr:
-                self.pa = hdr["BPA"]
-            # ... logic for case of no keyword
-            # ... get AIPS?
                 
         # give specified values priority
         if major is not None:
-            self.major = major
+            if u.deg.is_equivalent(major):
+                major = major
+            else:
+                warnings.warn("Assuming major axis has been specified in degrees")
+                major = major * u.deg
         if minor is not None:
-            self.minor = minor
+            if u.deg.is_equivalent(minor):
+                minor = minor
+            else:
+                warnings.warn("Assuming minor axis has been specified in degrees")
+                minor = minor * u.deg
         if pa is not None:
-            self.pa = pa
+            if u.deg.is_equivalent(pa):
+                pa = pa
+            else:
+                pa = pa * u.deg
+        else:
+            pa = 0.0 * u.deg
 
         # some sensible defaults
-        if self.minor is None:
-            self.minor = self.major
+        if minor is None:
+            minor = major
 
-        if self.pa is None:
-            self.pa = 0.0
+        self = super(Beam, cls).__new__(cls, _to_area(major,minor).value, u.sr)
+        self._major = major
+        self._minor = minor
+        self._pa = pa
 
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    # Functions to get the beam
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        return self
 
-    def from_aips_header(self, hdr):
+
+    @classmethod
+    def from_fits_header(cls, hdr):
+        # ... given a file try to make a fits header
+        # assume a string refers to a filename on disk
+        if not isinstance(hdr,fits.Header):
+            hdr = fits.getheader(hdr)
+
+        if hdr is not None:
+            if "BMAJ" in hdr:
+                major = hdr["BMAJ"] * u.deg
+            else:
+                raise TypeError("No BMAJ found; could be an AIPS header... TODO: look that up")
+
+            if "BMIN" in hdr:
+                minor = hdr["BMIN"] * u.deg
+            if "BPA" in hdr:
+                pa = hdr["BPA"] * u.deg
+
+        return cls(major=major, minor=minor, pa=pa)
+
+
+    @classmethod
+    def from_aips_header(cls, hdr):
         """
         Extract the beam from an old AIPS header. Returns true if
         successful?
         """
-
-        # logic to crawl the history here
-
-        # a line looks like 
+        # a line looks like
         # HISTORY AIPS   CLEAN BMAJ=  1.7599E-03 BMIN=  1.5740E-03 BPA=   2.61
+        for line in hdr['HISTORY']:
+            if 'BMAJ' in line:
+                aipsline = line
 
-        # multiple cleans can be in there, so you need to work
-        # BACKWARDS to get the last line that has this.
+        bmaj = float(aipsline.split()[3]) * u.deg
+        bmin = float(aipsline.split()[5]) * u.deg
+        bpa = float(aipsline.split()[7]) * u.deg
 
-        raise NotImplementedError()
+        return cls(major=bmaj, minor=bmin, pa=bpa)
 
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     # Operators
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    def __add__(self, other):
+    def __repr__(self):
+        return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major,self.minor,self.pa)
+
+    def convolve(self, other):
         """
         Addition convolves.
         """
@@ -105,30 +130,30 @@ class Beam(object):
 
         # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
 
-        alpha = ((self.major*cos(self.pa))**2 +
-                 (self.minor*sin(self.pa))**2 +
-                 (other.major*cos(other.pa))**2 +
-                 (other.minor*sin(other.pa))**2)
+        alpha = ((self.major*np.cos(self.pa))**2 +
+                 (self.minor*np.sin(self.pa))**2 +
+                 (other.major*np.cos(other.pa))**2 +
+                 (other.minor*np.sin(other.pa))**2)
 
-        beta = ((self.major*sin(self.pa))**2 +
-                (self.minor*cos(self.pa))**2 +
-                (other.major*sin(other.pa))**2 +
-                (other.minor*cos(other.pa))**2)
+        beta = ((self.major*np.sin(self.pa))**2 +
+                (self.minor*np.cos(self.pa))**2 +
+                (other.major*np.sin(other.pa))**2 +
+                (other.minor*np.cos(other.pa))**2)
         
         gamma = (2*((self.minor**2-self.major**2) *
-                    sin(self.pa)*cos(self.pa) +
+                    np.sin(self.pa)*np.cos(self.pa) +
                     (other.minor**2-other.major**2) *
-                    sin(other.pa)*cos(other.pa)))
+                    np.sin(other.pa)*np.cos(other.pa)))
 
         s = alpha + beta
-        t = sqrt((alpha-beta)**2 + gamma**2)
+        t = np.sqrt((alpha-beta)**2 + gamma**2)
 
-        new_major = sqrt(0.5*(s+t))
-        new_minor = sqrt(0.5*(s-t))
+        new_major = np.sqrt(0.5*(s+t))
+        new_minor = np.sqrt(0.5*(s-t))
         if (abs(gamma)+abs(alpha-beta)) == 0:
             new_pa = 0.0
         else:
-            new_pa = 0.5*atan2(-1.*gamma, alpha-beta)
+            new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta)
             # units!
         
         # Make a new beam and return it
@@ -138,12 +163,12 @@ class Beam(object):
 
     # Does multiplication do the same? Or what?
     
-    def __sub__(self, other):
+    def deconvolve(self, other):
         """
         Subtraction deconvolves.
         """
         # math.
-        pass
+        raise NotImplementedError()
 
     # Does division do the same? Or what? Doesn't have to be defined.
 
@@ -170,9 +195,36 @@ class Beam(object):
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Is it astropy convention to access properties through methods?
+    @property
+    def sr(self):
+        return _to_area(self.major,self.minor)
+
+    @property
+    def major(self):
+        return self._major
+
+    @property
+    def minor(self):
+        return self._minor
+
+    @property
+    def pa(self):
+        return self._pa
+
+    def beam_projected_area(self, distance):
+        """
+        Return the beam area in pc^2 (or equivalent) given a distance
+        """
+        pass
 
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     # Methods
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    
+    def ellipse_to_plot(self, xcen, ycen):
+        """
+        Return a matplotlib ellipse
+        """
+        import matplotlib
+        raise NotImplementedError("Let's finish this later, k?")
+        return matplotlib.Patches.Ellipse(self.major, self.minor, self.pa)
