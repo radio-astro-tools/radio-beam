@@ -1,0 +1,60 @@
+* Basic attributes:
+
+major FWHM
+minor FWHM
+position angle
+
+beam area?
+	 
+(needs to sensibly operate without minor and position angle)
+
+* Fancy attributes
+
+parameterized spectral behavior
+
+associated with a specific header or image? - this makes kernel
+
+(power law or just 1/nu to first order?)
+
+* Modes of input:
+
+read from header keyword (CASA, MIRIAD)
+
+read from header history (AIPS)
+
+* Modes of output:
+
+print
+tuple/array
+write to header
+
+user specifies
+
+* Things that it does:
+
+return area with units
+
+hook to units (integration with astropy semantics, how does Jy/beam work?)
+
+given a target resolution return a new beam?
+
+given a measurement return a deconvolved beam (less straightforward
+given varied geometry)
+
+expose as kernel (where does this live? outside? need pixel scale,
+etc, so only works with a header or other info in place)
+
+given pixel scale give pixperbeam <-> units
+
+defined operators? 
+--> addition is convolution
+--> subtraction is deconvolution
+
+Find a common beam given a set of others?
+
+Head-scratch:
+
+Does it ever matter if minor > major?
+
+Need to make sure this exposes to good scaling of Jy/beam during
+convolution. Ugh. Hate.
