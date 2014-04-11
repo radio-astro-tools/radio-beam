@@ -1,8 +1,11 @@
 # Astropy required or not?
 from astropy import units as u
 from astropy.io import fits
-from math import sqrt, pi, cos, sin, abs, atan2
+from math import sqrt, pi, cos, sin, abs, atan2, log
 import numpy as np
+import warnings
+
+fwhm_to_area = 2*pi*(8*log(2))
 
 class Beam(object):
     """
@@ -18,8 +21,7 @@ class Beam(object):
     # Constructor
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    def __init__(self, major=None, minor=None, pa=None, area=None, fname=None,
-                 hdr=None,):
+    def __init__(self, major=None, minor=None, pa=None, area=None, hdr=None,):
         """
 
         Parameters
@@ -32,65 +34,56 @@ class Beam(object):
 
         # ... given an area make a round beam
         if area is not None:
-            rad = sqrt(area/pi)
+            rad = sqrt(area/pi) * u.deg
             self.major = rad
             self.minor = rad
             self.pa = 0.0
             
-        # ... given a file try to make a fits header
-        if fname is not None:
-            hdr = fits.getheader(fname)
-
-        if hdr is not None:
-            if "BMAJ" in hdr:
-                self.major = hdr["BMAJ"]
-            else:
-                if not self.from_aips_header(hdr):
-                    print "No keyword BMAJ or AIPS convention."
-                    # ... exit with blank object
-                    return
-
-            if "BMIN" in hdr:
-                self.minor = hdr["BMIN"]
-            if "BPA" in hdr:
-                self.pa = hdr["BPA"]
-            # ... logic for case of no keyword
-            # ... get AIPS?
                 
         # give specified values priority
         if major is not None:
-            self.major = major
+            if u.deg.is_equivalent(major):
+                self.major = major
+            else:
+                warnings.warn("Assuming major axis has been specified in degrees")
+                self.major = major * u.deg
         if minor is not None:
-            self.minor = minor
+            if u.deg.is_equivalent(minor):
+                self.minor = minor
+            else:
+                warnings.warn("Assuming minor axis has been specified in degrees")
+                self.minor = minor * u.deg
         if pa is not None:
-            self.pa = pa
+            if u.deg.is_equivalent(pa):
+                self.pa = pa
+            else:
+                self.pa = pa * u.deg
+        else:
+            self.pa = 0.0 * u.deg
 
         # some sensible defaults
         if self.minor is None:
             self.minor = self.major
 
-        if self.pa is None:
-            self.pa = 0.0
+    @classmethod
+    def from_fits_header(cls, hdr):
+        # ... given a file try to make a fits header
+        # assume a string refers to a filename on disk
+        if not isinstance(hdr,fits.Header):
+            hdr = fits.getheader(hdr)
 
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    # Functions to get the beam
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        if hdr is not None:
+            if "BMAJ" in hdr:
+                major = hdr["BMAJ"] * u.deg
+            else:
+                raise TypeError("No BMAJ found; could be an AIPS header... TODO: look that up")
 
-    def from_aips_header(self, hdr):
-        """
-        Extract the beam from an old AIPS header. Returns true if
-        successful?
-        """
+            if "BMIN" in hdr:
+                minor = hdr["BMIN"] * u.deg
+            if "BPA" in hdr:
+                pa = hdr["BPA"] * u.deg
 
-        # logic to crawl the history here
-
-        # a line looks like 
-        # HISTORY AIPS   CLEAN BMAJ=  1.7599E-03 BMIN=  1.5740E-03 BPA=   2.61
-
-        # multiple cleans can be in there, so you need to work
-        # BACKWARDS to get the last line that has this.
-
-        raise NotImplementedError()
+        return cls(major=major, minor=minor, pa=pa)
 
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     # Operators
@@ -170,6 +163,9 @@ class Beam(object):
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Is it astropy convention to access properties through methods?
+    @property
+    def sr(self):
+        return self.major * self.minor * fwhm_to_area
 
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     # Methods
