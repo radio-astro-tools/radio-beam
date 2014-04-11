@@ -1,11 +1,10 @@
 # Astropy required or not?
 from astropy import units as u
 from astropy.io import fits
-from math import sqrt, pi, cos, sin, atan2, log
 import numpy as np
 import warnings
 
-FWHM_TO_AREA = 2*pi*(8*log(2))
+FWHM_TO_AREA = 2*np.pi*(8*np.log(2))
 
 def _to_area(major,minor):
     return (major * minor * FWHM_TO_AREA).to(u.sr)
@@ -37,10 +36,10 @@ class Beam(u.Quantity):
 
         # ... given an area make a round beam
         if area is not None:
-            rad = sqrt(area/pi) * u.deg
+            rad = np.sqrt(area/np.pi) * u.deg
             major = rad
             minor = rad
-            pa = 0.0
+            pa = 0.0 * u.deg
             
                 
         # give specified values priority
@@ -109,9 +108,9 @@ class Beam(u.Quantity):
             if 'BMAJ' in line:
                 aipsline = line
 
-        bmaj = aipsline.split()[3]
-        bmin = aipsline.split()[5]
-        bpa = aipsline.split()[7]
+        bmaj = float(aipsline.split()[3]) * u.deg
+        bmin = float(aipsline.split()[5]) * u.deg
+        bpa = float(aipsline.split()[7]) * u.deg
 
         return cls(major=bmaj, minor=bmin, pa=bpa)
 
@@ -122,7 +121,7 @@ class Beam(u.Quantity):
     def __repr__(self):
         return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major,self.minor,self.pa)
 
-    def __add__(self, other):
+    def convolve(self, other):
         """
         Addition convolves.
         """
@@ -131,30 +130,30 @@ class Beam(u.Quantity):
 
         # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
 
-        alpha = ((self.major*cos(self.pa))**2 +
-                 (self.minor*sin(self.pa))**2 +
-                 (other.major*cos(other.pa))**2 +
-                 (other.minor*sin(other.pa))**2)
+        alpha = ((self.major*np.cos(self.pa))**2 +
+                 (self.minor*np.sin(self.pa))**2 +
+                 (other.major*np.cos(other.pa))**2 +
+                 (other.minor*np.sin(other.pa))**2)
 
-        beta = ((self.major*sin(self.pa))**2 +
-                (self.minor*cos(self.pa))**2 +
-                (other.major*sin(other.pa))**2 +
-                (other.minor*cos(other.pa))**2)
+        beta = ((self.major*np.sin(self.pa))**2 +
+                (self.minor*np.cos(self.pa))**2 +
+                (other.major*np.sin(other.pa))**2 +
+                (other.minor*np.cos(other.pa))**2)
         
         gamma = (2*((self.minor**2-self.major**2) *
-                    sin(self.pa)*cos(self.pa) +
+                    np.sin(self.pa)*np.cos(self.pa) +
                     (other.minor**2-other.major**2) *
-                    sin(other.pa)*cos(other.pa)))
+                    np.sin(other.pa)*np.cos(other.pa)))
 
         s = alpha + beta
-        t = sqrt((alpha-beta)**2 + gamma**2)
+        t = np.sqrt((alpha-beta)**2 + gamma**2)
 
-        new_major = sqrt(0.5*(s+t))
-        new_minor = sqrt(0.5*(s-t))
+        new_major = np.sqrt(0.5*(s+t))
+        new_minor = np.sqrt(0.5*(s-t))
         if (abs(gamma)+abs(alpha-beta)) == 0:
             new_pa = 0.0
         else:
-            new_pa = 0.5*atan2(-1.*gamma, alpha-beta)
+            new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta)
             # units!
         
         # Make a new beam and return it
@@ -164,12 +163,12 @@ class Beam(u.Quantity):
 
     # Does multiplication do the same? Or what?
     
-    def __sub__(self, other):
+    def deconvolve(self, other):
         """
         Subtraction deconvolves.
         """
         # math.
-        pass
+        raise NotImplementedError()
 
     # Does division do the same? Or what? Doesn't have to be defined.
 
