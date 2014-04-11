@@ -1,13 +1,16 @@
 # Astropy required or not?
 from astropy import units as u
 from astropy.io import fits
-from math import sqrt, pi, cos, sin, abs, atan2, log
+from math import sqrt, pi, cos, sin, atan2, log
 import numpy as np
 import warnings
 
-fwhm_to_area = 2*pi*(8*log(2))
+FWHM_TO_AREA = 2*pi*(8*log(2))
 
-class Beam(object):
+def _to_area(major,minor):
+    return (major * minor * FWHM_TO_AREA).to(u.sr)
+
+class Beam(u.Quantity):
     """
     An object to handle radio beams.
     """
@@ -21,7 +24,7 @@ class Beam(object):
     # Constructor
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    def __init__(self, major=None, minor=None, pa=None, area=None, hdr=None,):
+    def __new__(cls, major=None, minor=None, pa=None, area=None, hdr=None,):
         """
 
         Parameters
@@ -35,35 +38,43 @@ class Beam(object):
         # ... given an area make a round beam
         if area is not None:
             rad = sqrt(area/pi) * u.deg
-            self.major = rad
-            self.minor = rad
-            self.pa = 0.0
+            major = rad
+            minor = rad
+            pa = 0.0
             
                 
         # give specified values priority
         if major is not None:
             if u.deg.is_equivalent(major):
-                self.major = major
+                major = major
             else:
                 warnings.warn("Assuming major axis has been specified in degrees")
-                self.major = major * u.deg
+                major = major * u.deg
         if minor is not None:
             if u.deg.is_equivalent(minor):
-                self.minor = minor
+                minor = minor
             else:
                 warnings.warn("Assuming minor axis has been specified in degrees")
-                self.minor = minor * u.deg
+                minor = minor * u.deg
         if pa is not None:
             if u.deg.is_equivalent(pa):
-                self.pa = pa
+                pa = pa
             else:
-                self.pa = pa * u.deg
+                pa = pa * u.deg
         else:
-            self.pa = 0.0 * u.deg
+            pa = 0.0 * u.deg
 
         # some sensible defaults
-        if self.minor is None:
-            self.minor = self.major
+        if minor is None:
+            minor = major
+
+        self = super(Beam, cls).__new__(cls, _to_area(major,minor).value, u.sr)
+        self._major = major
+        self._minor = minor
+        self._pa = pa
+
+        return self
+
 
     @classmethod
     def from_fits_header(cls, hdr):
@@ -107,6 +118,9 @@ class Beam(object):
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     # Operators
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    def __repr__(self):
+        return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major,self.minor,self.pa)
 
     def __add__(self, other):
         """
@@ -184,10 +198,32 @@ class Beam(object):
     # Is it astropy convention to access properties through methods?
     @property
     def sr(self):
-        return self.major * self.minor * fwhm_to_area
+        return _to_area(self.major,self.minor)
+
+    @property
+    def major(self):
+        return self._major
+
+    @property
+    def minor(self):
+        return self._minor
+
+    @property
+    def pa(self):
+        return self._pa
+
+    def beam_projected_area(self, distance):
+        """
+        Return the beam area in pc^2 (or equivalent) given a distance
+        """
+        pass
 
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     # Methods
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    
+    def ellipse(self):
+        """
+        Return a matplotlib ellipse
+        """
+        pass
