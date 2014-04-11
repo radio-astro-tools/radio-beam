@@ -4,7 +4,7 @@
 
 # Astropy required or not?
 from astropy.io import fits
-from math import sqrt, pi
+from math import sqrt, pi, cos, sin, abs, atan2
 import numpy as np
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -121,8 +121,42 @@ class Beam(object):
         """
         Addition convolves.
         """
-        # math.
-        pass
+        
+        # Units crap - expect in radians
+
+        # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
+
+        alpha = (self.major*cos(self.pa))**2 + \
+            (self.minor*sin(self.pa))**2 + \
+            (other.major*cos(other.pa))**2 + \
+            (other.minor*sin(other.pa))**2
+
+        beta = (self.major*sin(self.pa))**2 + \
+            (self.minor*cos(self.pa))**2 + \
+            (other.major*sin(other.pa))**2 + \
+            (other.minor*cos(other.pa))**2
+	
+	gamma = 2*((self.minor**2-self.major**2)* \
+                       sin(self.pa)*cos(self.pa) + \
+                       (other.minor**2-other.major**2)* \
+                       sin(other.pa)*cos(other.pa))
+
+        s = alpha + beta
+	t = sqrt((alpha-beta)**2 + gamma**2)
+
+        new_major = sqrt(0.5*(s+t))
+        new_minor = sqrt(0.5*(s-t))
+        if (abs(gamma)+abs(alpha-beta)) == 0:
+            new_pa = 0.0
+        else:
+            new_pa = 0.5*atan2(-1.*gamma, alpha-beta)
+            # units!
+
+        
+        # Make a new beam and return it
+        return Beam(major=new_major,
+                    minor=new_minor,
+                    pa=new_pa)
 
     # Does multiplication do the same? Or what?
     
