@@ -1,4 +1,6 @@
-class Beam(object):
+from astropy import units as u
+
+class Beam(u.Unit):
     """ 
     """
     pass
@@ -14,3 +16,4 @@ class Beam(object):
     @property
     def area():
         return self.minor * self.major
+        
