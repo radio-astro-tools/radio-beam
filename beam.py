@@ -40,8 +40,7 @@ class Beam(u.Quantity):
             major = rad
             minor = rad
             pa = 0.0 * u.deg
-            
-                
+
         # give specified values priority
         if major is not None:
             if u.deg.is_equivalent(major):
@@ -77,17 +76,34 @@ class Beam(u.Quantity):
 
     @classmethod
     def from_fits_header(cls, hdr):
+        """
+        Instantiate the beam from a header. Attempts to extract the
+        beam from standard keywords. Failing that, it looks for an
+        AIPS-style HISTORY entry.
+        """
         # ... given a file try to make a fits header
         # assume a string refers to a filename on disk
         if not isinstance(hdr,fits.Header):
             hdr = fits.getheader(hdr)
+        else:
+            # right type of error?
+            raise TypeError("Header does not appear to be a valid header or a file holding a header.")
 
         if hdr is not None:
+
+            # If we find a major axis keyword then we are in keyword
+            # mode. Else look to see if there is an AIPS header.
             if "BMAJ" in hdr:
                 major = hdr["BMAJ"] * u.deg
             else:
-                raise TypeError("No BMAJ found; could be an AIPS header... TODO: look that up")
+                aips_beam = cls.from_aips_header(hdr)
+                if aips_beam is None:
+                    raise TypeError("No BMAJ found and does not appear to be an AIPS header.")
+                else:
+                    return aips_beam
 
+            # Fill out the minor axis and position angle if they are
+            # present. Else they will default .
             if "BMIN" in hdr:
                 minor = hdr["BMIN"] * u.deg
             if "BPA" in hdr:
@@ -99,20 +115,24 @@ class Beam(u.Quantity):
     @classmethod
     def from_aips_header(cls, hdr):
         """
-        Extract the beam from an old AIPS header. Returns true if
-        successful?
+        Instantiate the beam from an AIPS header. AIPS holds the beam
+        in history. This method of initializing uses the last such
+        entry.
         """
         # a line looks like
         # HISTORY AIPS   CLEAN BMAJ=  1.7599E-03 BMIN=  1.5740E-03 BPA=   2.61
+        aipsline = None
         for line in hdr['HISTORY']:
             if 'BMAJ' in line:
                 aipsline = line
 
-        bmaj = float(aipsline.split()[3]) * u.deg
-        bmin = float(aipsline.split()[5]) * u.deg
-        bpa = float(aipsline.split()[7]) * u.deg
-
-        return cls(major=bmaj, minor=bmin, pa=bpa)
+        if aipsline is not None:
+            bmaj = float(aipsline.split()[3]) * u.deg
+            bmin = float(aipsline.split()[5]) * u.deg
+            bpa = float(aipsline.split()[7]) * u.deg
+            return cls(major=bmaj, minor=bmin, pa=bpa)
+        else:
+            return None
 
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     # Operators
@@ -123,7 +143,8 @@ class Beam(u.Quantity):
 
     def convolve(self, other):
         """
-        Addition convolves.
+        Convolve one beam with another. Returns a new beam
+        object. This new beam would be appropriate for 
         """
         
         # Units crap - we're storing PA in degrees, do we need to go to radians?
