@@ -59,6 +59,7 @@ class Beam(u.Quantity):
             if u.deg.is_equivalent(pa):
                 pa = pa
             else:
+                warnings.warn("Assuming position angle has been specified in degrees")
                 pa = pa * u.deg
         else:
             pa = 0.0 * u.deg
@@ -152,9 +153,9 @@ class Beam(u.Quantity):
         new_major = np.sqrt(0.5*(s+t))
         new_minor = np.sqrt(0.5*(s-t))
         if (abs(gamma)+abs(alpha-beta)) == 0:
-            new_pa = 0.0
+            new_pa = 0.0 * u.deg
         else:
-            new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta)
+            new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta) * u.rad
             # units!
         
         # Make a new beam and return it
