@@ -126,9 +126,10 @@ class Beam(u.Quantity):
         Addition convolves.
         """
         
-        # Units crap - expect in radians
+        # Units crap - we're storing PA in degrees, do we need to go to radians?
 
         # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
+        # (githup checkin of MIRIAD, code by Sault)
 
         alpha = ((self.major*np.cos(self.pa))**2 +
                  (self.minor*np.sin(self.pa))**2 +
@@ -168,7 +169,74 @@ class Beam(u.Quantity):
         Subtraction deconvolves.
         """
         # math.
-        raise NotImplementedError()
+
+        # Units crap - we're storing PA in degrees, do we need to go to radians?
+
+        # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
+        # (githup checkin of MIRIAD, code by Sault)
+
+        alpha = ((self.major*np.cos(self.pa))**2 + 
+                 (self.minor*np.sin(self.pa))**2 -
+                 (other.major*np.cos(other.pa))**2 -
+                 (other.minor*np.sin(other.pa))**2)
+
+        beta = ((self.major*np.sin(self.pa))**2 +
+                (self.minor*np.cos(self.pa))**2 -
+                (other.major*np.sin(other.pa))**2 -
+                (other.minor*np.cos(other.pa))**2)
+
+        gamma = (2 * (self.minor**2 - self.major**2) *
+                 np.sin(self.pa)*np.cos(self.pa) -
+                 (other.minor**2 - other.major**2) *
+                 np.sin(other.pa)*np.cos(other.pa))
+
+        s = alpha + beta
+        t = np.sqrt((alpha-beta)**2 + gamma**2)
+
+        # identify the smallest resolution
+
+        # ... MECHANICAL: How do I do this right?
+        limit = np.min([self.major.value, self.minor.value, other.major.value, other.minor.value])
+        limit = 0.1*limit*limit
+        
+        # two cases...
+
+        # ... failure
+        if (alpha < 0) or (beta < 0) or (s < t):
+
+            # Note failure as an empty beam
+            new_major = 0.0
+            new_minor = 0.0
+            new_pa = 0.0
+
+            # Record that things failed
+            failed = True
+            
+            # Check if it is close to a point source
+            if ((0.5*(s-t) < limit) and 
+                (alpha > -1*limit) and 
+                (beta > -1*limit)):
+                pointlike = True
+            else:
+                pointlike = False
+        # ... success
+        else:
+            # save
+            new_major = np.sqrt(0.5*(s+t))
+            new_minor = np.sqrt(0.5*(s-t))
+
+            if (abs(gamma)+abs(alpha-beta)) == 0:
+                new_pa = 0.0
+            else:
+                new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta)
+
+            failed = False
+            pointlike = False
+
+        # Make a new beam and return it
+        return Beam(major=new_major,
+                    minor=new_minor,
+                    pa=new_pa)
 
     # Does division do the same? Or what? Doesn't have to be defined.
 
