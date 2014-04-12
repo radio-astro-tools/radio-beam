@@ -58,6 +58,7 @@ class Beam(u.Quantity):
             if u.deg.is_equivalent(pa):
                 pa = pa
             else:
+                warnings.warn("Assuming position angle has been specified in degrees")
                 pa = pa * u.deg
         else:
             pa = 0.0 * u.deg
@@ -141,6 +142,10 @@ class Beam(u.Quantity):
     def __repr__(self):
         return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major,self.minor,self.pa)
 
+    def __repr_html__(self):
+        return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major,self.minor,self.pa)
+
+
     def convolve(self, other):
         """
         Convolve one beam with another. Returns a new beam
@@ -173,9 +178,9 @@ class Beam(u.Quantity):
         new_major = np.sqrt(0.5*(s+t))
         new_minor = np.sqrt(0.5*(s-t))
         if (abs(gamma)+abs(alpha-beta)) == 0:
-            new_pa = 0.0
+            new_pa = 0.0 * u.deg
         else:
-            new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta)
+            new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta) * u.rad
             # units!
         
         # Make a new beam and return it
@@ -196,7 +201,7 @@ class Beam(u.Quantity):
         # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
         # (githup checkin of MIRIAD, code by Sault)
 
-        alpha = ((self.major*np.cos(self.pa))**2 + 
+        alpha = ((self.major*np.cos(self.pa))**2 +
                  (self.minor*np.sin(self.pa))**2 -
                  (other.major*np.cos(other.pa))**2 -
                  (other.minor*np.sin(other.pa))**2)
@@ -217,7 +222,11 @@ class Beam(u.Quantity):
         # identify the smallest resolution
 
         # ... MECHANICAL: How do I do this right?
-        limit = np.min([self.major.value, self.minor.value, other.major.value, other.minor.value])
+        axes = np.array([self.major.to(u.deg).value,
+                         self.minor.to(u.deg).value,
+                         other.major.to(u.deg).value,
+                         other.minor.to(u.deg).value])*u.deg
+        limit = np.min(axes)
         limit = 0.1*limit*limit
         
         # two cases...
@@ -234,8 +243,8 @@ class Beam(u.Quantity):
             failed = True
             
             # Check if it is close to a point source
-            if ((0.5*(s-t) < limit) and 
-                (alpha > -1*limit) and 
+            if ((0.5*(s-t) < limit) and
+                (alpha > -1*limit) and
                 (beta > -1*limit)):
                 pointlike = True
             else:
