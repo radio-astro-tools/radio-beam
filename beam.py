@@ -175,7 +175,7 @@ class Beam(u.Quantity):
         # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
         # (githup checkin of MIRIAD, code by Sault)
 
-        alpha = ((self.major*np.cos(self.pa))**2 + 
+        alpha = ((self.major*np.cos(self.pa))**2 +
                  (self.minor*np.sin(self.pa))**2 -
                  (other.major*np.cos(other.pa))**2 -
                  (other.minor*np.sin(other.pa))**2)
@@ -196,7 +196,11 @@ class Beam(u.Quantity):
         # identify the smallest resolution
 
         # ... MECHANICAL: How do I do this right?
-        limit = np.min([self.major.value, self.minor.value, other.major.value, other.minor.value])
+        axes = np.array([self.major.to(u.deg).value,
+                         self.minor.to(u.deg).value,
+                         other.major.to(u.deg).value,
+                         other.minor.to(u.deg).value])*u.deg
+        limit = np.min(axes)
         limit = 0.1*limit*limit
         
         # two cases...
@@ -213,8 +217,8 @@ class Beam(u.Quantity):
             failed = True
             
             # Check if it is close to a point source
-            if ((0.5*(s-t) < limit) and 
-                (alpha > -1*limit) and 
+            if ((0.5*(s-t) < limit) and
+                (alpha > -1*limit) and
                 (beta > -1*limit)):
                 pointlike = True
             else:
