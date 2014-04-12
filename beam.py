@@ -122,6 +122,10 @@ class Beam(u.Quantity):
     def __repr__(self):
         return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major,self.minor,self.pa)
 
+    def __repr_html__(self):
+        return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major,self.minor,self.pa)
+
+
     def convolve(self, other):
         """
         Addition convolves.
