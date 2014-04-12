@@ -337,8 +337,15 @@ class Beam(u.Quantity):
         # do something here involving matrices
         # need to rotate the kernel into the wcs pixel space, kinda...
         # at the least, need to rescale the kernel axes into pixels
+        cdelt = np.matrix(wcs.get_cdelt())
+        pc = np.matrix(wcs.get_pc())
+        scale = np.array(cdelt * pc)[0,:]
+        # this may be wrong in perverse cases
+        pixscale = np.abs(scale[0])
 
-        return EllipticalGaussian2DKernel(major, minor, pa)
+        return EllipticalGaussian2DKernel(self.major.to(u.deg).value/pixscale,
+                                          self.minor.to(u.deg).value/pixscale,
+                                          self.pa.to(u.radian).value)
 
 
 from astropy.modeling import models
