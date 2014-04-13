@@ -145,6 +145,11 @@ class Beam(u.Quantity):
     def __repr_html__(self):
         return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major,self.minor,self.pa)
 
+    def _repr_latex_(self):
+        return "Beam: BMAJ=${0}^\\circ$ BMIN=${1}^\\circ$ BPA=${2}^\\circ$".format(self.major.to(u.deg).value,
+                                                                                   self.minor.to(u.deg).value,
+                                                                                   self.pa.to(u.deg).value)
+
 
     def convolve(self, other):
         """
