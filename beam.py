@@ -186,7 +186,7 @@ class Beam(u.Quantity):
         if (abs(gamma)+abs(alpha-beta)) == 0:
             new_pa = 0.0 * u.deg
         else:
-            new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta) * u.rad
+            new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta)
             # units!
         
         # Make a new beam and return it
@@ -333,8 +333,105 @@ class Beam(u.Quantity):
         raise NotImplementedError("Let's finish this later, k?")
         return matplotlib.Patches.Ellipse(self.major, self.minor, self.pa)
 
-#    def beam_image(self, hdr=None, wcs=None, support=3):
-#        #if (wcs is None) and (hdr is not None):
-#        #    wcs = astropy.wcs.WCS(hdr)
-#        raise NotImplementedError("In progress")
-    
+    def as_kernel(self, pixscale):
+        """
+        Parameters
+        ----------
+        pixscale : float
+            deg -> pixels
+
+        """
+        # do something here involving matrices
+        # need to rotate the kernel into the wcs pixel space, kinda...
+        # at the least, need to rescale the kernel axes into pixels
+
+        return EllipticalGaussian2DKernel(self.major.to(u.deg).value/pixscale,
+                                          self.minor.to(u.deg).value/pixscale,
+                                          self.pa.to(u.radian).value)
+
+def wcs_to_platescale(wcs):
+    cdelt = np.matrix(wcs.get_cdelt())
+    pc = np.matrix(wcs.get_pc())
+    scale = np.array(cdelt * pc)[0,:]
+    # this may be wrong in perverse cases
+    pixscale = np.abs(scale[0])
+    return pixscale
+
+from astropy.modeling import models
+from astropy.convolution import Kernel2D
+from astropy.convolution.kernels import _round_up_to_odd_integer
+
+class EllipticalGaussian2DKernel(Kernel2D):
+    """
+    2D Elliptical Gaussian filter kernel.
+
+    The Gaussian filter is a filter with great smoothing properties. It is
+    isotropic and does not produce artifacts.
+
+    Parameters
+    ----------
+    width : float
+        Standard deviation of the Gaussian kernel in direction 1
+    height : float
+        Standard deviation of the Gaussian kernel in direction 1
+    position_angle : float
+        Position angle of the elliptical gaussian
+    x_size : odd int, optional
+        Size in x direction of the kernel array. Default = support_scaling *
+        stddev.
+    y_size : odd int, optional
+        Size in y direction of the kernel array. Default = support_scaling *
+        stddev.
+    support_scaling : int
+        The amount to scale the stddev to determine the size of the kernel
+    mode : str, optional
+        One of the following discretization modes:
+            * 'center' (default)
+                Discretize model by taking the value
+                at the center of the bin.
+            * 'linear_interp'
+                Discretize model by performing a bilinear interpolation
+                between the values at the corners of the bin.
+            * 'oversample'
+                Discretize model by taking the average
+                on an oversampled grid.
+            * 'integrate'
+                Discretize model by integrating the
+                model over the bin.
+    factor : number, optional
+        Factor of oversampling. Default factor = 10.
+
+
+    See Also
+    --------
+    Box2DKernel, Tophat2DKernel, MexicanHat2DKernel, Ring2DKernel,
+    TrapezoidDisk2DKernel, AiryDisk2DKernel, Gaussian2DKernel
+
+    Examples
+    --------
+    Kernel response:
+
+     .. plot::
+        :include-source:
+
+        import matplotlib.pyplot as plt
+        from beam import EllipticalGaussian2DKernel
+        gaussian_2D_kernel = EllipticalGaussian2DKernel(10)
+        plt.imshow(gaussian_2D_kernel, interpolation='none', origin='lower')
+        plt.xlabel('x [pixels]')
+        plt.ylabel('y [pixels]')
+        plt.colorbar()
+        plt.show()
+
+    """
+    _separable = True
+    _is_bool = False
+
+    def __init__(self, width, height, position_angle, support_scaling=8, **kwargs):
+        self._model = models.Gaussian2D(1. / (2 * np.pi * width * height), 0,
+                                        0, x_stddev=width, y_stddev=height,
+                                        theta=position_angle)
+        self._default_size = _round_up_to_odd_integer(support_scaling *
+                                                      np.max([width,height]))
+        super(EllipticalGaussian2DKernel, self).__init__(**kwargs)
+        self._truncation = np.abs(1. - 1 / self._normalization)
