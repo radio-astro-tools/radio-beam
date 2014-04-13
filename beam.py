@@ -186,7 +186,7 @@ class Beam(u.Quantity):
         if (abs(gamma)+abs(alpha-beta)) == 0:
             new_pa = 0.0 * u.deg
         else:
-            new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta) * u.rad
+            new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta)
             # units!
         
         # Make a new beam and return it
@@ -349,7 +349,7 @@ class Beam(u.Quantity):
                                           self.minor.to(u.deg).value/pixscale,
                                           self.pa.to(u.radian).value)
 
-def wcs_to_platescale(pixscale):
+def wcs_to_platescale(wcs):
     cdelt = np.matrix(wcs.get_cdelt())
     pc = np.matrix(wcs.get_pc())
     scale = np.array(cdelt * pc)[0,:]
