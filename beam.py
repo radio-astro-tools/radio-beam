@@ -1,10 +1,11 @@
 # Astropy required or not?
 from astropy import units as u
 from astropy.io import fits
+import astropy.wcs
 import numpy as np
 import warnings
 
-FWHM_TO_AREA = 2*np.pi*(8*np.log(2))
+FWHM_TO_AREA = 2*np.pi/(8*np.log(2))
 
 def _to_area(major,minor):
     return (major * minor * FWHM_TO_AREA).to(u.sr)
@@ -13,7 +14,7 @@ class Beam(u.Quantity):
     """
     An object to handle radio beams.
     """
-
+ 
     # Attributes
     major = None
     minor = None
@@ -318,7 +319,7 @@ class Beam(u.Quantity):
         """
         Return the beam area in pc^2 (or equivalent) given a distance
         """
-        pass
+        return self.sr*(distance**2)/u.sr
 
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     # Methods
@@ -331,3 +332,9 @@ class Beam(u.Quantity):
         import matplotlib
         raise NotImplementedError("Let's finish this later, k?")
         return matplotlib.Patches.Ellipse(self.major, self.minor, self.pa)
+
+#    def beam_image(self, hdr=None, wcs=None, support=3):
+#        #if (wcs is None) and (hdr is not None):
+#        #    wcs = astropy.wcs.WCS(hdr)
+#        raise NotImplementedError("In progress")
+    
