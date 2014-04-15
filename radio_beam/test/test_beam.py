@@ -1,14 +1,20 @@
-import radio_beam
+# Licensed under a 3-clause BSD style license - see LICENSE.rst
+from .. import beam as radio_beam
 from astropy.io import fits
 from astropy import units as u
+import os
+
+def data_path(filename):
+    data_dir = os.path.join(os.path.dirname(__file__), 'data')
+    return os.path.join(data_dir, filename)
 
 # Instantiate from header
-fname = "NGC0925.bima.mmom0.fits"
+fname = data_path("NGC0925.bima.mmom0.fits")
 hdr = fits.getheader(fname)
 bima_beam_file = radio_beam.Beam.from_fits_header(fname)
 bima_beam_hdr = radio_beam.Beam.from_fits_header(hdr)
 
-aips_fname = "ngc0925_na.fits"
+aips_fname = data_path("ngc0925_na.fits")
 aips_hdr = fits.getheader(aips_fname)
 aips_beam_hdr = radio_beam.Beam.from_fits_header(aips_hdr)
 aips_beam_file = radio_beam.Beam.from_fits_header(aips_fname)
