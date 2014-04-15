@@ -20,11 +20,18 @@ man_beam_rad = radio_beam.Beam(0.1*u.deg, 0.1*u.deg, 1.0*u.rad)
 
 # Deconvolution and convolution
 beam_1 = radio_beam.Beam(10.*u.arcsec, 5.*u.arcsec, 30.*u.deg)
-beam_2 = radio_beam.Beam(5.*u.arcsec, 3.*u.arcsec, 120.*u.deg)
+beam_2 = radio_beam.Beam(10.*u.arcsec, 3.*u.arcsec, 120.*u.deg)
 
 beam_3 = beam_1.convolve(beam_2)
-print beam_2 == beam_3.deconvolve(beam_1)
-print beam_1 == beam_3.deconvolve(beam_2)
+print "test1: ",beam_2 == beam_3.deconvolve(beam_1)
+print "test1: ",beam_2 - beam_3.deconvolve(beam_1)
+print "test2: ",beam_1 == beam_3.deconvolve(beam_2)
+print "test2: ",beam_1 - beam_3.deconvolve(beam_2)
+print "beam1: ",beam_1
+print "beam2: ",beam_2
+print "beam3: ",beam_3
+print "beam3.deconv(beam2): ",beam_3.deconvolve(beam_2)
+
 
 # Area
 print beam_3.sr

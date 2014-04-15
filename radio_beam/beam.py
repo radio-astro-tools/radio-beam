@@ -25,7 +25,8 @@ class Beam(u.Quantity):
     # Constructor
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    def __new__(cls, major=None, minor=None, pa=None, area=None, hdr=None,):
+    def __new__(cls, major=None, minor=None, pa=None, area=None, hdr=None,
+                default_unit=u.arcsec):
         """
 
         Parameters
@@ -73,6 +74,7 @@ class Beam(u.Quantity):
         self._major = major
         self._minor = minor
         self._pa = pa
+        self.default_unit = default_unit
 
         return self
 
@@ -145,10 +147,10 @@ class Beam(u.Quantity):
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     def __repr__(self):
-        return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major,self.minor,self.pa)
+        return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major.to(self.default_unit),self.minor.to(self.default_unit),self.pa.to(u.deg))
 
     def __repr_html__(self):
-        return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major,self.minor,self.pa)
+        return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major.to(self.default_unit),self.minor.to(self.default_unit),self.pa.to(u.deg))
 
     def _repr_latex_(self):
         return "Beam: BMAJ=${0}^\\circ$ BMIN=${1}^\\circ$ BPA=${2}^\\circ$".format(self.major.to(u.deg).value,
