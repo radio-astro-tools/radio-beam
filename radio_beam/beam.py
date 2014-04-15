@@ -1,10 +1,11 @@
-# Astropy required or not?
 from astropy import units as u
 from astropy.io import fits
+from astropy import constants
 import astropy.wcs
 import numpy as np
 import warnings
 
+# Conversion between a twod Gaussian FWHM**2 and effective area
 FWHM_TO_AREA = 2*np.pi/(8*np.log(2))
 
 def _to_area(major,minor):
@@ -86,8 +87,11 @@ class Beam(u.Quantity):
         # ... given a file try to make a fits header
         # assume a string refers to a filename on disk
         if not isinstance(hdr,fits.Header):
-            hdr = fits.getheader(hdr)
-        else:
+            if type(hdr) == type("hello"):
+                if (hdr[-4:]).upper() == "FITS":
+                    hdr = fits.getheader(hdr)
+
+        if not isinstance(hdr,fits.Header):
             # right type of error?
             raise TypeError("Header does not appear to be a valid header or a file holding a header.")
 
@@ -320,6 +324,24 @@ class Beam(u.Quantity):
         Return the beam area in pc^2 (or equivalent) given a distance
         """
         return self.sr*(distance**2)/u.sr
+
+    def jtok(self, freq):
+        """
+        Return the conversion between janskies per beam and kelvin (in
+        Rayleigh Jeans brightness temperature) given a frequency.
+        """
+
+        c = (constants.c.cgs).value
+        h = (constants.h.cgs).value
+        kb = (constants.k_B.cgs).value
+
+        if u.hertz.is_equivalent(freq):
+            freq = freq
+        else:
+            warnings.warn("Assuming frequency has been specified in Hz")
+            freq = freq * u.hertz
+            
+        return c**2/self.sr.value/1e23/(2*kb*(freq.to(u.hertz).value)**2)
 
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     # Methods
