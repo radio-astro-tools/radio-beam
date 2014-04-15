@@ -31,6 +31,7 @@ print beam_3.sr
 print beam_2.sr
 #  <Quantity 3.994895404940742e-10 sr>
 print beam_1.sr
+print beam_1
 
 # Janskies to Kelvin
 print beam_2.jtok(1.e9)

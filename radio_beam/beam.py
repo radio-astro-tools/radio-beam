@@ -155,6 +155,9 @@ class Beam(u.Quantity):
                                                                                    self.minor.to(u.deg).value,
                                                                                    self.pa.to(u.deg).value)
 
+    def __str__(self):
+        return self.__repr__()
+
 
     def convolve(self, other):
         """
