@@ -214,31 +214,32 @@ class Beam(u.Quantity):
         # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
         # (githup checkin of MIRIAD, code by Sault)
 
-        alpha = ((self.major*np.cos(self.pa))**2 +
-                 (self.minor*np.sin(self.pa))**2 -
-                 (other.major*np.cos(other.pa))**2 -
-                 (other.minor*np.sin(other.pa))**2)
+        # rename to shorter variables for readability
+        maj1,min1,pa1 = self.major,self.minor,self.pa
+        maj2,min2,pa2 = other.major,other.minor,other.pa
+        cos,sin = np.cos,np.sin
 
-        beta = ((self.major*np.sin(self.pa))**2 +
-                (self.minor*np.cos(self.pa))**2 -
-                (other.major*np.sin(other.pa))**2 -
-                (other.minor*np.cos(other.pa))**2)
+        alpha = ((maj1*cos(pa1))**2 +
+                 (min1*sin(pa1))**2 -
+                 (maj2*cos(pa2))**2 -
+                 (min2*sin(pa2))**2)
 
-        gamma = (2 * (self.minor**2 - self.major**2) *
-                 np.sin(self.pa)*np.cos(self.pa) -
-                 (other.minor**2 - other.major**2) *
-                 np.sin(other.pa)*np.cos(other.pa))
+        beta = ((maj1*sin(pa1))**2 +
+                (min1*cos(pa1))**2 -
+                (maj2*sin(pa2))**2 -
+                (min2*cos(pa2))**2)
+
+        gamma = 2 * ((min1**2 - maj1**2) * sin(pa1)*cos(pa1) -
+                     (min2**2 - maj2**2) * sin(pa2)*cos(pa2))
 
         s = alpha + beta
         t = np.sqrt((alpha-beta)**2 + gamma**2)
 
         # identify the smallest resolution
-
-        # ... MECHANICAL: How do I do this right?
-        axes = np.array([self.major.to(u.deg).value,
-                         self.minor.to(u.deg).value,
-                         other.major.to(u.deg).value,
-                         other.minor.to(u.deg).value])*u.deg
+        axes = np.array([maj1.to(u.deg).value,
+                         min1.to(u.deg).value,
+                         maj2.to(u.deg).value,
+                         min2.to(u.deg).value])*u.deg
         limit = np.min(axes)
         limit = 0.1*limit*limit
         
