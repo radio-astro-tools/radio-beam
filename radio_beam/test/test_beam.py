@@ -20,9 +20,9 @@ def test_from_aips_test():
     aips_fname = data_path("ngc0925_na.fits")
     aips_hdr = fits.getheader(aips_fname)
     aips_beam_hdr = radio_beam.Beam.from_fits_header(aips_hdr)
-    assert np.testing.assert_almost_equal(aips_beam_hdr.sr.value, 9.029858054819811e-10)
+    np.testing.assert_almost_equal(aips_beam_hdr.sr.value, 9.029858054819811e-10)
     aips_beam_file = radio_beam.Beam.from_fits_header(aips_fname)
-    assert np.testing.assert_almost_equal(aips_beam_file.sr.value, 9.029858054819811e-10)
+    np.testing.assert_almost_equal(aips_beam_file.sr.value, 9.029858054819811e-10)
 
 def test_manual():
     # Instantiate from command line
