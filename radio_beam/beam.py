@@ -1,7 +1,8 @@
 from astropy import units as u
 from astropy.io import fits
 from astropy import constants
-import astropy.wcs
+#from astropy import wcs
+from astropy.extern import six
 import numpy as np
 import warnings
 
@@ -21,16 +22,19 @@ class Beam(u.Quantity):
     minor = None
     pa = None
 
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    # Constructor
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
     def __new__(cls, major=None, minor=None, pa=None, area=None, hdr=None,
                 default_unit=u.arcsec):
         """
 
         Parameters
         ----------
+        major : :class:`~astropy.units.Quantity` with angular equivalency
+        minor : :class:`~astropy.units.Quantity` with angular equivalency
+        pa : :class:`~astropy.units.Quantity` with angular equivalency
+        area : :class:`~astropy.units.Quantity` with steradian equivalency
+        header : :class:`~astropy.io.fits.Header`
+        default_unit : :class:`~astropy.units.Unit`
+            The unit to impose on major, minor if they are specified as floats
         """
         
         # improve to some kwargs magic later
@@ -89,33 +93,33 @@ class Beam(u.Quantity):
         # ... given a file try to make a fits header
         # assume a string refers to a filename on disk
         if not isinstance(hdr,fits.Header):
-            if type(hdr) == type("hello"):
-                if (hdr[-4:]).upper() == "FITS":
+            if isinstance(hdr, six.string_types):
+                if hdr.lower().endswith(('.fits', '.fits.gz', '.fit',
+                                         '.fit.gz', '.fits.Z', '.fit.Z')):
                     hdr = fits.getheader(hdr)
-
-        if not isinstance(hdr,fits.Header):
-            # right type of error?
-            raise TypeError("Header does not appear to be a valid header or a file holding a header.")
-
-        if hdr is not None:
-
-            # If we find a major axis keyword then we are in keyword
-            # mode. Else look to see if there is an AIPS header.
-            if "BMAJ" in hdr:
-                major = hdr["BMAJ"] * u.deg
-            else:
-                aips_beam = cls.from_aips_header(hdr)
-                if aips_beam is None:
-                    raise TypeError("No BMAJ found and does not appear to be an AIPS header.")
                 else:
-                    return aips_beam
+                    raise TypeError("Unrecognized extension.")
+            else:
+                raise TypeError("Header is not a FITS header or a filename")
 
-            # Fill out the minor axis and position angle if they are
-            # present. Else they will default .
-            if "BMIN" in hdr:
-                minor = hdr["BMIN"] * u.deg
-            if "BPA" in hdr:
-                pa = hdr["BPA"] * u.deg
+
+        # If we find a major axis keyword then we are in keyword
+        # mode. Else look to see if there is an AIPS header.
+        if "BMAJ" in hdr:
+            major = hdr["BMAJ"] * u.deg
+        else:
+            aips_beam = cls.from_aips_header(hdr)
+            if aips_beam is None:
+                raise TypeError("No BMAJ found and does not appear to be an AIPS header.")
+            else:
+                return aips_beam
+
+        # Fill out the minor axis and position angle if they are
+        # present. Else they will default .
+        if "BMIN" in hdr:
+            minor = hdr["BMIN"] * u.deg
+        if "BPA" in hdr:
+            pa = hdr["BPA"] * u.deg
 
         return cls(major=major, minor=minor, pa=pa)
 
@@ -141,10 +145,6 @@ class Beam(u.Quantity):
             return cls(major=bmaj, minor=bmin, pa=bpa)
         else:
             return None
-
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    # Operators
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     def __repr__(self):
         return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major.to(self.default_unit),self.minor.to(self.default_unit),self.pa.to(u.deg))
