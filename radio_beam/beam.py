@@ -205,6 +205,7 @@ class Beam(u.Quantity):
     def __mult__(self, other):
         return self.convolve(other)
 
+    # Does division do the same? Or what? Doesn't have to be defined.
     def __sub__(self, other):
         return self.deconvolve(other)
 
@@ -284,15 +285,7 @@ class Beam(u.Quantity):
                     minor=new_minor,
                     pa=new_pa)
 
-    # Does division do the same? Or what? Doesn't have to be defined.
-
     def __eq__(self, other):
-        """
-        Equality operator.
-        """
-
-        # Right now it's loose, just check major, minor, pa.
-
         if ((self.major == other.major) and
             (self.minor == other.minor) and
             (self.pa == other.pa)):
