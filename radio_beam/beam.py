@@ -163,12 +163,19 @@ class Beam(u.Quantity):
 
     def convolve(self, other):
         """
-        Convolve one beam with another. Returns a new beam
-        object. This new beam would be appropriate for 
+        Convolve one beam with another.
+
+        Parameters
+        ----------
+        other : `Beam`
+            The beam to convolve with
+        
+        Returns
+        -------
+        new_beam : `Beam`
+            The convolved Beam
         """
         
-        # Units crap - we're storing PA in degrees, do we need to go to radians?
-
         # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
         # (githup checkin of MIRIAD, code by Sault)
 
@@ -196,22 +203,42 @@ class Beam(u.Quantity):
             new_pa = 0.0 * u.deg
         else:
             new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta)
-            # units!
         
-        # Make a new beam and return it
         return Beam(major=new_major,
                     minor=new_minor,
                     pa=new_pa)
 
-    # Does multiplication do the same? Or what?
-    
-    def deconvolve(self, other):
-        """
-        Subtraction deconvolves.
-        """
-        # math.
+    def __mult__(self, other):
+        return self.convolve(other)
 
-        # Units crap - we're storing PA in degrees, do we need to go to radians?
+    def __sub__(self, other):
+        return self.deconvolve(other)
+
+    def deconvolve(self, other, failure_returns_pointlike=False):
+        """
+        Deconvolve a beam from another
+
+        Parameters
+        ----------
+        other : `Beam`
+            The beam to deconvolve from this beam
+        failure_returns_pointlike : bool
+            Option to return a pointlike beam (i.e., one with major=minor=0) if
+            the second beam is larger than the first.  Otherwise, a ValueError
+            will be raised
+        
+        Returns
+        -------
+        new_beam : `Beam`
+            The convolved Beam
+
+        Raises
+        ------
+        failure : ValueError
+            If the second beam is larger than the first, the default behavior
+            is to raise an exception.  This can be overridden with
+            failure_returns_pointlike
+        """
 
         # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
         # (githup checkin of MIRIAD, code by Sault)
@@ -245,29 +272,12 @@ class Beam(u.Quantity):
         limit = np.min(axes)
         limit = 0.1*limit*limit
         
-        # two cases...
-
-        # ... failure
         if (alpha < 0) or (beta < 0) or (s < t):
-
-            # Note failure as an empty beam
-            new_major = 0.0
-            new_minor = 0.0
-            new_pa = 0.0
-
-            # Record that things failed
-            failed = True
-            
-            # Check if it is close to a point source
-            if ((0.5*(s-t) < limit) and
-                (alpha > -1*limit) and
-                (beta > -1*limit)):
-                pointlike = True
+            if failure_returns_pointlike:
+                return Beam(major=0, minor=0, pa=0)
             else:
-                pointlike = False
-        # ... success
+                raise ValueError("Beam could not be deconvolved")
         else:
-            # save
             new_major = np.sqrt(0.5*(s+t))
             new_minor = np.sqrt(0.5*(s-t))
 
@@ -276,10 +286,6 @@ class Beam(u.Quantity):
             else:
                 new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta)
 
-            failed = False
-            pointlike = False
-
-        # Make a new beam and return it
         return Beam(major=new_major,
                     minor=new_minor,
                     pa=new_pa)
@@ -293,20 +299,12 @@ class Beam(u.Quantity):
 
         # Right now it's loose, just check major, minor, pa.
 
-        if self.major != other.major:
+        if ((self.major == other.major) and
+            (self.minor == other.minor) and
+            (self.pa == other.pa)):
+            return True
+        else:
             return False
-
-        if self.minor != other.minor:
-            return False
-
-        if self.pa != other.pa:
-            return False
-
-        return True
-
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    # Property Access
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Is it astropy convention to access properties through methods?
     @property
@@ -338,7 +336,6 @@ class Beam(u.Quantity):
         """
 
         c = (constants.c.cgs).value
-        h = (constants.h.cgs).value
         kb = (constants.k_B.cgs).value
 
         if u.hertz.is_equivalent(freq):
@@ -349,13 +346,12 @@ class Beam(u.Quantity):
             
         return c**2/self.sr.value/1e23/(2*kb*(freq.to(u.hertz).value)**2)
 
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    # Methods
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
-    def ellipse_to_plot(self, xcen, ycen):
+    def ellipse_to_plot(self, xcen, ycen, units=u.deg, wcs=None):
         """
-        Return a matplotlib ellipse
+        Return a matplotlib ellipse for plotting
+
+        .. todo::
+            Implement this!
         """
         import matplotlib
         raise NotImplementedError("Let's finish this later, k?")
@@ -372,6 +368,8 @@ class Beam(u.Quantity):
         # do something here involving matrices
         # need to rotate the kernel into the wcs pixel space, kinda...
         # at the least, need to rescale the kernel axes into pixels
+        warnings.warn("as_kernel is not aware of any misaligment between pixel "
+                      "and world coordinates")
 
         return EllipticalGaussian2DKernel(self.major.to(u.deg).value/pixscale,
                                           self.minor.to(u.deg).value/pixscale,
