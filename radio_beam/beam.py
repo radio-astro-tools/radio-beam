@@ -16,13 +16,8 @@ class Beam(u.Quantity):
     """
     An object to handle radio beams.
     """
- 
-    # Attributes
-    major = None
-    minor = None
-    pa = None
 
-    def __new__(cls, major=None, minor=None, pa=None, area=None, hdr=None,
+    def __new__(cls, major=None, minor=None, pa=None, area=None,
                 default_unit=u.arcsec):
         """
 
@@ -32,7 +27,6 @@ class Beam(u.Quantity):
         minor : :class:`~astropy.units.Quantity` with angular equivalency
         pa : :class:`~astropy.units.Quantity` with angular equivalency
         area : :class:`~astropy.units.Quantity` with steradian equivalency
-        header : :class:`~astropy.io.fits.Header`
         default_unit : :class:`~astropy.units.Unit`
             The unit to impose on major, minor if they are specified as floats
         """
