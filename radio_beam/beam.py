@@ -11,6 +11,10 @@ FWHM_TO_AREA = 2*np.pi/(8*np.log(2))
 def _to_area(major,minor):
     return (major * minor * FWHM_TO_AREA).to(u.sr)
 
+unit_format = {u.deg: '\\circ',
+               u.arcsec: "''",
+               u.arcmin: "'"}
+
 class Beam(u.Quantity):
     """
     An object to handle radio beams.
@@ -153,9 +157,10 @@ class Beam(u.Quantity):
         return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major.to(self.default_unit),self.minor.to(self.default_unit),self.pa.to(u.deg))
 
     def _repr_latex_(self):
-        return "Beam: BMAJ=${0}^\\circ$ BMIN=${1}^\\circ$ BPA=${2}^\\circ$".format(self.major.to(u.deg).value,
-                                                                                   self.minor.to(u.deg).value,
-                                                                                   self.pa.to(u.deg).value)
+        return "Beam: BMAJ=${0}^{{{fmt}}}$ BMIN=${1}^{{{fmt}}}$ BPA=${2}^\\circ$".format(self.major.to(self.default_unit).value,
+                                                                                         self.minor.to(self.default_unit).value,
+                                                                                         self.pa.to(u.deg).value,
+                                                                                         fmt = unit_format[self.default_unit])
 
     def __str__(self):
         return self.__repr__()
