@@ -358,13 +358,15 @@ class Beam(u.Quantity):
     # Methods
     # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    def ellipse_to_plot(self, xcen, ycen):
+    def ellipse_to_plot(self, xcen, ycen, pixscale):
         """
         Return a matplotlib ellipse
         """
         import matplotlib
-        raise NotImplementedError("Let's finish this later, k?")
-        return matplotlib.Patches.Ellipse(self.major, self.minor, self.pa)
+        return matplotlib.patches.Ellipse((xcen,ycen),
+                                          width=self.major.to(u.deg).value/pixscale,
+                                          height=self.minor.to(u.deg).value/pixscale,
+                                          angle=self.pa.to(u.deg).value)
 
     def as_kernel(self, pixscale):
         """
@@ -381,6 +383,13 @@ class Beam(u.Quantity):
         return EllipticalGaussian2DKernel(self.major.to(u.deg).value/pixscale,
                                           self.minor.to(u.deg).value/pixscale,
                                           self.pa.to(u.radian).value)
+
+    def to_header_keywords(self):
+        return {'BMAJ': self.major.to(u.deg).value,
+                'BMIN': self.major.to(u.deg).value,
+                'BPA':  self.pa.to(u.deg).value,
+               }
+
 
 def wcs_to_platescale(wcs):
     cdelt = np.matrix(wcs.get_cdelt())
