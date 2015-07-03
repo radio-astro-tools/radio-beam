@@ -25,7 +25,10 @@ class PyTest(Command):
         errno = subprocess.call([sys.executable, 'runtests.py'])
         raise SystemExit(errno)
 
-execfile('radio_beam/version.py')
+with open("radio_beam/version.py") as f:
+    code = compile(f.read(), "radio_beam/version.py", 'exec')
+    exec(code, globals(), locals())
+assert '__version__' in locals()
 
 setup(name='radio_beam',
       version=__version__,
