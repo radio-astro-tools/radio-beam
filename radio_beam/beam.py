@@ -1,7 +1,8 @@
 from astropy import units as u
 from astropy.io import fits
 from astropy import constants
-import astropy.wcs
+#from astropy import wcs
+from astropy.extern import six
 import numpy as np
 import warnings
 
@@ -19,22 +20,19 @@ class Beam(u.Quantity):
     """
     An object to handle radio beams.
     """
- 
-    # Attributes
-    major = None
-    minor = None
-    pa = None
 
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    # Constructor
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
-    def __new__(cls, major=None, minor=None, pa=None, area=None, hdr=None,
+    def __new__(cls, major=None, minor=None, pa=None, area=None,
                 default_unit=u.arcsec):
         """
 
         Parameters
         ----------
+        major : :class:`~astropy.units.Quantity` with angular equivalency
+        minor : :class:`~astropy.units.Quantity` with angular equivalency
+        pa : :class:`~astropy.units.Quantity` with angular equivalency
+        area : :class:`~astropy.units.Quantity` with steradian equivalency
+        default_unit : :class:`~astropy.units.Unit`
+            The unit to impose on major, minor if they are specified as floats
         """
         
         # improve to some kwargs magic later
@@ -93,33 +91,33 @@ class Beam(u.Quantity):
         # ... given a file try to make a fits header
         # assume a string refers to a filename on disk
         if not isinstance(hdr,fits.Header):
-            if type(hdr) == type("hello"):
-                if (hdr[-4:]).upper() == "FITS":
+            if isinstance(hdr, six.string_types):
+                if hdr.lower().endswith(('.fits', '.fits.gz', '.fit',
+                                         '.fit.gz', '.fits.Z', '.fit.Z')):
                     hdr = fits.getheader(hdr)
-
-        if not isinstance(hdr,fits.Header):
-            # right type of error?
-            raise TypeError("Header does not appear to be a valid header or a file holding a header.")
-
-        if hdr is not None:
-
-            # If we find a major axis keyword then we are in keyword
-            # mode. Else look to see if there is an AIPS header.
-            if "BMAJ" in hdr:
-                major = hdr["BMAJ"] * u.deg
-            else:
-                aips_beam = cls.from_aips_header(hdr)
-                if aips_beam is None:
-                    raise TypeError("No BMAJ found and does not appear to be an AIPS header.")
                 else:
-                    return aips_beam
+                    raise TypeError("Unrecognized extension.")
+            else:
+                raise TypeError("Header is not a FITS header or a filename")
 
-            # Fill out the minor axis and position angle if they are
-            # present. Else they will default .
-            if "BMIN" in hdr:
-                minor = hdr["BMIN"] * u.deg
-            if "BPA" in hdr:
-                pa = hdr["BPA"] * u.deg
+
+        # If we find a major axis keyword then we are in keyword
+        # mode. Else look to see if there is an AIPS header.
+        if "BMAJ" in hdr:
+            major = hdr["BMAJ"] * u.deg
+        else:
+            aips_beam = cls.from_aips_header(hdr)
+            if aips_beam is None:
+                raise TypeError("No BMAJ found and does not appear to be an AIPS header.")
+            else:
+                return aips_beam
+
+        # Fill out the minor axis and position angle if they are
+        # present. Else they will default .
+        if "BMIN" in hdr:
+            minor = hdr["BMIN"] * u.deg
+        if "BPA" in hdr:
+            pa = hdr["BPA"] * u.deg
 
         return cls(major=major, minor=minor, pa=pa)
 
@@ -146,10 +144,6 @@ class Beam(u.Quantity):
         else:
             return None
 
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    # Operators
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
     def __repr__(self):
         return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major.to(self.default_unit),self.minor.to(self.default_unit),self.pa.to(u.deg))
 
@@ -168,12 +162,19 @@ class Beam(u.Quantity):
 
     def convolve(self, other):
         """
-        Convolve one beam with another. Returns a new beam
-        object. This new beam would be appropriate for 
+        Convolve one beam with another.
+
+        Parameters
+        ----------
+        other : `Beam`
+            The beam to convolve with
+        
+        Returns
+        -------
+        new_beam : `Beam`
+            The convolved Beam
         """
         
-        # Units crap - we're storing PA in degrees, do we need to go to radians?
-
         # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
         # (githup checkin of MIRIAD, code by Sault)
 
@@ -201,22 +202,43 @@ class Beam(u.Quantity):
             new_pa = 0.0 * u.deg
         else:
             new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta)
-            # units!
         
-        # Make a new beam and return it
         return Beam(major=new_major,
                     minor=new_minor,
                     pa=new_pa)
 
-    # Does multiplication do the same? Or what?
-    
-    def deconvolve(self, other):
-        """
-        Subtraction deconvolves.
-        """
-        # math.
+    def __mult__(self, other):
+        return self.convolve(other)
 
-        # Units crap - we're storing PA in degrees, do we need to go to radians?
+    # Does division do the same? Or what? Doesn't have to be defined.
+    def __sub__(self, other):
+        return self.deconvolve(other)
+
+    def deconvolve(self, other, failure_returns_pointlike=False):
+        """
+        Deconvolve a beam from another
+
+        Parameters
+        ----------
+        other : `Beam`
+            The beam to deconvolve from this beam
+        failure_returns_pointlike : bool
+            Option to return a pointlike beam (i.e., one with major=minor=0) if
+            the second beam is larger than the first.  Otherwise, a ValueError
+            will be raised
+        
+        Returns
+        -------
+        new_beam : `Beam`
+            The convolved Beam
+
+        Raises
+        ------
+        failure : ValueError
+            If the second beam is larger than the first, the default behavior
+            is to raise an exception.  This can be overridden with
+            failure_returns_pointlike
+        """
 
         # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
         # (githup checkin of MIRIAD, code by Sault)
@@ -250,29 +272,12 @@ class Beam(u.Quantity):
         limit = np.min(axes)
         limit = 0.1*limit*limit
         
-        # two cases...
-
-        # ... failure
         if (alpha < 0) or (beta < 0) or (s < t):
-
-            # Note failure as an empty beam
-            new_major = 0.0
-            new_minor = 0.0
-            new_pa = 0.0
-
-            # Record that things failed
-            failed = True
-            
-            # Check if it is close to a point source
-            if ((0.5*(s-t) < limit) and
-                (alpha > -1*limit) and
-                (beta > -1*limit)):
-                pointlike = True
+            if failure_returns_pointlike:
+                return Beam(major=0, minor=0, pa=0)
             else:
-                pointlike = False
-        # ... success
+                raise ValueError("Beam could not be deconvolved")
         else:
-            # save
             new_major = np.sqrt(0.5*(s+t))
             new_minor = np.sqrt(0.5*(s-t))
 
@@ -281,37 +286,17 @@ class Beam(u.Quantity):
             else:
                 new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta)
 
-            failed = False
-            pointlike = False
-
-        # Make a new beam and return it
         return Beam(major=new_major,
                     minor=new_minor,
                     pa=new_pa)
 
-    # Does division do the same? Or what? Doesn't have to be defined.
-
     def __eq__(self, other):
-        """
-        Equality operator.
-        """
-
-        # Right now it's loose, just check major, minor, pa.
-
-        if self.major != other.major:
+        if ((self.major == other.major) and
+            (self.minor == other.minor) and
+            (self.pa == other.pa)):
+            return True
+        else:
             return False
-
-        if self.minor != other.minor:
-            return False
-
-        if self.pa != other.pa:
-            return False
-
-        return True
-
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    # Property Access
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Is it astropy convention to access properties through methods?
     @property
@@ -343,7 +328,6 @@ class Beam(u.Quantity):
         """
 
         c = (constants.c.cgs).value
-        h = (constants.h.cgs).value
         kb = (constants.k_B.cgs).value
 
         if u.hertz.is_equivalent(freq):
@@ -354,13 +338,12 @@ class Beam(u.Quantity):
             
         return c**2/self.sr.value/1e23/(2*kb*(freq.to(u.hertz).value)**2)
 
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    # Methods
-    # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
-    def ellipse_to_plot(self, xcen, ycen, pixscale):
+    def ellipse_to_plot(self, xcen, ycen, units=u.deg, wcs=None):
         """
-        Return a matplotlib ellipse
+        Return a matplotlib ellipse for plotting
+
+        .. todo::
+            Implement this!
         """
         import matplotlib
         return matplotlib.patches.Ellipse((xcen,ycen),
@@ -379,6 +362,8 @@ class Beam(u.Quantity):
         # do something here involving matrices
         # need to rotate the kernel into the wcs pixel space, kinda...
         # at the least, need to rescale the kernel axes into pixels
+        warnings.warn("as_kernel is not aware of any misaligment between pixel "
+                      "and world coordinates")
 
         return EllipticalGaussian2DKernel(self.major.to(u.deg).value/pixscale,
                                           self.minor.to(u.deg).value/pixscale,
