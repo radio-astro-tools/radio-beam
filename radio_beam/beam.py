@@ -34,7 +34,7 @@ class Beam(u.Quantity):
         default_unit : :class:`~astropy.units.Unit`
             The unit to impose on major, minor if they are specified as floats
         """
-        
+
         # improve to some kwargs magic later
 
         # error checking
@@ -116,8 +116,12 @@ class Beam(u.Quantity):
         # present. Else they will default .
         if "BMIN" in hdr:
             minor = hdr["BMIN"] * u.deg
+        else:
+            minor = None
         if "BPA" in hdr:
             pa = hdr["BPA"] * u.deg
+        else:
+            pa = None
 
         return cls(major=major, minor=minor, pa=pa)
 
@@ -168,13 +172,13 @@ class Beam(u.Quantity):
         ----------
         other : `Beam`
             The beam to convolve with
-        
+
         Returns
         -------
         new_beam : `Beam`
             The convolved Beam
         """
-        
+
         # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
         # (githup checkin of MIRIAD, code by Sault)
 
@@ -187,7 +191,7 @@ class Beam(u.Quantity):
                 (self.minor*np.cos(self.pa))**2 +
                 (other.major*np.sin(other.pa))**2 +
                 (other.minor*np.cos(other.pa))**2)
-        
+
         gamma = (2*((self.minor**2-self.major**2) *
                     np.sin(self.pa)*np.cos(self.pa) +
                     (other.minor**2-other.major**2) *
@@ -202,7 +206,7 @@ class Beam(u.Quantity):
             new_pa = 0.0 * u.deg
         else:
             new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta)
-        
+
         return Beam(major=new_major,
                     minor=new_minor,
                     pa=new_pa)
@@ -226,7 +230,7 @@ class Beam(u.Quantity):
             Option to return a pointlike beam (i.e., one with major=minor=0) if
             the second beam is larger than the first.  Otherwise, a ValueError
             will be raised
-        
+
         Returns
         -------
         new_beam : `Beam`
@@ -271,7 +275,7 @@ class Beam(u.Quantity):
                          min2.to(u.deg).value])*u.deg
         limit = np.min(axes)
         limit = 0.1*limit*limit
-        
+
         if (alpha < 0) or (beta < 0) or (s < t):
             if failure_returns_pointlike:
                 return Beam(major=0, minor=0, pa=0)
@@ -335,7 +339,7 @@ class Beam(u.Quantity):
         else:
             warnings.warn("Assuming frequency has been specified in Hz")
             freq = freq * u.hertz
-            
+
         return c**2/self.sr.value/1e23/(2*kb*(freq.to(u.hertz).value)**2)
 
     def ellipse_to_plot(self, xcen, ycen, units=u.deg, wcs=None):
