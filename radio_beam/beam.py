@@ -371,7 +371,7 @@ class Beam(u.Quantity):
             Value converted to K.
         """
 
-        return value.to(u.K, self.jtok_equiv(self.sr, freq))
+        return value.to(u.K, self.jtok_equiv(freq))
 
     def ellipse_to_plot(self, xcen, ycen, units=u.deg, wcs=None):
         """
