@@ -57,7 +57,7 @@ def test_deconv():
     print beam_1
 
     # Janskies to Kelvin
-    np.testing.assert_almost_equal(beam_2.jtok(1.e9), 81474.701386)
+    np.testing.assert_almost_equal(beam_2.jtok(1.e9).value, 81474.701386)
     # 81474
 
     # Return as array
