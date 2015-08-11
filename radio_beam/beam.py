@@ -369,16 +369,7 @@ class Beam(u.Quantity):
             Value converted to K.
         """
 
-        c = (constants.c.cgs).value
-        kb = (constants.k_B.cgs).value
-
-        if u.hertz.is_equivalent(freq):
-            freq = freq
-        else:
-            warnings.warn("Assuming frequency has been specified in Hz")
-            freq = freq * u.hertz
-
-        return c**2/self.sr.value/1e23/(2*kb*(freq.to(u.hertz).value)**2)
+        return value.to(u.K, self.jtok_equiv(self.sr, freq))
 
     def ellipse_to_plot(self, xcen, ycen, units=u.deg, wcs=None):
         """
