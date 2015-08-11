@@ -1,6 +1,7 @@
 from astropy import units as u
 from astropy.io import fits
 from astropy import constants
+import astropy.units as u
 #from astropy import wcs
 from astropy.extern import six
 import numpy as np
@@ -325,10 +326,47 @@ class Beam(u.Quantity):
         """
         return self.sr*(distance**2)/u.sr
 
-    def jtok(self, freq):
+    def jtok_equiv(self, freq):
+        '''
+        Return conversion function between Jy/beam to K at the specified
+        frequency.
+
+        The function can be used with the usual astropy.units conversion:
+        >>> (1.0*u.Jy).to(u.K, self.jtok_equiv(1.4*u.GHz))
+
+        Parameters
+        ----------
+        freq : astropy.units.quantity.Quantity
+            Frequency to calculate conversion.
+
+        Returns
+        -------
+
+        u.brightness_temperature
+
+        '''
+        return u.brightness_temperature(self.sr, freq)
+
+    def jtok(self, freq, value=1.0*u.Jy):
         """
-        Return the conversion between janskies per beam and kelvin (in
-        Rayleigh Jeans brightness temperature) given a frequency.
+        Return the conversion for the given value between Jy/beam to K at
+        the specified frequency.
+
+        Unlike :meth:`jtok_equiv`, the output is the numerical value that
+        converts the units, without any attached unit.
+
+        Parameters
+        ----------
+        freq : astropy.units.quantity.Quantity
+            Frequency to calculate conversion.
+        value : astropy.units.quantity.Quantity
+            Value (in Jy or an equivalent unit) to convert to K.
+
+        Returns
+        -------
+
+        value : float
+            Value converted to K.
         """
 
         c = (constants.c.cgs).value
