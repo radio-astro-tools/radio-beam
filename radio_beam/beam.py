@@ -341,10 +341,13 @@ class Beam(u.Quantity):
 
         Returns
         -------
-
         u.brightness_temperature
-
         '''
+
+        if not isinstance(freq, u.quantity.Quantity):
+            raise TypeError("freq must be a Quantity object. "
+                            "Try 'freq*u.Hz' or another equivalent unit.")
+
         return u.brightness_temperature(self.sr, freq)
 
     def jtok(self, freq, value=1.0*u.Jy):
@@ -364,7 +367,6 @@ class Beam(u.Quantity):
 
         Returns
         -------
-
         value : float
             Value converted to K.
         """
