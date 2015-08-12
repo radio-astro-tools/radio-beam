@@ -1,6 +1,7 @@
 from astropy import units as u
 from astropy.io import fits
 from astropy import constants
+import astropy.units as u
 #from astropy import wcs
 from astropy.extern import six
 import numpy as np
@@ -325,22 +326,52 @@ class Beam(u.Quantity):
         """
         return self.sr*(distance**2)/u.sr
 
-    def jtok(self, freq):
+    def jtok_equiv(self, freq):
+        '''
+        Return conversion function between Jy/beam to K at the specified
+        frequency.
+
+        The function can be used with the usual astropy.units conversion:
+        >>> (1.0*u.Jy).to(u.K, self.jtok_equiv(1.4*u.GHz))
+
+        Parameters
+        ----------
+        freq : astropy.units.quantity.Quantity
+            Frequency to calculate conversion.
+
+        Returns
+        -------
+        u.brightness_temperature
+        '''
+
+        if not isinstance(freq, u.quantity.Quantity):
+            raise TypeError("freq must be a Quantity object. "
+                            "Try 'freq*u.Hz' or another equivalent unit.")
+
+        return u.brightness_temperature(self.sr, freq)
+
+    def jtok(self, freq, value=1.0*u.Jy):
         """
-        Return the conversion between janskies per beam and kelvin (in
-        Rayleigh Jeans brightness temperature) given a frequency.
+        Return the conversion for the given value between Jy/beam to K at
+        the specified frequency.
+
+        Unlike :meth:`jtok_equiv`, the output is the numerical value that
+        converts the units, without any attached unit.
+
+        Parameters
+        ----------
+        freq : astropy.units.quantity.Quantity
+            Frequency to calculate conversion.
+        value : astropy.units.quantity.Quantity
+            Value (in Jy or an equivalent unit) to convert to K.
+
+        Returns
+        -------
+        value : float
+            Value converted to K.
         """
 
-        c = (constants.c.cgs).value
-        kb = (constants.k_B.cgs).value
-
-        if u.hertz.is_equivalent(freq):
-            freq = freq
-        else:
-            warnings.warn("Assuming frequency has been specified in Hz")
-            freq = freq * u.hertz
-
-        return c**2/self.sr.value/1e23/(2*kb*(freq.to(u.hertz).value)**2)
+        return value.to(u.K, self.jtok_equiv(freq))
 
     def ellipse_to_plot(self, xcen, ycen, units=u.deg, wcs=None):
         """
