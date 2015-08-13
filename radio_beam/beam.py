@@ -496,4 +496,4 @@ class EllipticalGaussian2DKernel(Kernel2D):
         self._default_size = _round_up_to_odd_integer(support_scaling *
                                                       np.max([width,height]))
         super(EllipticalGaussian2DKernel, self).__init__(**kwargs)
-        self._truncation = np.abs(1. - 1 / self._normalization)
+        self._truncation = np.abs(1. - 1 / self._array.sum())
