@@ -149,6 +149,17 @@ class Beam(u.Quantity):
         else:
             return None
 
+    def attach_to_header(self, header):
+        '''
+        Attach the beam information to the provided header.
+        '''
+
+        header["BMAJ"] = self.major.value
+        header["BMIN"] = self.minor.value
+        header["BPA"] = self.pa.value
+
+        return header
+
     def __repr__(self):
         return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major.to(self.default_unit),self.minor.to(self.default_unit),self.pa.to(u.deg))
 
