@@ -152,6 +152,16 @@ class Beam(u.Quantity):
     def attach_to_header(self, header):
         '''
         Attach the beam information to the provided header.
+
+        Parameters
+        ----------
+        header : astropy.io.fits.header.Header
+            Header to add/update beam info.
+
+        Returns
+        -------
+        copy_header : astropy.io.fits.header.Header
+            Copy of the input header with the updated beam info.
         '''
 
         copy_header = header.copy()
