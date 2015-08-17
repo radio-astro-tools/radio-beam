@@ -149,6 +149,31 @@ class Beam(u.Quantity):
         else:
             return None
 
+    def attach_to_header(self, header, copy=True):
+        '''
+        Attach the beam information to the provided header.
+
+        Parameters
+        ----------
+        header : astropy.io.fits.header.Header
+            Header to add/update beam info.
+        copy : bool, optional
+            Returns a copy of the inputted header with the beam information.
+
+        Returns
+        -------
+        copy_header : astropy.io.fits.header.Header
+            Copy of the input header with the updated beam info when
+            `copy=True`.
+        '''
+
+        if copy:
+            header = header.copy()
+
+        header.update(self.to_header_keywords())
+
+        return header
+
     def __repr__(self):
         return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major.to(self.default_unit),self.minor.to(self.default_unit),self.pa.to(u.deg))
 
