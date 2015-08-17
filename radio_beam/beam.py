@@ -168,13 +168,11 @@ class Beam(u.Quantity):
         '''
 
         if copy:
-            copy_header = header.copy()
-
-            copy_header.update(self.to_header_keywords())
-
-            return copy_header
+            header = header.copy()
 
         header.update(self.to_header_keywords())
+
+        return header
 
     def __repr__(self):
         return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major.to(self.default_unit),self.minor.to(self.default_unit),self.pa.to(u.deg))
