@@ -149,7 +149,7 @@ class Beam(u.Quantity):
         else:
             return None
 
-    def attach_to_header(self, header):
+    def attach_to_header(self, header, copy=True):
         '''
         Attach the beam information to the provided header.
 
@@ -164,13 +164,16 @@ class Beam(u.Quantity):
             Copy of the input header with the updated beam info.
         '''
 
-        copy_header = header.copy()
+        if copy:
+            copy_header = header.copy()
 
-        copy_header["BMAJ"] = self.major.value
-        copy_header["BMIN"] = self.minor.value
-        copy_header["BPA"] = self.pa.value
+            copy_header.update(self.to_header_keywords())
 
-        return copy_header
+            return copy_header
+
+        header.update(self.to_header_keywords())
+
+        return header
 
     def __repr__(self):
         return "Beam: BMAJ={0} BMIN={1} BPA={2}".format(self.major.to(self.default_unit),self.minor.to(self.default_unit),self.pa.to(u.deg))
