@@ -157,11 +157,14 @@ class Beam(u.Quantity):
         ----------
         header : astropy.io.fits.header.Header
             Header to add/update beam info.
+        copy : bool, optional
+            Returns a copy of the inputted header with the beam information.
 
         Returns
         -------
         copy_header : astropy.io.fits.header.Header
-            Copy of the input header with the updated beam info.
+            Copy of the input header with the updated beam info when
+            `copy=True`.
         '''
 
         if copy:
