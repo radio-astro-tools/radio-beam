@@ -431,7 +431,7 @@ class Beam(u.Quantity):
 
     def to_header_keywords(self):
         return {'BMAJ': self.major.to(u.deg).value,
-                'BMIN': self.major.to(u.deg).value,
+                'BMIN': self.minor.to(u.deg).value,
                 'BPA':  self.pa.to(u.deg).value,
                }
 
