@@ -9,6 +9,7 @@ import warnings
 
 # Conversion between a twod Gaussian FWHM**2 and effective area
 FWHM_TO_AREA = 2*np.pi/(8*np.log(2))
+SIGMA_TO_FWHM = np.sqrt(8*np.log(2))
 
 def _to_area(major,minor):
     return (major * minor * FWHM_TO_AREA).to(u.sr)
@@ -25,6 +26,7 @@ class Beam(u.Quantity):
     def __new__(cls, major=None, minor=None, pa=None, area=None,
                 default_unit=u.arcsec):
         """
+        Create a new Gaussian beam
 
         Parameters
         ----------
@@ -40,11 +42,11 @@ class Beam(u.Quantity):
 
         # error checking
 
-        # ... given an area make a round beam
+        # ... given an area make a round beam assuming it is Gaussian
         if area is not None:
-            rad = np.sqrt(area/np.pi) * u.deg
-            major = rad
-            minor = rad
+            rad = np.sqrt(area/(2*np.pi)) * u.deg
+            major = rad * SIGMA_TO_FWHM
+            minor = rad * SIGMA_TO_FWHM
             pa = 0.0 * u.deg
 
         # give specified values priority
@@ -206,7 +208,7 @@ class Beam(u.Quantity):
         """
 
         # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
-        # (githup checkin of MIRIAD, code by Sault)
+        # (github checkin of MIRIAD, code by Sault)
 
         alpha = ((self.major*np.cos(self.pa))**2 +
                  (self.minor*np.sin(self.pa))**2 +
@@ -335,10 +337,12 @@ class Beam(u.Quantity):
 
     @property
     def major(self):
+        """ Beam FWHM Major Axis """
         return self._major
 
     @property
     def minor(self):
+        """ Beam FWHM Minor Axis """
         return self._minor
 
     @property
