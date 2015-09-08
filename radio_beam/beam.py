@@ -435,6 +435,16 @@ class Beam(u.Quantity):
                                           self.minor.to(u.deg).value/pixscale,
                                           self.pa.to(u.radian).value)
 
+    def as_struct_element(self, pixscale):
+
+        # Same as above...
+        warnings.warn("as_struct_element is not aware of any misaligment "
+                      " between pixel and world coordinates")
+
+        return EllipticalTophat2DKernel(self.major.to(u.deg).value/pixscale,
+                                        self.minor.to(u.deg).value/pixscale,
+                                        self.pa.to(u.radian).value)
+
     def to_header_keywords(self):
         return {'BMAJ': self.major.to(u.deg).value,
                 'BMIN': self.minor.to(u.deg).value,
