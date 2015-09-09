@@ -462,7 +462,7 @@ class Beam(u.Quantity):
         maj_eff = self.major.to(u.deg) / (pixscale*gauss_to_tophat)
         min_eff = self.minor.to(u.deg) / (pixscale*gauss_to_tophat)
 
-        return EllipticalTophat2DKernel(maj_eff, min_eff,
+        return EllipticalTophat2DKernel(maj_eff.value, min_eff.value,
                                         self.pa.to(u.radian).value)
 
     def to_header_keywords(self):
