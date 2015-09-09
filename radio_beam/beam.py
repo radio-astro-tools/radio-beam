@@ -451,6 +451,12 @@ class Beam(u.Quantity):
         warnings.warn("as_struct_element is not aware of any misaligment "
                       " between pixel and world coordinates")
 
+        # Based on Gaussian to Tophat area conversion
+        # A_gaussian = 2 * pi * sigma^2 / (sqrt(8*log(2))^2
+        # A_tophat = pi * r^2
+        # pi r^2 = 2 * pi * sigma^2 / (sqrt(8*log(2))^2
+        # r = sqrt(2)/sqrt(8*log(2)) * sigma
+
         gauss_to_tophat = 2*np.sqrt(np.log(2))
 
         maj_eff = self.major.to(u.deg) / (pixscale*gauss_to_tophat)
