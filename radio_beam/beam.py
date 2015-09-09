@@ -581,13 +581,12 @@ class EllipticalDisk2D(Fittable2DModel):
 
     Notes
     -----
-    ** NOT UPDATED **
     Model formula:
         .. math::
-            f(r) = \\left \\{
+            f(a, b) = \\left \\{
                      \\begin{array}{ll}
-                       A & : r \\leq R_0 \\\\
-                       0 & : r > R_0
+                       A & : \\freq{(x\\cos{\\theta}+y\\sin{\\theta})^2}{a^2} + \\freq{(x\\sin{\\theta}-y\\cos{\\theta})^2}{b^2} \\leq 1 \\\\
+                       0 & : \\freq{(x\\cos{\\theta}+y\\sin{\\theta})^2}{a^2} + \\freq{(x\\sin{\\theta}-y\\cos{\\theta})^2}{b^2} > 1
                      \\end{array}
                    \\right.
     """
