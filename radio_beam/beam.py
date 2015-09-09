@@ -419,6 +419,8 @@ class Beam(u.Quantity):
 
     def as_kernel(self, pixscale):
         """
+        Returns an elliptical Gaussian kernel of the beam.
+
         Parameters
         ----------
         pixscale : float
@@ -436,6 +438,14 @@ class Beam(u.Quantity):
                                           self.pa.to(u.radian).value)
 
     def as_tophat_kernel(self, pixscale):
+        '''
+        Returns an elliptical Top Hat kernel of the beam.
+
+        Parameters
+        ----------
+        pixscale : float
+            deg -> pixels
+        '''
 
         # Same as above...
         warnings.warn("as_struct_element is not aware of any misaligment "
