@@ -558,7 +558,7 @@ class EllipticalGaussian2DKernel(Kernel2D):
                                         0, x_stddev=width, y_stddev=height,
                                         theta=position_angle)
         self._default_size = _round_up_to_odd_integer(support_scaling *
-                                                      np.max([width,height]))
+                                                      np.sqrt(height**2 + width**2))
         super(EllipticalGaussian2DKernel, self).__init__(**kwargs)
         self._truncation = np.abs(1. - 1 / self._array.sum())
 
@@ -633,11 +633,11 @@ class EllipticalTophat2DKernel(Kernel2D):
 
     _is_bool = True
 
-    def __init__(self, width, height, position_angle, support_scaling=1, **kwargs):
+    def __init__(self, width, height, position_angle, support_scaling=2, **kwargs):
 
         self._model = EllipticalDisk2D(1. / (np.pi * width * height), 0, 0,
                                        width, height, position_angle)
         self._default_size = _round_up_to_odd_integer(support_scaling *
-                                                      np.max([width, height]))
+                                                      np.sqrt(height**2 + width**2))
         super(EllipticalTophat2DKernel, self).__init__(**kwargs)
         self._truncation = 0
