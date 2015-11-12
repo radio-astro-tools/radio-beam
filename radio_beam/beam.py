@@ -633,7 +633,7 @@ class EllipticalTophat2DKernel(Kernel2D):
 
     _is_bool = True
 
-    def __init__(self, width, height, position_angle, support_scaling=8, **kwargs):
+    def __init__(self, width, height, position_angle, support_scaling=1, **kwargs):
 
         self._model = EllipticalDisk2D(1. / (np.pi * width * height), 0, 0,
                                        width, height, position_angle)
