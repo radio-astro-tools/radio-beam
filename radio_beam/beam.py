@@ -421,7 +421,7 @@ class Beam(u.Quantity):
                                           height=self.minor.to(u.deg).value/pixscale,
                                           angle=self.pa.to(u.deg).value)
 
-    def as_kernel(self, pixscale):
+    def as_kernel(self, pixscale, **kwargs):
         """
         Returns an elliptical Gaussian kernel of the beam.
 
@@ -429,7 +429,7 @@ class Beam(u.Quantity):
         ----------
         pixscale : float
             deg -> pixels
-
+        **kwargs : passed to EllipticalGaussian2DKernel
         """
         # do something here involving matrices
         # need to rotate the kernel into the wcs pixel space, kinda...
@@ -439,9 +439,10 @@ class Beam(u.Quantity):
 
         return EllipticalGaussian2DKernel(self.major.to(u.deg).value/pixscale,
                                           self.minor.to(u.deg).value/pixscale,
-                                          self.pa.to(u.radian).value)
+                                          self.pa.to(u.radian).value,
+                                          **kwargs)
 
-    def as_tophat_kernel(self, pixscale):
+    def as_tophat_kernel(self, pixscale, **kwargs):
         '''
         Returns an elliptical Top Hat kernel of the beam.
 
@@ -449,6 +450,7 @@ class Beam(u.Quantity):
         ----------
         pixscale : float
             deg -> pixels
+        **kwargs : passed to EllipticalTophat2DKernel
         '''
 
         # Same as above...
@@ -467,7 +469,7 @@ class Beam(u.Quantity):
         min_eff = self.minor.to(u.deg) / (pixscale*gauss_to_tophat)
 
         return EllipticalTophat2DKernel(maj_eff.value, min_eff.value,
-                                        self.pa.to(u.radian).value)
+                                        self.pa.to(u.radian).value, **kwargs)
 
     def to_header_keywords(self):
         return {'BMAJ': self.major.to(u.deg).value,
