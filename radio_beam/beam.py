@@ -9,6 +9,8 @@ import warnings
 
 # Imports for the custom kernels
 from astropy.modeling import models, Fittable2DModel, Parameter
+from astropy.modeling.models import Ellipse2D
+from astropy.modeling.utils import ellipse_extent
 from astropy.convolution import Kernel2D
 from astropy.convolution.kernels import _round_up_to_odd_integer
 from astropy.modeling.parameters import InputParameterError
@@ -633,11 +635,14 @@ class EllipticalTophat2DKernel(Kernel2D):
 
     _is_bool = True
 
-    def __init__(self, width, height, position_angle, support_scaling=2, **kwargs):
+    def __init__(self, width, height, position_angle, support_scaling=1,
+                 **kwargs):
 
-        self._model = EllipticalDisk2D(1. / (np.pi * width * height), 0, 0,
-                                       width, height, position_angle)
-        self._default_size = _round_up_to_odd_integer(support_scaling *
-                                                      np.sqrt(height**2 + width**2))
+        self._model = Ellipse2D(1. / (np.pi * width * height), 0, 0,
+                                width, height, position_angle)
+
+        max_extent = np.max(ellipse_extent(width, height, position_angle))
+        self._default_size = \
+            _round_up_to_odd_integer(support_scaling * 2 * max_extent)
         super(EllipticalTophat2DKernel, self).__init__(**kwargs)
         self._truncation = 0
