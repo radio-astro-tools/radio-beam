@@ -558,8 +558,10 @@ class EllipticalGaussian2DKernel(Kernel2D):
         self._model = Gaussian2D(1. / (2 * np.pi * width * height), 0,
                                  0, x_stddev=width, y_stddev=height,
                                  theta=position_angle)
-        self._default_size = _round_up_to_odd_integer(support_scaling *
-                                                      np.sqrt(height**2 + width**2))
+
+        max_extent = np.max(ellipse_extent(width, height, position_angle))
+        self._default_size = \
+            _round_up_to_odd_integer(support_scaling * 2 * max_extent)
         super(EllipticalGaussian2DKernel, self).__init__(**kwargs)
         self._truncation = np.abs(1. - 1 / self._array.sum())
 
