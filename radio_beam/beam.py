@@ -8,12 +8,10 @@ import numpy as np
 import warnings
 
 # Imports for the custom kernels
-from astropy.modeling import models, Fittable2DModel, Parameter
-from astropy.modeling.models import Ellipse2D
+from astropy.modeling.models import Ellipse2D, Gaussian2D
 from astropy.modeling.utils import ellipse_extent
 from astropy.convolution import Kernel2D
 from astropy.convolution.kernels import _round_up_to_odd_integer
-from astropy.modeling.parameters import InputParameterError
 
 # Conversion between a twod Gaussian FWHM**2 and effective area
 FWHM_TO_AREA = 2*np.pi/(8*np.log(2))
@@ -555,79 +553,15 @@ class EllipticalGaussian2DKernel(Kernel2D):
     _separable = True
     _is_bool = False
 
-    def __init__(self, width, height, position_angle, support_scaling=8, **kwargs):
-        self._model = models.Gaussian2D(1. / (2 * np.pi * width * height), 0,
-                                        0, x_stddev=width, y_stddev=height,
-                                        theta=position_angle)
+    def __init__(self, width, height, position_angle, support_scaling=8,
+                 **kwargs):
+        self._model = Gaussian2D(1. / (2 * np.pi * width * height), 0,
+                                 0, x_stddev=width, y_stddev=height,
+                                 theta=position_angle)
         self._default_size = _round_up_to_odd_integer(support_scaling *
                                                       np.sqrt(height**2 + width**2))
         super(EllipticalGaussian2DKernel, self).__init__(**kwargs)
         self._truncation = np.abs(1. - 1 / self._array.sum())
-
-
-class EllipticalDisk2D(Fittable2DModel):
-    """
-    Two dimensional elliptical Disk model.
-    Parameters
-    ----------
-    amplitude : float
-        Value of the disk function
-    x_0 : float
-        x position center of the disk
-    y_0 : float
-        y position center of the disk
-    a : float
-        Major axis of the disk
-    b : float
-        Minor axis of the disk
-    theta : float
-        Orientation of the major axis with respect to the x axis.
-
-    See Also
-    --------
-    Box2D, TrapezoidDisk2D, Disk2D
-
-    Notes
-    -----
-    Model formula:
-        .. math::
-            f(a, b) = \\left \\{
-                     \\begin{array}{ll}
-                       A & : \\freq{(x\\cos{\\theta}+y\\sin{\\theta})^2}{a^2} + \\freq{(x\\sin{\\theta}-y\\cos{\\theta})^2}{b^2} \\leq 1 \\\\
-                       0 & : \\freq{(x\\cos{\\theta}+y\\sin{\\theta})^2}{a^2} + \\freq{(x\\sin{\\theta}-y\\cos{\\theta})^2}{b^2} > 1
-                     \\end{array}
-                   \\right.
-    """
-
-    amplitude = Parameter(default=1)
-    x_0 = Parameter(default=0)
-    y_0 = Parameter(default=0)
-    a = Parameter(default=1)
-    b = Parameter(default=1)
-    theta = Parameter(default=0)
-
-    def __init__(self, amplitude=amplitude.default, x_0=x_0.default,
-                 y_0=y_0.default, a=a.default, b=b.default,
-                 theta=theta.default, **kwargs):
-
-        if a < b:
-            raise InputParameterError("Major axis (a) must be greater than "
-                                      "minor axis (b).")
-
-        super(EllipticalDisk2D, self).__init__(
-            amplitude=amplitude, x_0=x_0, y_0=y_0, a=a, b=b, theta=theta,
-            **kwargs)
-
-    @staticmethod
-    def evaluate(x, y, amplitude, x_0,
-                 y_0, a, b, theta):
-        """Two dimensional elliptical Disk model function"""
-
-        majr = (((x - x_0)*np.cos(theta) + (y - y_0)*np.sin(theta)) ** 2) /\
-            a ** 2
-        minr = (((x - x_0)*np.sin(theta) - (y - y_0)*np.cos(theta)) ** 2) /\
-            b ** 2
-        return np.select([majr + minr <= 1.], [amplitude])
 
 
 class EllipticalTophat2DKernel(Kernel2D):
