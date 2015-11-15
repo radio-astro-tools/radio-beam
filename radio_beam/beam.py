@@ -434,7 +434,7 @@ class Beam(u.Quantity):
         # do something here involving matrices
         # need to rotate the kernel into the wcs pixel space, kinda...
         # at the least, need to rescale the kernel axes into pixels
-        warnings.warn("as_struct_element is not aware of any misaligment "
+        warnings.warn("as_kernel is not aware of any misaligment "
                       " between pixel and world coordinates")
 
         stddev_maj = self.major.to(u.deg)/(pixscale * SIGMA_TO_FWHM)
@@ -465,7 +465,7 @@ class Beam(u.Quantity):
         '''
 
         # Same as above...
-        warnings.warn("as_struct_element is not aware of any misaligment "
+        warnings.warn("as_tophat_kernel is not aware of any misaligment "
                       " between pixel and world coordinates")
 
         # Based on Gaussian to Tophat area conversion
