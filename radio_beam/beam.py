@@ -474,10 +474,12 @@ class Beam(u.Quantity):
         # pi r^2 = 2 * pi * sigma^2 / (sqrt(8*log(2))^2
         # r = sqrt(2)/sqrt(8*log(2)) * sigma
 
-        gauss_to_tophat = 2*np.sqrt(np.log(2))
+        gauss_to_top = np.sqrt(2)
 
-        maj_eff = self.major.to(u.deg) / (pixscale*gauss_to_tophat)
-        min_eff = self.minor.to(u.deg) / (pixscale*gauss_to_tophat)
+        maj_eff = gauss_to_top * self.major.to(u.deg) / \
+            (pixscale * SIGMA_TO_FWHM)
+        min_eff = gauss_to_top * self.minor.to(u.deg) / \
+            (pixscale * SIGMA_TO_FWHM)
 
         return EllipticalTophat2DKernel(maj_eff.value, min_eff.value,
                                         self.pa.to(u.radian).value, **kwargs)
