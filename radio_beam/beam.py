@@ -434,11 +434,14 @@ class Beam(u.Quantity):
         # do something here involving matrices
         # need to rotate the kernel into the wcs pixel space, kinda...
         # at the least, need to rescale the kernel axes into pixels
-        warnings.warn("as_kernel is not aware of any misaligment between pixel "
-                      "and world coordinates")
+        warnings.warn("as_struct_element is not aware of any misaligment "
+                      " between pixel and world coordinates")
 
-        return EllipticalGaussian2DKernel(self.major.to(u.deg).value/pixscale,
-                                          self.minor.to(u.deg).value/pixscale,
+        stddev_maj = self.major.to(u.deg)/(pixscale * SIGMA_TO_FWHM)
+        stddev_min = self.minor.to(u.deg)/(pixscale * SIGMA_TO_FWHM)
+
+        return EllipticalGaussian2DKernel(stddev_maj,
+                                          stddev_min,
                                           self.pa.to(u.radian).value,
                                           **kwargs)
 
@@ -475,7 +478,7 @@ class Beam(u.Quantity):
         return {'BMAJ': self.major.to(u.deg).value,
                 'BMIN': self.minor.to(u.deg).value,
                 'BPA':  self.pa.to(u.deg).value,
-               }
+                }
 
 
 def wcs_to_platescale(wcs):
