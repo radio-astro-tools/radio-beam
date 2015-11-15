@@ -447,7 +447,15 @@ class Beam(u.Quantity):
 
     def as_tophat_kernel(self, pixscale, **kwargs):
         '''
-        Returns an elliptical Top Hat kernel of the beam.
+        Returns an elliptical Tophat kernel of the beam. The area has
+        been scaled to match the 2D Gaussian area:
+
+        .. math::
+            \\begin{array}{ll}
+            A_{\\mathrm{Gauss}} = 2\\pi\\sigma_{\\mathrm{Gauss}}^{2}
+            A_{\\mathrm{Tophat}} = \\pi\\sigma_{\\mathrm{Tophat}}^{2}
+            \\sigma_{\\mathrm{Tophat}} = \\sqrt{2}\\sigma_{\\mathrm{Gauss}}
+            \\end{array}
 
         Parameters
         ----------
