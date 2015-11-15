@@ -496,9 +496,9 @@ class EllipticalGaussian2DKernel(Kernel2D):
 
     Parameters
     ----------
-    width : float
+    stddev_maj : float
         Standard deviation of the Gaussian kernel in direction 1
-    height : float
+    stddev_min : float
         Standard deviation of the Gaussian kernel in direction 1
     position_angle : float
         Position angle of the elliptical gaussian
@@ -553,13 +553,14 @@ class EllipticalGaussian2DKernel(Kernel2D):
     _separable = True
     _is_bool = False
 
-    def __init__(self, width, height, position_angle, support_scaling=8,
+    def __init__(self, stddev_maj, stddev_min, position_angle, support_scaling=8,
                  **kwargs):
-        self._model = Gaussian2D(1. / (2 * np.pi * width * height), 0,
-                                 0, x_stddev=width, y_stddev=height,
+        self._model = Gaussian2D(1. / (2 * np.pi * stddev_maj * stddev_min), 0,
+                                 0, x_stddev=stddev_maj, y_stddev=stddev_min,
                                  theta=position_angle)
 
-        max_extent = np.max(ellipse_extent(width, height, position_angle))
+        max_extent = \
+            np.max(ellipse_extent(stddev_maj, stddev_min, position_angle))
         self._default_size = \
             _round_up_to_odd_integer(support_scaling * 2 * max_extent)
         super(EllipticalGaussian2DKernel, self).__init__(**kwargs)
@@ -571,13 +572,14 @@ class EllipticalTophat2DKernel(Kernel2D):
 
     _is_bool = True
 
-    def __init__(self, width, height, position_angle, support_scaling=1,
+    def __init__(self, stddev_maj, stddev_min, position_angle, support_scaling=1,
                  **kwargs):
 
-        self._model = Ellipse2D(1. / (np.pi * width * height), 0, 0,
-                                width, height, position_angle)
+        self._model = Ellipse2D(1. / (np.pi * stddev_maj * stddev_min), 0, 0,
+                                stddev_maj, stddev_min, position_angle)
 
-        max_extent = np.max(ellipse_extent(width, height, position_angle))
+        max_extent = \
+            np.max(ellipse_extent(stddev_maj, stddev_min, position_angle))
         self._default_size = \
             _round_up_to_odd_integer(support_scaling * 2 * max_extent)
         super(EllipticalTophat2DKernel, self).__init__(**kwargs)
