@@ -531,7 +531,8 @@ class EllipticalGaussian2DKernel(Kernel2D):
     See Also
     --------
     Box2DKernel, Tophat2DKernel, MexicanHat2DKernel, Ring2DKernel,
-    TrapezoidDisk2DKernel, AiryDisk2DKernel, Gaussian2DKernel
+    TrapezoidDisk2DKernel, AiryDisk2DKernel, Gaussian2DKernel,
+    EllipticalTophat2DKernel
 
     Examples
     --------
@@ -541,8 +542,8 @@ class EllipticalGaussian2DKernel(Kernel2D):
         :include-source:
 
         import matplotlib.pyplot as plt
-        from beam import EllipticalGaussian2DKernel
-        gaussian_2D_kernel = EllipticalGaussian2DKernel(10)
+        from radio_beam import EllipticalGaussian2DKernel
+        gaussian_2D_kernel = EllipticalGaussian2DKernel(10, 5, np.pi/4)
         plt.imshow(gaussian_2D_kernel, interpolation='none', origin='lower')
         plt.xlabel('x [pixels]')
         plt.ylabel('y [pixels]')
@@ -568,7 +569,68 @@ class EllipticalGaussian2DKernel(Kernel2D):
 
 
 class EllipticalTophat2DKernel(Kernel2D):
-    """docstring for EllipticalTophat2DKernel"""
+    """
+    2D Elliptical Tophat filter kernel.
+
+    The Tophat filter can produce artifacts when applied
+    repeatedly on the same data.
+
+    Parameters
+    ----------
+    stddev_maj : float
+        Standard deviation of the Gaussian kernel in direction 1
+    stddev_min : float
+        Standard deviation of the Gaussian kernel in direction 1
+    position_angle : float
+        Position angle of the elliptical gaussian
+    x_size : odd int, optional
+        Size in x direction of the kernel array. Default = support_scaling *
+        stddev.
+    y_size : odd int, optional
+        Size in y direction of the kernel array. Default = support_scaling *
+        stddev.
+    support_scaling : int
+        The amount to scale the stddev to determine the size of the kernel
+    mode : str, optional
+        One of the following discretization modes:
+            * 'center' (default)
+                Discretize model by taking the value
+                at the center of the bin.
+            * 'linear_interp'
+                Discretize model by performing a bilinear interpolation
+                between the values at the corners of the bin.
+            * 'oversample'
+                Discretize model by taking the average
+                on an oversampled grid.
+            * 'integrate'
+                Discretize model by integrating the
+                model over the bin.
+    factor : number, optional
+        Factor of oversampling. Default factor = 10.
+
+
+    See Also
+    --------
+    Box2DKernel, Tophat2DKernel, MexicanHat2DKernel, Ring2DKernel,
+    TrapezoidDisk2DKernel, AiryDisk2DKernel, Gaussian2DKernel,
+    EllipticalGaussian2DKernel
+
+    Examples
+    --------
+    Kernel response:
+
+     .. plot::
+        :include-source:
+
+        import matplotlib.pyplot as plt
+        from radio_beam import EllipticalTophat2DKernel
+        gaussian_2D_kernel = EllipticalTophat2DKernel(10, 5, np.pi/4)
+        plt.imshow(tophat_2D_kernel, interpolation='none', origin='lower')
+        plt.xlabel('x [pixels]')
+        plt.ylabel('y [pixels]')
+        plt.colorbar()
+        plt.show()
+    """
 
     _is_bool = True
 
