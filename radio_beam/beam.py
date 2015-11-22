@@ -8,10 +8,10 @@ import numpy as np
 import warnings
 
 # Imports for the custom kernels
-from astropy.modeling import models, Fittable2DModel, Parameter
+from astropy.modeling.models import Ellipse2D, Gaussian2D
+from astropy.modeling.utils import ellipse_extent
 from astropy.convolution import Kernel2D
 from astropy.convolution.kernels import _round_up_to_odd_integer
-from astropy.modeling.parameters import InputParameterError
 
 # Conversion between a twod Gaussian FWHM**2 and effective area
 FWHM_TO_AREA = 2*np.pi/(8*np.log(2))
@@ -421,7 +421,7 @@ class Beam(u.Quantity):
                                           height=self.minor.to(u.deg).value/pixscale,
                                           angle=self.pa.to(u.deg).value)
 
-    def as_kernel(self, pixscale):
+    def as_kernel(self, pixscale, **kwargs):
         """
         Returns an elliptical Gaussian kernel of the beam.
 
@@ -429,30 +429,43 @@ class Beam(u.Quantity):
         ----------
         pixscale : float
             deg -> pixels
-
+        **kwargs : passed to EllipticalGaussian2DKernel
         """
         # do something here involving matrices
         # need to rotate the kernel into the wcs pixel space, kinda...
         # at the least, need to rescale the kernel axes into pixels
-        warnings.warn("as_kernel is not aware of any misaligment between pixel "
-                      "and world coordinates")
+        warnings.warn("as_kernel is not aware of any misaligment "
+                      " between pixel and world coordinates")
 
-        return EllipticalGaussian2DKernel(self.major.to(u.deg).value/pixscale,
-                                          self.minor.to(u.deg).value/pixscale,
-                                          self.pa.to(u.radian).value)
+        stddev_maj = self.major.to(u.deg)/(pixscale * SIGMA_TO_FWHM)
+        stddev_min = self.minor.to(u.deg)/(pixscale * SIGMA_TO_FWHM)
 
-    def as_tophat_kernel(self, pixscale):
+        return EllipticalGaussian2DKernel(stddev_maj,
+                                          stddev_min,
+                                          self.pa.to(u.radian).value,
+                                          **kwargs)
+
+    def as_tophat_kernel(self, pixscale, **kwargs):
         '''
-        Returns an elliptical Top Hat kernel of the beam.
+        Returns an elliptical Tophat kernel of the beam. The area has
+        been scaled to match the 2D Gaussian area:
+
+        .. math::
+            \\begin{array}{ll}
+            A_{\\mathrm{Gauss}} = 2\\pi\\sigma_{\\mathrm{Gauss}}^{2}
+            A_{\\mathrm{Tophat}} = \\pi\\sigma_{\\mathrm{Tophat}}^{2}
+            \\sigma_{\\mathrm{Tophat}} = \\sqrt{2}\\sigma_{\\mathrm{Gauss}}
+            \\end{array}
 
         Parameters
         ----------
         pixscale : float
             deg -> pixels
+        **kwargs : passed to EllipticalTophat2DKernel
         '''
 
         # Same as above...
-        warnings.warn("as_struct_element is not aware of any misaligment "
+        warnings.warn("as_tophat_kernel is not aware of any misaligment "
                       " between pixel and world coordinates")
 
         # Based on Gaussian to Tophat area conversion
@@ -461,19 +474,21 @@ class Beam(u.Quantity):
         # pi r^2 = 2 * pi * sigma^2 / (sqrt(8*log(2))^2
         # r = sqrt(2)/sqrt(8*log(2)) * sigma
 
-        gauss_to_tophat = 2*np.sqrt(np.log(2))
+        gauss_to_top = np.sqrt(2)
 
-        maj_eff = self.major.to(u.deg) / (pixscale*gauss_to_tophat)
-        min_eff = self.minor.to(u.deg) / (pixscale*gauss_to_tophat)
+        maj_eff = gauss_to_top * self.major.to(u.deg) / \
+            (pixscale * SIGMA_TO_FWHM)
+        min_eff = gauss_to_top * self.minor.to(u.deg) / \
+            (pixscale * SIGMA_TO_FWHM)
 
         return EllipticalTophat2DKernel(maj_eff.value, min_eff.value,
-                                        self.pa.to(u.radian).value)
+                                        self.pa.to(u.radian).value, **kwargs)
 
     def to_header_keywords(self):
         return {'BMAJ': self.major.to(u.deg).value,
                 'BMIN': self.minor.to(u.deg).value,
                 'BPA':  self.pa.to(u.deg).value,
-               }
+                }
 
 
 def wcs_to_platescale(wcs):
@@ -494,9 +509,9 @@ class EllipticalGaussian2DKernel(Kernel2D):
 
     Parameters
     ----------
-    width : float
+    stddev_maj : float
         Standard deviation of the Gaussian kernel in direction 1
-    height : float
+    stddev_min : float
         Standard deviation of the Gaussian kernel in direction 1
     position_angle : float
         Position angle of the elliptical gaussian
@@ -529,7 +544,8 @@ class EllipticalGaussian2DKernel(Kernel2D):
     See Also
     --------
     Box2DKernel, Tophat2DKernel, MexicanHat2DKernel, Ring2DKernel,
-    TrapezoidDisk2DKernel, AiryDisk2DKernel, Gaussian2DKernel
+    TrapezoidDisk2DKernel, AiryDisk2DKernel, Gaussian2DKernel,
+    EllipticalTophat2DKernel
 
     Examples
     --------
@@ -539,8 +555,8 @@ class EllipticalGaussian2DKernel(Kernel2D):
         :include-source:
 
         import matplotlib.pyplot as plt
-        from beam import EllipticalGaussian2DKernel
-        gaussian_2D_kernel = EllipticalGaussian2DKernel(10)
+        from radio_beam import EllipticalGaussian2DKernel
+        gaussian_2D_kernel = EllipticalGaussian2DKernel(10, 5, np.pi/4)
         plt.imshow(gaussian_2D_kernel, interpolation='none', origin='lower')
         plt.xlabel('x [pixels]')
         plt.ylabel('y [pixels]')
@@ -551,91 +567,95 @@ class EllipticalGaussian2DKernel(Kernel2D):
     _separable = True
     _is_bool = False
 
-    def __init__(self, width, height, position_angle, support_scaling=8, **kwargs):
-        self._model = models.Gaussian2D(1. / (2 * np.pi * width * height), 0,
-                                        0, x_stddev=width, y_stddev=height,
-                                        theta=position_angle)
-        self._default_size = _round_up_to_odd_integer(support_scaling *
-                                                      np.max([width,height]))
+    def __init__(self, stddev_maj, stddev_min, position_angle, support_scaling=8,
+                 **kwargs):
+        self._model = Gaussian2D(1. / (2 * np.pi * stddev_maj * stddev_min), 0,
+                                 0, x_stddev=stddev_maj, y_stddev=stddev_min,
+                                 theta=position_angle)
+
+        max_extent = \
+            np.max(ellipse_extent(stddev_maj, stddev_min, position_angle))
+        self._default_size = \
+            _round_up_to_odd_integer(support_scaling * 2 * max_extent)
         super(EllipticalGaussian2DKernel, self).__init__(**kwargs)
         self._truncation = np.abs(1. - 1 / self._array.sum())
 
 
-class EllipticalDisk2D(Fittable2DModel):
+class EllipticalTophat2DKernel(Kernel2D):
     """
-    Two dimensional elliptical Disk model.
+    2D Elliptical Tophat filter kernel.
+
+    The Tophat filter can produce artifacts when applied
+    repeatedly on the same data.
+
     Parameters
     ----------
-    amplitude : float
-        Value of the disk function
-    x_0 : float
-        x position center of the disk
-    y_0 : float
-        y position center of the disk
-    a : float
-        Major axis of the disk
-    b : float
-        Minor axis of the disk
-    theta : float
-        Orientation of the major axis with respect to the x axis.
+    stddev_maj : float
+        Standard deviation of the Gaussian kernel in direction 1
+    stddev_min : float
+        Standard deviation of the Gaussian kernel in direction 1
+    position_angle : float
+        Position angle of the elliptical gaussian
+    x_size : odd int, optional
+        Size in x direction of the kernel array. Default = support_scaling *
+        stddev.
+    y_size : odd int, optional
+        Size in y direction of the kernel array. Default = support_scaling *
+        stddev.
+    support_scaling : int
+        The amount to scale the stddev to determine the size of the kernel
+    mode : str, optional
+        One of the following discretization modes:
+            * 'center' (default)
+                Discretize model by taking the value
+                at the center of the bin.
+            * 'linear_interp'
+                Discretize model by performing a bilinear interpolation
+                between the values at the corners of the bin.
+            * 'oversample'
+                Discretize model by taking the average
+                on an oversampled grid.
+            * 'integrate'
+                Discretize model by integrating the
+                model over the bin.
+    factor : number, optional
+        Factor of oversampling. Default factor = 10.
+
 
     See Also
     --------
-    Box2D, TrapezoidDisk2D, Disk2D
+    Box2DKernel, Tophat2DKernel, MexicanHat2DKernel, Ring2DKernel,
+    TrapezoidDisk2DKernel, AiryDisk2DKernel, Gaussian2DKernel,
+    EllipticalGaussian2DKernel
 
-    Notes
-    -----
-    Model formula:
-        .. math::
-            f(a, b) = \\left \\{
-                     \\begin{array}{ll}
-                       A & : \\freq{(x\\cos{\\theta}+y\\sin{\\theta})^2}{a^2} + \\freq{(x\\sin{\\theta}-y\\cos{\\theta})^2}{b^2} \\leq 1 \\\\
-                       0 & : \\freq{(x\\cos{\\theta}+y\\sin{\\theta})^2}{a^2} + \\freq{(x\\sin{\\theta}-y\\cos{\\theta})^2}{b^2} > 1
-                     \\end{array}
-                   \\right.
+    Examples
+    --------
+    Kernel response:
+
+     .. plot::
+        :include-source:
+
+        import matplotlib.pyplot as plt
+        from radio_beam import EllipticalTophat2DKernel
+        gaussian_2D_kernel = EllipticalTophat2DKernel(10, 5, np.pi/4)
+        plt.imshow(tophat_2D_kernel, interpolation='none', origin='lower')
+        plt.xlabel('x [pixels]')
+        plt.ylabel('y [pixels]')
+        plt.colorbar()
+        plt.show()
     """
-
-    amplitude = Parameter(default=1)
-    x_0 = Parameter(default=0)
-    y_0 = Parameter(default=0)
-    a = Parameter(default=1)
-    b = Parameter(default=1)
-    theta = Parameter(default=0)
-
-    def __init__(self, amplitude=amplitude.default, x_0=x_0.default,
-                 y_0=y_0.default, a=a.default, b=b.default,
-                 theta=theta.default, **kwargs):
-
-        if a < b:
-            raise InputParameterError("Major axis (a) must be greater than "
-                                      "minor axis (b).")
-
-        super(EllipticalDisk2D, self).__init__(
-            amplitude=amplitude, x_0=x_0, y_0=y_0, a=a, b=b, theta=theta,
-            **kwargs)
-
-    @staticmethod
-    def evaluate(x, y, amplitude, x_0,
-                 y_0, a, b, theta):
-        """Two dimensional elliptical Disk model function"""
-
-        majr = (((x - x_0)*np.cos(theta) + (y - y_0)*np.sin(theta)) ** 2) /\
-            a ** 2
-        minr = (((x - x_0)*np.sin(theta) - (y - y_0)*np.cos(theta)) ** 2) /\
-            b ** 2
-        return np.select([majr + minr <= 1.], [amplitude])
-
-
-class EllipticalTophat2DKernel(Kernel2D):
-    """docstring for EllipticalTophat2DKernel"""
 
     _is_bool = True
 
-    def __init__(self, width, height, position_angle, support_scaling=8, **kwargs):
+    def __init__(self, stddev_maj, stddev_min, position_angle, support_scaling=1,
+                 **kwargs):
 
-        self._model = EllipticalDisk2D(1. / (np.pi * width * height), 0, 0,
-                                       width, height, position_angle)
-        self._default_size = _round_up_to_odd_integer(support_scaling *
-                                                      np.max([width, height]))
+        self._model = Ellipse2D(1. / (np.pi * stddev_maj * stddev_min), 0, 0,
+                                stddev_maj, stddev_min, position_angle)
+
+        max_extent = \
+            np.max(ellipse_extent(stddev_maj, stddev_min, position_angle))
+        self._default_size = \
+            _round_up_to_odd_integer(support_scaling * 2 * max_extent)
         super(EllipticalTophat2DKernel, self).__init__(**kwargs)
         self._truncation = 0
