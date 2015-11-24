@@ -9,7 +9,6 @@ import warnings
 
 # Imports for the custom kernels
 from astropy.modeling.models import Ellipse2D, Gaussian2D
-from astropy.modeling.utils import ellipse_extent
 from astropy.convolution import Kernel2D
 from astropy.convolution.kernels import _round_up_to_odd_integer
 
@@ -573,6 +572,12 @@ class EllipticalGaussian2DKernel(Kernel2D):
                                  0, x_stddev=stddev_maj, y_stddev=stddev_min,
                                  theta=position_angle)
 
+        try:
+            from astropy.modeling.utils import ellipse_extent
+        except ImportError:
+            raise NotImplementedError("EllipticalGaussian2DKernel requires"
+                                      " astropy 1.1b1 or greater.")
+
         max_extent = \
             np.max(ellipse_extent(stddev_maj, stddev_min, position_angle))
         self._default_size = \
@@ -652,6 +657,12 @@ class EllipticalTophat2DKernel(Kernel2D):
 
         self._model = Ellipse2D(1. / (np.pi * stddev_maj * stddev_min), 0, 0,
                                 stddev_maj, stddev_min, position_angle)
+
+        try:
+            from astropy.modeling.utils import ellipse_extent
+        except ImportError:
+            raise NotImplementedError("EllipticalTophat2DKernel requires"
+                                      " astropy 1.1b1 or greater.")
 
         max_extent = \
             np.max(ellipse_extent(stddev_maj, stddev_min, position_angle))
