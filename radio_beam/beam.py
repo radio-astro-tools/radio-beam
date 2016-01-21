@@ -2,7 +2,7 @@ from astropy import units as u
 from astropy.io import fits
 from astropy import constants
 import astropy.units as u
-#from astropy import wcs
+from astropy import wcs
 from astropy.extern import six
 import numpy as np
 import warnings
@@ -490,13 +490,9 @@ class Beam(u.Quantity):
                 }
 
 
-def wcs_to_platescale(wcs):
-    cdelt = np.matrix(wcs.get_cdelt())
-    pc = np.matrix(wcs.get_pc())
-    scale = np.array(cdelt * pc)[0,:]
-    # this may be wrong in perverse cases
-    pixscale = np.abs(scale[0])
-    return pixscale
+def mywcs_to_platescale(mywcs):
+    pix_area = wcs.utils.proj_plane_pixel_area(mywcs)
+    return pix_area**0.5
 
 
 class EllipticalGaussian2DKernel(Kernel2D):
