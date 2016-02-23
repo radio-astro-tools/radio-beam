@@ -11,13 +11,13 @@ def data_path(filename):
 
 def test_classic_header():
     # Instantiate from header
-    fname = data_path("NGC0925.bima.mmom0.fits")
+    fname = data_path("NGC0925.bima.mmom0.fits.gz")
     hdr = fits.getheader(fname)
     bima_beam_file = radio_beam.Beam.from_fits_header(fname)
     bima_beam_hdr = radio_beam.Beam.from_fits_header(hdr)
 
 def test_from_aips_test():
-    aips_fname = data_path("ngc0925_na.fits")
+    aips_fname = data_path("ngc0925_na.fits.gz")
     aips_hdr = fits.getheader(aips_fname)
     aips_beam_hdr = radio_beam.Beam.from_fits_header(aips_hdr)
     np.testing.assert_almost_equal(aips_beam_hdr.sr.value, 9.029858054819811e-10)
