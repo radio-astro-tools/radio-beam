@@ -162,8 +162,8 @@ class Beam(u.Quantity):
         #        this is a dubious choice
 
         if casaline is not None:
-            bmaj = float(casaline.split()[2]) * u.deg
-            bmin = float(casaline.split()[4]) * u.deg
+            bmaj = float(casaline.split()[2]) * u.arcsec
+            bmin = float(casaline.split()[4]) * u.arcsec
             bpa = float(casaline.split()[8]) * u.deg
             return cls(major=bmaj, minor=bmin, pa=bpa)
 
