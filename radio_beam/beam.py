@@ -170,15 +170,15 @@ class Beam(u.Quantity):
         # HISTORY Sat May 10 20:53:11 2014
         # HISTORY imager::clean() [] Fitted beam used in
         # HISTORY > restoration: 1.34841 by 0.830715 (arcsec) at pa 82.8827 (deg)
-        aipsline = None
+        casaline = None
         for line in hdr['HISTORY']:
             if ('restoration' in line) and ('arcsec' in line):
-                aipsline = line
+                casaline = line
 
-        if aipsline is not None:
-            bmaj = float(aipsline.split()[2]) * u.arcsec
-            bmin = float(aipsline.split()[4]) * u.arcsec
-            bpa = float(aipsline.split()[8]) * u.deg
+        if casaline is not None:
+            bmaj = float(casaline.split()[2]) * u.arcsec
+            bmin = float(casaline.split()[4]) * u.arcsec
+            bpa = float(casaline.split()[8]) * u.deg
             return cls(major=bmaj, minor=bmin, pa=bpa)
         else:
             return None
