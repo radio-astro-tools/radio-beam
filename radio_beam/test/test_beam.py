@@ -24,6 +24,14 @@ def test_from_aips_test():
     aips_beam_file = radio_beam.Beam.from_fits_header(aips_fname)
     np.testing.assert_almost_equal(aips_beam_file.sr.value, 9.029858054819811e-10)
 
+def test_from_casa_test():
+    casa_fname = data_path("m83.moment0.fits")
+    casa_hdr = fits.getheader(casa_fname)
+    casa_beam_hdr = radio_beam.Beam.from_fits_header(casa_hdr)
+    np.testing.assert_almost_equal(casa_beam_hdr.sr.value, 2.98323984597532e-11)
+    casa_beam_file = radio_beam.Beam.from_fits_header(casa_fname)
+    np.testing.assert_almost_equal(casa_beam_file.sr.value, 2.98323984597532e-11)
+    
 def test_manual():
     # Instantiate from command line
     man_beam_val = radio_beam.Beam(0.1, 0.1, 30)

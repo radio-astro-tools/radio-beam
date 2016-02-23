@@ -114,11 +114,11 @@ class Beam(u.Quantity):
         if "BMAJ" in hdr:
             major = hdr["BMAJ"] * u.deg
         else:
-            aips_beam = cls.from_aips_header(hdr)
-            if aips_beam is None:
-                raise TypeError("No BMAJ found and does not appear to be an AIPS header.")
+            hist_beam = cls.from_fits_history(hdr)
+            if hist_beam is not None:
+                return hist_beam
             else:
-                return aips_beam
+                raise TypeError("No BMAJ found and does not appear to be a CASA/AIPS header.")
 
         # Fill out the minor axis and position angle if they are
         # present. Else they will default .
@@ -135,7 +135,7 @@ class Beam(u.Quantity):
 
 
     @classmethod
-    def from_aips_header(cls, hdr):
+    def from_fits_history(cls, hdr):
         """
         Instantiate the beam from an AIPS header. AIPS holds the beam
         in history. This method of initializing uses the last such
@@ -148,11 +148,31 @@ class Beam(u.Quantity):
             if 'BMAJ' in line:
                 aipsline = line
 
-        if aipsline is not None:
+        # a line looks like
+        # HISTORY Sat May 10 20:53:11 2014
+        # HISTORY imager::clean() [] Fitted beam used in
+        # HISTORY > restoration: 1.34841 by 0.830715 (arcsec)
+        #        at pa 82.8827 (deg)
+
+        casaline = None
+        for line in hdr['HISTORY']:
+            if ('restoration' in line) and ('arcsec' in line):
+                casaline = line
+        #assert precedence for CASA style over AIPS
+        #        this is a dubious choice
+
+        if casaline is not None:
+            bmaj = float(casaline.split()[2]) * u.arcsec
+            bmin = float(casaline.split()[4]) * u.arcsec
+            bpa = float(casaline.split()[8]) * u.deg
+            return cls(major=bmaj, minor=bmin, pa=bpa)
+
+        elif aipsline is not None:
             bmaj = float(aipsline.split()[3]) * u.deg
             bmin = float(aipsline.split()[5]) * u.deg
             bpa = float(aipsline.split()[7]) * u.deg
             return cls(major=bmaj, minor=bmin, pa=bpa)
+
         else:
             return None
 
