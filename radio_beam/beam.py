@@ -115,10 +115,13 @@ class Beam(u.Quantity):
             major = hdr["BMAJ"] * u.deg
         else:
             aips_beam = cls.from_aips_header(hdr)
-            if aips_beam is None:
-                raise TypeError("No BMAJ found and does not appear to be an AIPS header.")
-            else:
+            casa_beam = cls.from_casa_header(hdr)
+            if casa_beam is not None:
+                return casa_beam
+            elif aips_beam is not None:
                 return aips_beam
+            else:
+                raise TypeError("No BMAJ found and does not appear to be an AIPS header.")
 
         # Fill out the minor axis and position angle if they are
         # present. Else they will default .
@@ -152,6 +155,30 @@ class Beam(u.Quantity):
             bmaj = float(aipsline.split()[3]) * u.deg
             bmin = float(aipsline.split()[5]) * u.deg
             bpa = float(aipsline.split()[7]) * u.deg
+            return cls(major=bmaj, minor=bmin, pa=bpa)
+        else:
+            return None
+
+    @classmethod
+    def from_casa_header(cls, hdr):
+        """
+        Instantiate the beam from an CASA header. CASA can hold the beam
+        in history. This method of initializing uses the last such
+        entry.
+        """
+        # a line looks like
+        # HISTORY Sat May 10 20:53:11 2014
+        # HISTORY imager::clean() [] Fitted beam used in
+        # HISTORY > restoration: 1.34841 by 0.830715 (arcsec) at pa 82.8827 (deg)
+        aipsline = None
+        for line in hdr['HISTORY']:
+            if ('restoration' in line) and ('arcsec' in line):
+                aipsline = line
+
+        if aipsline is not None:
+            bmaj = float(aipsline.split()[2]) * u.arcsec
+            bmin = float(aipsline.split()[4]) * u.arcsec
+            bpa = float(aipsline.split()[8]) * u.deg
             return cls(major=bmaj, minor=bmin, pa=bpa)
         else:
             return None
