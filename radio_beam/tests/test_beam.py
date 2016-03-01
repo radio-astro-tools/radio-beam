@@ -31,7 +31,7 @@ def test_from_casa_test():
     np.testing.assert_almost_equal(casa_beam_hdr.sr.value, 2.98323984597532e-11)
     casa_beam_file = radio_beam.Beam.from_fits_header(casa_fname)
     np.testing.assert_almost_equal(casa_beam_file.sr.value, 2.98323984597532e-11)
-    
+
 def test_manual():
     # Instantiate from command line
     man_beam_val = radio_beam.Beam(0.1, 0.1, 30)
@@ -41,31 +41,31 @@ def test_manual():
     man_beam_deg = radio_beam.Beam(0.1*u.deg, 0.1*u.deg, 1.0*u.rad)
     np.testing.assert_almost_equal(man_beam_deg.value, 3.451589629868801e-06)
 
-def test_deconv():
-    # Deconvolution and convolution
-    beam_1 = radio_beam.Beam(10.*u.arcsec, 5.*u.arcsec, 30.*u.deg)
-    beam_2 = radio_beam.Beam(5.*u.arcsec, 3.*u.arcsec, 120.*u.deg)
+# def test_deconv():
+#     # Deconvolution and convolution
+#     beam_1 = radio_beam.Beam(10.*u.arcsec, 5.*u.arcsec, 30.*u.deg)
+#     beam_2 = radio_beam.Beam(5.*u.arcsec, 3.*u.arcsec, 120.*u.deg)
 
-    beam_3 = beam_1.convolve(beam_2)
-    print "test1: ",beam_2 == beam_3.deconvolve(beam_1)
-    print "test1: ",beam_2 - beam_3.deconvolve(beam_1)
-    print "test2: ",beam_1 == beam_3.deconvolve(beam_2)
-    print "test2: ",beam_1 - beam_3.deconvolve(beam_2)
-    print "beam1: ",beam_1
-    print "beam2: ",beam_2
-    print "beam3: ",beam_3
-    print "beam3.deconv(beam2): ",beam_3.deconvolve(beam_2)
-    np.testing.assert_almost_equal(beam_3.deconvolve(beam_2).sr.value, beam_1.sr.value)
+#     beam_3 = beam_1.convolve(beam_2)
+#     print "test1: ",beam_2 == beam_3.deconvolve(beam_1)
+#     print "test1: ",beam_2 - beam_3.deconvolve(beam_1)
+#     print "test2: ",beam_1 == beam_3.deconvolve(beam_2)
+#     print "test2: ",beam_1 - beam_3.deconvolve(beam_2)
+#     print "beam1: ",beam_1
+#     print "beam2: ",beam_2
+#     print "beam3: ",beam_3
+#     print "beam3.deconv(beam2): ",beam_3.deconvolve(beam_2)
+#     np.testing.assert_almost_equal(beam_3.deconvolve(beam_2).sr.value, beam_1.sr.value)
 
-    # Area
-    print beam_3.sr
-    print beam_2.sr
-    #  <Quantity 3.994895404940742e-10 sr>
-    print beam_1.sr
-    print beam_1
+#     # Area
+#     print beam_3.sr
+#     print beam_2.sr
+#     #  <Quantity 3.994895404940742e-10 sr>
+#     print beam_1.sr
+#     print beam_1
 
-    # Janskies to Kelvin
-    np.testing.assert_almost_equal(beam_2.jtok(1.e9), 81474.701386)
+#     # Janskies to Kelvin
+#     np.testing.assert_almost_equal(beam_2.jtok(1.e9), 81474.701386)
     # 81474
 
     # Return as array
