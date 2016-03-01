@@ -386,8 +386,8 @@ class Beam(u.Quantity):
         frequency.
 
         The function can be used with the usual astropy.units conversion:
-        >>> beam = Beam.from_fits_header("header.fits")
-        >>> (1.0*u.Jy).to(u.K, beam.jtok_equiv(1.4*u.GHz))
+        >>> beam = Beam.from_fits_header("header.fits") # doctest: +SKIP
+        >>> (1.0*u.Jy).to(u.K, beam.jtok_equiv(1.4*u.GHz)) # doctest: +SKIP
 
         Parameters
         ----------
