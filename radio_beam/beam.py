@@ -460,8 +460,8 @@ class Beam(u.Quantity):
         stddev_maj = self.major.to(u.deg)/(pixscale * SIGMA_TO_FWHM)
         stddev_min = self.minor.to(u.deg)/(pixscale * SIGMA_TO_FWHM)
 
-        return EllipticalGaussian2DKernel(stddev_maj,
-                                          stddev_min,
+        return EllipticalGaussian2DKernel(stddev_maj.value,
+                                          stddev_min.value,
                                           self.pa.to(u.radian).value,
                                           **kwargs)
 
@@ -583,8 +583,8 @@ class EllipticalGaussian2DKernel(Kernel2D):
     _separable = True
     _is_bool = False
 
-    def __init__(self, stddev_maj, stddev_min, position_angle, support_scaling=8,
-                 **kwargs):
+    def __init__(self, stddev_maj, stddev_min, position_angle,
+                 support_scaling=8, **kwargs):
         self._model = Gaussian2D(1. / (2 * np.pi * stddev_maj * stddev_min), 0,
                                  0, x_stddev=stddev_maj, y_stddev=stddev_min,
                                  theta=position_angle)
