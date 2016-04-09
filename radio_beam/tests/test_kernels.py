@@ -2,11 +2,17 @@
 from .. import beam as radio_beam
 import numpy.testing as npt
 import numpy as np
-
+import pytest
+from pkg_resources import parse_version
+from astropy.version import version
 
 SIGMA_TO_FWHM = radio_beam.SIGMA_TO_FWHM
 
+min_astropy_version = parse_version("1.1")
 
+
+@pytest.mark.skipif(parse_version(version) < min_astropy_version,
+                    reason="Must have astropy version >1.1")
 def test_gauss_kernel():
 
     fake_beam = radio_beam.Beam(10)
@@ -22,6 +28,8 @@ def test_gauss_kernel():
     npt.assert_allclose(kernel.array, direct_kernel.array)
 
 
+@pytest.mark.skipif(parse_version(version) < min_astropy_version,
+                    reason="Must have astropy version >1.1")
 def test_tophat_kernel():
 
     fake_beam = radio_beam.Beam(10)
