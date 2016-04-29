@@ -88,6 +88,31 @@ class Beam(u.Quantity):
 
         return self
 
+    @classmethod
+    def from_fits_bintable(cls, bintable, tolerance=0.1):
+        """
+        Insantiate a beam from a bintable from a CASA-produced image HDU.
+
+        Parameters
+        ----------
+        bintable : fits.BinTableHDU
+            The table data containing the beam information
+        tolerance : float
+            The fractional tolerance on the beam size to include when averaging
+            to a single beam
+        """
+        bmaj = bintable.data['BMAJ']
+        bmin = bintable.data['BMIN']
+        bpa = bintable.data['BPA']
+        if np.any(np.isnan(bmaj) | np.isnan(bmin) | np.isnan(bpa)):
+            raise ValueError("NaN beam encountered.")
+        for par in (bmin,bmaj):
+            par_mean = par.mean()
+            if (par.max() > par_mean*(1+tolerance)) or (par.min()<par_mean*(1-tolerance)):
+                raise ValueError("Beams are not within specified tolerance")
+
+        return cls(major=bmaj.mean()*u.deg, minor=bmin.mean()*u.deg,
+                   pa=bpa.mean()*u.deg)
 
     @classmethod
     def from_fits_header(cls, hdr):
