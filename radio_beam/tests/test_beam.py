@@ -41,6 +41,28 @@ def test_manual():
     man_beam_deg = radio_beam.Beam(0.1*u.deg, 0.1*u.deg, 1.0*u.rad)
     np.testing.assert_almost_equal(man_beam_deg.value, 3.451589629868801e-06)
 
+def test_bintable():
+
+    beams = np.recarray(4, dtype=[('BMAJ', '>f4'), ('BMIN', '>f4'),
+                                  ('BPA', '>f4'), ('CHAN', '>i4'),
+                                  ('POL', '>i4')])
+    beams['BMIN'] = [0.1,0.1001,0.09999,0.099999] # arcseconds
+    beams['BMAJ'] = [0.2,0.2001,0.1999,0.19999]
+    beams['BPA'] = [45.1,45.101,45.102,45.099] # degrees
+    beams['CHAN'] = [0,0,0,0]
+    beams['POL'] = [0,0,0,0]
+    beams = fits.BinTableHDU(beams)
+
+    beam = radio_beam.Beam.from_fits_bintable(beams)
+
+    np.testing.assert_almost_equal(beam.minor.to(u.arcsec).value,
+                                   0.10002226)
+    np.testing.assert_almost_equal(beam.major.to(u.arcsec).value,
+                                   0.19999751)
+    np.testing.assert_almost_equal(beam.pa.to(u.deg).value,
+                                   45.10050065568665)
+
+
 # def test_deconv():
 #     # Deconvolution and convolution
 #     beam_1 = radio_beam.Beam(10.*u.arcsec, 5.*u.arcsec, 30.*u.deg)

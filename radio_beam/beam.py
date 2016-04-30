@@ -108,6 +108,8 @@ class Beam(u.Quantity):
             The fractional tolerance on the beam size to include when averaging
             to a single beam
         """
+        from astropy.stats import circmean
+
         bmaj = bintable.data['BMAJ']
         bmin = bintable.data['BMIN']
         bpa = bintable.data['BPA']
@@ -124,8 +126,8 @@ class Beam(u.Quantity):
             warnings.warn("Metadata was averaged for keywords "
                           "{0}".format(",".join([key for key in meta])))
 
-        return cls(major=bmaj.mean()*u.deg, minor=bmin.mean()*u.deg,
-                   pa=bpa.mean()*u.deg)
+        return cls(major=bmaj.mean()*u.arcsec, minor=bmin.mean()*u.arcsec,
+                   pa=circmean(bpa*u.deg, weights=bmaj/bmin))
 
     @classmethod
     def from_fits_header(cls, hdr):
