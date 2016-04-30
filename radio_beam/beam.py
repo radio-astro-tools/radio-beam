@@ -29,7 +29,7 @@ class Beam(u.Quantity):
     """
 
     def __new__(cls, major=None, minor=None, pa=None, area=None,
-                default_unit=u.arcsec):
+                default_unit=u.arcsec, meta=None):
         """
         Create a new Gaussian beam
 
@@ -85,6 +85,13 @@ class Beam(u.Quantity):
         self._minor = minor
         self._pa = pa
         self.default_unit = default_unit
+
+        if meta is None:
+            self.meta = {}
+        elif isinstance(meta, dict):
+            self.meta = meta
+        else:
+            raise TypeError("metadata must be a dictionary")
 
         return self
 
