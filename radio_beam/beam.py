@@ -96,7 +96,7 @@ class Beam(u.Quantity):
         return self
 
     @classmethod
-    def from_fits_bintable(cls, bintable, tolerance=0.1):
+    def from_fits_bintable(cls, bintable, tolerance=0.01):
         """
         Insantiate a beam from a bintable from a CASA-produced image HDU.
 
@@ -117,6 +117,12 @@ class Beam(u.Quantity):
             par_mean = par.mean()
             if (par.max() > par_mean*(1+tolerance)) or (par.min()<par_mean*(1-tolerance)):
                 raise ValueError("Beams are not within specified tolerance")
+
+        meta = {key: bintable.data[key].mean() for key in bintable.data.names if
+                key not in ('BMAJ','BPA', 'BMIN')}
+        if meta:
+            warnings.warn("Metadata was averaged for keywords "
+                          "{0}".format(",".join([key for key in meta])))
 
         return cls(major=bmaj.mean()*u.deg, minor=bmin.mean()*u.deg,
                    pa=bpa.mean()*u.deg)
