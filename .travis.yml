@@ -26,7 +26,7 @@ env:
         # overidden underneath. They are defined here in order to save having
         # to repeat them for all configurations.
         - NUMPY_VERSION=1.9
-        - ASTROPY_VERSION=stable
+        - ASTROPY_VERSION=development
         - SETUP_CMD='test'
         - PIP_DEPENDENCIES=''
         # For this package-template, we include examples of Cython modules,
