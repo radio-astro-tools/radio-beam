@@ -26,6 +26,8 @@ env:
         # overidden underneath. They are defined here in order to save having
         # to repeat them for all configurations.
         - NUMPY_VERSION=1.9
+        # NOTE: This should be reverted to 1.2 once 1.2 is released (circmean
+        # is part of 1.2 and is required)
         - ASTROPY_VERSION=development
         - SETUP_CMD='test'
         - PIP_DEPENDENCIES=''
