@@ -183,6 +183,9 @@ class Beam(u.Quantity):
         """
         # a line looks like
         # HISTORY AIPS   CLEAN BMAJ=  1.7599E-03 BMIN=  1.5740E-03 BPA=   2.61
+        if 'HISTORY' not in hdr:
+            return None
+
         aipsline = None
         for line in hdr['HISTORY']:
             if 'BMAJ' in line:
