@@ -417,6 +417,11 @@ class Beam(u.Quantity):
     def pa(self):
         return self._pa
 
+    @property
+    def isfinite(self):
+        return ((self.major > 0) & (self.minor > 0) & np.isfinite(self.major) &
+                np.isfinite(self.minor) & np.isfinite(self.pa))
+
     def beam_projected_area(self, distance):
         """
         Return the beam area in pc^2 (or equivalent) given a distance
