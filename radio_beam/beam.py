@@ -508,9 +508,14 @@ class Beam(u.Quantity):
         stddev_maj = self.major.to(u.deg)/(pixscale * SIGMA_TO_FWHM)
         stddev_min = self.minor.to(u.deg)/(pixscale * SIGMA_TO_FWHM)
 
+        # position angle is defined as CCW from north
+        # "angle" is conventionally defined as CCW from "west".
+        # Therefore, add 90 degrees
+        angle = (90*u.deg+self.pa).to(u.radian).value,
+
         return EllipticalGaussian2DKernel(stddev_maj.value,
                                           stddev_min.value,
-                                          self.pa.to(u.radian).value,
+                                          angle,
                                           **kwargs)
 
     def as_tophat_kernel(self, pixscale, **kwargs):
