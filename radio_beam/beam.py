@@ -495,7 +495,7 @@ class Beam(u.Quantity):
 
         Parameters
         ----------
-        pixscale : float
+        pixscale : Quantity
             deg -> pixels
         **kwargs : passed to EllipticalGaussian2DKernel
         """
@@ -505,8 +505,10 @@ class Beam(u.Quantity):
         warnings.warn("as_kernel is not aware of any misaligment "
                       " between pixel and world coordinates")
 
-        stddev_maj = self.major.to(u.deg)/(pixscale * SIGMA_TO_FWHM)
-        stddev_min = self.minor.to(u.deg)/(pixscale * SIGMA_TO_FWHM)
+        stddev_maj = (self.major.to(u.deg)/(pixscale.to(u.deg) *
+                                            SIGMA_TO_FWHM)).decompose()
+        stddev_min = (self.minor.to(u.deg)/(pixscale.to(u.deg) *
+                                            SIGMA_TO_FWHM)).decompose()
 
         # position angle is defined as CCW from north
         # "angle" is conventionally defined as CCW from "west".
