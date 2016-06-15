@@ -1,5 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from .. import beam as radio_beam
+from astropy import units as u
 import numpy.testing as npt
 import numpy as np
 import pytest
@@ -17,8 +18,8 @@ def test_gauss_kernel():
 
     fake_beam = radio_beam.Beam(10)
 
-    # Let pixscale be 0.1 pix/deg
-    kernel = fake_beam.as_kernel(0.1)
+    # Let pixscale be 0.1 deg/pix
+    kernel = fake_beam.as_kernel(0.1*u.deg)
 
     direct_kernel = \
         radio_beam.EllipticalGaussian2DKernel(100. / SIGMA_TO_FWHM,
@@ -34,8 +35,8 @@ def test_tophat_kernel():
 
     fake_beam = radio_beam.Beam(10)
 
-    # Let pixscale be 0.1 pix/deg
-    kernel = fake_beam.as_tophat_kernel(0.1)
+    # Let pixscale be 0.1 deg/pix
+    kernel = fake_beam.as_tophat_kernel(0.1*u.deg)
 
     direct_kernel = \
         radio_beam.EllipticalTophat2DKernel(100. / (SIGMA_TO_FWHM/np.sqrt(2)),
