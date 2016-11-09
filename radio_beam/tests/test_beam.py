@@ -84,7 +84,6 @@ def test_from_casa_image():
     tar.close()
     fname = data_path("NGC0925.bima.mmom0.image")
     bima_casa_beam = radio_beam.Beam.from_casa_image(fname)
-    print(bima_casa_beam)
 
 
 # def test_deconv():
