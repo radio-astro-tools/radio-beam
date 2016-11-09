@@ -242,6 +242,12 @@ class Beam(u.Quantity):
         beam_props = ia.restoringbeam()
         ia.close()
 
+        beam_keys = ["major", "minor", "positionangle"]
+        if not all([True for key in beam_keys if key in beam_props]):
+            raise ValueError("The image does not contain complete beam "
+                             "information. Check the output of "
+                             "ia.restoringbeam().")
+
         major = beam_props["major"]["value"] * \
             u.Unit(beam_props["major"]["unit"])
         minor = beam_props["minor"]["value"] * \
