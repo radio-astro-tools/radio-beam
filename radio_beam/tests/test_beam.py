@@ -14,9 +14,10 @@ try:
 except ImportError:
     HAS_CASA = False
 
+data_dir = os.path.join(os.path.dirname(__file__), 'data')
+
 
 def data_path(filename):
-    data_dir = os.path.join(os.path.dirname(__file__), 'data')
     return os.path.join(data_dir, filename)
 
 def test_classic_header():
@@ -75,8 +76,15 @@ def test_bintable():
 
 @pytest.mark.skipif("not HAS_CASA")
 def test_from_casa_image():
+    # Extract from tar
+    import tarfile
+    fname_tar = data_path("NGC0925.bima.mmom0.image.tar.gz")
+    tar = tarfile.open(fname_tar)
+    tar.extractall(path=data_dir)
+    tar.close()
     fname = data_path("NGC0925.bima.mmom0.image")
     bima_casa_beam = radio_beam.Beam.from_casa_image(fname)
+    print(bima_casa_beam)
 
 
 # def test_deconv():
