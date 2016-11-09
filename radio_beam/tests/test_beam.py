@@ -1,9 +1,19 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+
+import pytest
+
 from .. import beam as radio_beam
 from astropy.io import fits
 from astropy import units as u
 import os
 import numpy as np
+
+try:
+    from taskinit import ia
+    HAS_CASA = True
+except ImportError:
+    HAS_CASA = False
+
 
 def data_path(filename):
     data_dir = os.path.join(os.path.dirname(__file__), 'data')
@@ -61,6 +71,13 @@ def test_bintable():
                                    0.19999751)
     np.testing.assert_almost_equal(beam.pa.to(u.deg).value,
                                    45.10050065568665)
+
+
+@pytest.mark.skipif("not HAS_CASA")
+def test_from_casa_image():
+    # fname = data_path("NGC0925.bima.mmom0.image")
+    fname = "NGC0925.bima.mmom0.image"
+    bima_casa_beam = radio_beam.Beam.from_casa_image(fname)
 
 
 # def test_deconv():
