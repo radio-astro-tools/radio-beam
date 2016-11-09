@@ -75,8 +75,7 @@ def test_bintable():
 
 @pytest.mark.skipif("not HAS_CASA")
 def test_from_casa_image():
-    # fname = data_path("NGC0925.bima.mmom0.image")
-    fname = "NGC0925.bima.mmom0.image"
+    fname = data_path("NGC0925.bima.mmom0.image")
     bima_casa_beam = radio_beam.Beam.from_casa_image(fname)
 
 
