@@ -219,6 +219,44 @@ class Beam(u.Quantity):
         else:
             return None
 
+    @classmethod
+    def from_casa_image(cls, imagename):
+        '''
+        Instantiate beam from a CASA image.
+
+        ** Must be run in a CASA environment! **
+
+        Parameters
+        ----------
+        imagename : str
+            Name of CASA image.
+        '''
+
+        try:
+            from taskinit import ia
+        except ImportError:
+            raise ImportError("Could not import CASA (casac) and therefore"
+                              " cannot read CASA .image files")
+
+        ia.open(imagename)
+        beam_props = ia.restoringbeam()
+        ia.close()
+
+        beam_keys = ["major", "minor", "positionangle"]
+        if not all([True for key in beam_keys if key in beam_props]):
+            raise ValueError("The image does not contain complete beam "
+                             "information. Check the output of "
+                             "ia.restoringbeam().")
+
+        major = beam_props["major"]["value"] * \
+            u.Unit(beam_props["major"]["unit"])
+        minor = beam_props["minor"]["value"] * \
+            u.Unit(beam_props["minor"]["unit"])
+        pa = beam_props["positionangle"]["value"] * \
+            u.Unit(beam_props["positionangle"]["unit"])
+
+        return cls(major=major, minor=minor, pa=pa)
+
     def attach_to_header(self, header, copy=True):
         '''
         Attach the beam information to the provided header.
