@@ -239,3 +239,18 @@ def test_conv_deconv():
     assert beam1 == beam3 - beam2
 
     assert beam3 == beam1 * beam2
+
+
+def test_isfinite():
+
+    beam1 = Beam(10. * u.arcsec, 5. * u.arcsec, 30. * u.deg)
+
+    assert beam1.isfinite
+
+    beam2 = Beam(-10. * u.arcsec, 5. * u.arcsec, 30. * u.deg)
+
+    assert not beam2.isfinite
+
+    beam3 = Beam(10. * u.arcsec, -5. * u.arcsec, 30. * u.deg)
+
+    assert not beam3.isfinite
