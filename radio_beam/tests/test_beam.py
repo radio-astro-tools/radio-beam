@@ -156,33 +156,80 @@ def test_jtok_equiv():
                              (1 * u.K).to(u.Jy, equivalencies=conv_beam_factor))
 
 
-# def test_deconv():
-#     # Deconvolution and convolution
-#     beam_1 = radio_beam.Beam(10.*u.arcsec, 5.*u.arcsec, 30.*u.deg)
-#     beam_2 = radio_beam.Beam(5.*u.arcsec, 3.*u.arcsec, 120.*u.deg)
+def test_convolution():
 
-#     beam_3 = beam_1.convolve(beam_2)
-#     print "test1: ",beam_2 == beam_3.deconvolve(beam_1)
-#     print "test1: ",beam_2 - beam_3.deconvolve(beam_1)
-#     print "test2: ",beam_1 == beam_3.deconvolve(beam_2)
-#     print "test2: ",beam_1 - beam_3.deconvolve(beam_2)
-#     print "beam1: ",beam_1
-#     print "beam2: ",beam_2
-#     print "beam3: ",beam_3
-#     print "beam3.deconv(beam2): ",beam_3.deconvolve(beam_2)
-#     npt.assert_almost_equal(beam_3.deconvolve(beam_2).sr.value, beam_1.sr.value)
+    major1 = 1 * u.deg
+    minor1 = 0.5 * u.deg
+    pa1 = 0.0 * u.deg
+    beam1 = Beam(major1, minor1, pa1)
 
-#     # Area
-#     print beam_3.sr
-#     print beam_2.sr
-#     #  <Quantity 3.994895404940742e-10 sr>
-#     print beam_1.sr
-#     print beam_1
+    major2 = 1 * u.deg
+    minor2 = 0.75 * u.deg
+    pa2 = 90.0 * u.deg
+    beam2 = Beam(major2, minor2, pa2)
 
-#     # Janskies to Kelvin
-#     npt.assert_almost_equal(beam_2.jtok(1.e9), 81474.701386)
-    # 81474
+    alpha = (major1 * np.cos(pa1))**2 + (minor1 * np.sin(pa1))**2 + \
+        (major2 * np.cos(pa2))**2 + (minor2 * np.sin(pa2))**2
+    beta = (major1 * np.sin(pa1))**2 + (minor1 * np.cos(pa1))**2 + \
+        (major2 * np.sin(pa2))**2 + (minor2 * np.cos(pa2))**2
+    gamma = 2 * ((minor1**2 - major1**2) * np.sin(pa1) * np.cos(pa1) +
+                 (minor2**2 - major2**2) * np.sin(pa2) * np.cos(pa2))
 
-    # Return as array
+    s = alpha + beta
+    t = np.sqrt((alpha - beta)**2 + gamma**2)
 
-    # Return as array given WCS
+    conv_major = np.sqrt(0.5 * (s + t))
+    conv_minor = np.sqrt(0.5 * (s - t))
+    conv_pa = 0.5 * np.arctan2(- gamma, alpha - beta)
+
+    conv_beam = beam1.convolve(beam2)
+
+    assert_quantity_allclose(conv_major, conv_beam.major)
+    assert_quantity_allclose(conv_minor, conv_beam.minor)
+    assert_quantity_allclose(conv_pa, conv_beam.pa)
+
+
+def test_deconvolution():
+
+    major1 = 2.0 * u.deg
+    minor1 = 1.0 * u.deg
+    pa1 = 45.0 * u.deg
+    beam1 = Beam(major1, minor1, pa1)
+
+    major2 = 1 * u.deg
+    minor2 = 0.5 * u.deg
+    pa2 = 0.0 * u.deg
+    beam2 = Beam(major2, minor2, pa2)
+
+    alpha = (major1 * np.cos(pa1))**2 + (minor1 * np.sin(pa1))**2 - \
+        (major2 * np.cos(pa2))**2 - (minor2 * np.sin(pa2))**2
+    beta = (major1 * np.sin(pa1))**2 + (minor1 * np.cos(pa1))**2 - \
+        (major2 * np.sin(pa2))**2 - (minor2 * np.cos(pa2))**2
+    gamma = 2 * ((minor1**2 - major1**2) * np.sin(pa1) * np.cos(pa1) +
+                 (minor2**2 - major2**2) * np.sin(pa2) * np.cos(pa2))
+
+    s = alpha + beta
+    t = np.sqrt((alpha - beta)**2 + gamma**2)
+
+    deconv_major = np.sqrt(0.5 * (s + t))
+    deconv_minor = np.sqrt(0.5 * (s - t))
+    deconv_pa = 0.5 * np.arctan2(- gamma, alpha - beta)
+
+    deconv_beam = beam1.deconvolve(beam2)
+
+    assert_quantity_allclose(deconv_major, deconv_beam.major)
+    assert_quantity_allclose(deconv_minor, deconv_beam.minor)
+    assert_quantity_allclose(deconv_pa, deconv_beam.pa)
+
+
+def test_conv_deconv():
+
+    beam1 = Beam(10. * u.arcsec, 5. * u.arcsec, 30. * u.deg)
+    beam2 = Beam(5. * u.arcsec, 3. * u.arcsec, 120. * u.deg)
+
+    beam3 = beam1.convolve(beam2)
+
+    assert beam2 == beam3.deconvolve(beam1)
+    assert beam1 == beam3.deconvolve(beam2)
+
+    assert beam1.convolve(beam2) == beam2.convolve(beam1)
