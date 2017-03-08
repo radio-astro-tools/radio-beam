@@ -233,3 +233,9 @@ def test_conv_deconv():
     assert beam1 == beam3.deconvolve(beam2)
 
     assert beam1.convolve(beam2) == beam2.convolve(beam1)
+
+    # Test multiplication and subtraction (i.e., convolution and deconvolution)
+    assert beam2 == beam3 - beam1
+    assert beam1 == beam3 - beam2
+
+    assert beam3 == beam1 * beam2
