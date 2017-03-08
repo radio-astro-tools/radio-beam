@@ -8,6 +8,7 @@ from astropy import units as u
 import os
 import numpy as np
 import numpy.testing as npt
+from astropy.tests.helper import assert_quantity_allclose
 
 try:
     from taskinit import ia
@@ -110,6 +111,49 @@ def test_attach_to_header():
     npt.assert_equal(new_hdr["BMAJ"], hdr["BMAJ"])
     npt.assert_equal(new_hdr["BMIN"], hdr["BMIN"])
     npt.assert_equal(new_hdr["BPA"], hdr["BPA"])
+
+
+def test_beam_projected_area():
+
+    distance = 250 * u.pc
+
+    major = 0.1 * u.rad
+    beam = Beam(major, major, 30 * u.deg)
+
+    beam_sr = (major**2 * 2 * np.pi / (8 * np.log(2))).to(u.sr)
+
+    assert_quantity_allclose(beam_sr.value * distance ** 2,
+                             beam.beam_projected_area(distance))
+
+
+def test_jtok():
+
+    major = 0.1 * u.rad
+    beam = Beam(major, major, 30 * u.deg)
+
+    freq = 1.42 * u.GHz
+
+    conv_factor = u.brightness_temperature(beam.sr, freq)
+
+    assert_quantity_allclose((1 * u.Jy).to(u.K, equivalencies=conv_factor),
+                             beam.jtok(freq))
+
+
+def test_jtok_equiv():
+
+    major = 0.1 * u.rad
+    beam = Beam(major, major, 30 * u.deg)
+
+    freq = 1.42 * u.GHz
+
+    conv_factor = u.brightness_temperature(beam.sr, freq)
+    conv_beam_factor = beam.jtok_equiv(freq)
+
+    assert_quantity_allclose((1 * u.Jy).to(u.K, equivalencies=conv_factor),
+                             (1 * u.Jy).to(u.K, equivalencies=conv_beam_factor))
+
+    assert_quantity_allclose((1 * u.K).to(u.Jy, equivalencies=conv_factor),
+                             (1 * u.K).to(u.Jy, equivalencies=conv_beam_factor))
 
 
 # def test_deconv():
