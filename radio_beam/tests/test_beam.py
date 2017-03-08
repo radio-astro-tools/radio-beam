@@ -2,11 +2,12 @@
 
 import pytest
 
-from .. import beam as radio_beam
+from ..beam import Beam
 from astropy.io import fits
 from astropy import units as u
 import os
 import numpy as np
+import numpy.testing as npt
 
 try:
     from taskinit import ia
@@ -24,33 +25,43 @@ def test_classic_header():
     # Instantiate from header
     fname = data_path("NGC0925.bima.mmom0.fits.gz")
     hdr = fits.getheader(fname)
-    bima_beam_file = radio_beam.Beam.from_fits_header(fname)
-    bima_beam_hdr = radio_beam.Beam.from_fits_header(hdr)
+    bima_beam_file = Beam.from_fits_header(fname)
+
+    npt.assert_equal(bima_beam_file.major.value, hdr["BMAJ"])
+    npt.assert_equal(bima_beam_file.minor.value, hdr["BMIN"])
+    npt.assert_equal(bima_beam_file.pa.value, hdr["BPA"])
+
+    bima_beam_hdr = Beam.from_fits_header(hdr)
+
+    npt.assert_equal(bima_beam_hdr.major.value, hdr["BMAJ"])
+    npt.assert_equal(bima_beam_hdr.minor.value, hdr["BMIN"])
+    npt.assert_equal(bima_beam_hdr.pa.value, hdr["BPA"])
+
 
 def test_from_aips_test():
     aips_fname = data_path("ngc0925_na.fits.gz")
     aips_hdr = fits.getheader(aips_fname)
-    aips_beam_hdr = radio_beam.Beam.from_fits_header(aips_hdr)
-    np.testing.assert_almost_equal(aips_beam_hdr.sr.value, 9.029858054819811e-10)
-    aips_beam_file = radio_beam.Beam.from_fits_header(aips_fname)
-    np.testing.assert_almost_equal(aips_beam_file.sr.value, 9.029858054819811e-10)
+    aips_beam_hdr = Beam.from_fits_header(aips_hdr)
+    npt.assert_almost_equal(aips_beam_hdr.sr.value, 9.029858054819811e-10)
+    aips_beam_file = Beam.from_fits_header(aips_fname)
+    npt.assert_almost_equal(aips_beam_file.sr.value, 9.029858054819811e-10)
 
-def test_from_casa_test():
+def test_fits_from_casa_test():
     casa_fname = data_path("m83.moment0.fits.gz")
     casa_hdr = fits.getheader(casa_fname)
-    casa_beam_hdr = radio_beam.Beam.from_fits_header(casa_hdr)
-    np.testing.assert_almost_equal(casa_beam_hdr.sr.value, 2.98323984597532e-11)
-    casa_beam_file = radio_beam.Beam.from_fits_header(casa_fname)
-    np.testing.assert_almost_equal(casa_beam_file.sr.value, 2.98323984597532e-11)
+    casa_beam_hdr = Beam.from_fits_header(casa_hdr)
+    npt.assert_almost_equal(casa_beam_hdr.sr.value, 2.98323984597532e-11)
+    casa_beam_file = Beam.from_fits_header(casa_fname)
+    npt.assert_almost_equal(casa_beam_file.sr.value, 2.98323984597532e-11)
 
 def test_manual():
     # Instantiate from command line
-    man_beam_val = radio_beam.Beam(0.1, 0.1, 30)
-    np.testing.assert_almost_equal(man_beam_val.value, 3.451589629868801e-06)
-    man_beam_rad = radio_beam.Beam(0.1*u.rad, 0.1*u.rad, 30*u.deg)
-    np.testing.assert_almost_equal(man_beam_rad.value, 0.011330900354567986)
-    man_beam_deg = radio_beam.Beam(0.1*u.deg, 0.1*u.deg, 1.0*u.rad)
-    np.testing.assert_almost_equal(man_beam_deg.value, 3.451589629868801e-06)
+    man_beam_val = Beam(0.1, 0.1, 30)
+    npt.assert_almost_equal(man_beam_val.value, 3.451589629868801e-06)
+    man_beam_rad = Beam(0.1*u.rad, 0.1*u.rad, 30*u.deg)
+    npt.assert_almost_equal(man_beam_rad.value, 0.011330900354567986)
+    man_beam_deg = Beam(0.1*u.deg, 0.1*u.deg, 1.0*u.rad)
+    npt.assert_almost_equal(man_beam_deg.value, 3.451589629868801e-06)
 
 def test_bintable():
 
@@ -64,13 +75,13 @@ def test_bintable():
     beams['POL'] = [0,0,0,0]
     beams = fits.BinTableHDU(beams)
 
-    beam = radio_beam.Beam.from_fits_bintable(beams)
+    beam = Beam.from_fits_bintable(beams)
 
-    np.testing.assert_almost_equal(beam.minor.to(u.arcsec).value,
+    npt.assert_almost_equal(beam.minor.to(u.arcsec).value,
                                    0.10002226)
-    np.testing.assert_almost_equal(beam.major.to(u.arcsec).value,
+    npt.assert_almost_equal(beam.major.to(u.arcsec).value,
                                    0.19999751)
-    np.testing.assert_almost_equal(beam.pa.to(u.deg).value,
+    npt.assert_almost_equal(beam.pa.to(u.deg).value,
                                    45.10050065568665)
 
 
@@ -83,7 +94,22 @@ def test_from_casa_image():
     tar.extractall(path=data_dir)
     tar.close()
     fname = data_path("NGC0925.bima.mmom0.image")
-    bima_casa_beam = radio_beam.Beam.from_casa_image(fname)
+    bima_casa_beam = Beam.from_casa_image(fname)
+
+
+def test_attach_to_header():
+    fname = data_path("NGC0925.bima.mmom0.fits.gz")
+    hdr = fits.getheader(fname)
+    hdr_copy = hdr.copy()
+    del hdr_copy["BMAJ"], hdr_copy["BMIN"], hdr_copy["BPA"]
+
+    bima_beam = Beam.from_fits_header(fname)
+
+    new_hdr = bima_beam.attach_to_header(hdr_copy)
+
+    npt.assert_equal(new_hdr["BMAJ"], hdr["BMAJ"])
+    npt.assert_equal(new_hdr["BMIN"], hdr["BMIN"])
+    npt.assert_equal(new_hdr["BPA"], hdr["BPA"])
 
 
 # def test_deconv():
@@ -100,7 +126,7 @@ def test_from_casa_image():
 #     print "beam2: ",beam_2
 #     print "beam3: ",beam_3
 #     print "beam3.deconv(beam2): ",beam_3.deconvolve(beam_2)
-#     np.testing.assert_almost_equal(beam_3.deconvolve(beam_2).sr.value, beam_1.sr.value)
+#     npt.assert_almost_equal(beam_3.deconvolve(beam_2).sr.value, beam_1.sr.value)
 
 #     # Area
 #     print beam_3.sr
@@ -110,7 +136,7 @@ def test_from_casa_image():
 #     print beam_1
 
 #     # Janskies to Kelvin
-#     np.testing.assert_almost_equal(beam_2.jtok(1.e9), 81474.701386)
+#     npt.assert_almost_equal(beam_2.jtok(1.e9), 81474.701386)
     # 81474
 
     # Return as array
