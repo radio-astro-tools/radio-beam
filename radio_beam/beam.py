@@ -345,7 +345,7 @@ class Beam(u.Quantity):
                     minor=new_minor,
                     pa=new_pa)
 
-    def __mult__(self, other):
+    def __mul__(self, other):
         return self.convolve(other)
 
     # Does division do the same? Or what? Doesn't have to be defined.
