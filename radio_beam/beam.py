@@ -433,23 +433,12 @@ class Beam(u.Quantity):
         # Catch floating point issues
         atol_deg = 1e-12 * u.deg
 
-        # PA direction can be ambiguous so check both cases
-        zero_deg = 0.0 * u.deg
+        this_pa = self.pa.to(u.deg) % (180.0 * u.deg)
+        other_pa = other.pa.to(u.deg) % (180.0 * u.deg)
 
-        this_pa = self.pa.to(u.deg)
-        other_pa = other.pa.to(u.deg)
-
-        if np.abs(this_pa - other_pa) < atol_deg:
-            equal_pa = True
-        elif other_pa < zero_deg and this_pa > zero_deg:
-            equal_pa = np.abs(this_pa - (other_pa + 180 * u.deg)) < atol_deg
-        elif other_pa > zero_deg and this_pa < zero_deg:
-            equal_pa = np.abs(this_pa - (other_pa - 180 * u.deg)) < atol_deg
-        else:
-            equal_pa = False
-
-        equal_maj = (self.major - other.major) < atol_deg
-        equal_min = (self.minor - other.minor) < atol_deg
+        equal_pa = True if np.abs(this_pa - other_pa) < atol_deg else False
+        equal_maj = np.abs(self.major - other.major) < atol_deg
+        equal_min = np.abs(self.minor - other.minor) < atol_deg
 
         if equal_maj and equal_min and equal_pa:
             return True
