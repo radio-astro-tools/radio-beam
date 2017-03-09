@@ -47,7 +47,7 @@ def test_from_aips_test():
     aips_beam_file = Beam.from_fits_header(aips_fname)
     npt.assert_almost_equal(aips_beam_file.sr.value, 9.029858054819811e-10)
 
-def test_fits_from_casa_test():
+def test_fits_from_casa():
     casa_fname = data_path("m83.moment0.fits.gz")
     casa_hdr = fits.getheader(casa_fname)
     casa_beam_hdr = Beam.from_fits_header(casa_hdr)
@@ -254,3 +254,31 @@ def test_isfinite():
     beam3 = Beam(10. * u.arcsec, -5. * u.arcsec, 30. * u.deg)
 
     assert not beam3.isfinite
+
+
+@pytest.mark.parametrize(("major", "minor", "pa"),
+                           [(10, 10, 60),
+                            (10, 10, -120),
+                            (10, 10, -300),
+                            (10, 10, 240)])
+def test_beam_equal(major, minor, pa):
+
+    beam1 = Beam(10 * u.deg, 10 * u.deg, 60 * u.deg)
+
+    beam2 = Beam(major * u.deg, minor * u.deg, pa * u.deg)
+
+    assert beam1 == beam2
+
+
+@pytest.mark.parametrize(("major", "minor", "pa"),
+                           [(10, 8, 60),
+                            (12, 10, 60),
+                            (10, 10, 59),
+                            (10, 10, -121)])
+def test_beam_not_equal(major, minor, pa):
+
+    beam1 = Beam(10 * u.deg, 10 * u.deg, 60 * u.deg)
+
+    beam2 = Beam(major * u.deg, minor * u.deg, pa * u.deg)
+
+    assert not beam1 == beam2
