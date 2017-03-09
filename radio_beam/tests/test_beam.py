@@ -158,6 +158,10 @@ def test_jtok_equiv():
 
 def test_convolution():
 
+    # equations from:
+    # https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
+    # (github checkin of MIRIAD, code by Sault)
+
     major1 = 1 * u.deg
     minor1 = 0.5 * u.deg
     pa1 = 0.0 * u.deg
@@ -190,6 +194,10 @@ def test_convolution():
 
 
 def test_deconvolution():
+
+    # equations from:
+    # https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
+    # (github checkin of MIRIAD, code by Sault)
 
     major1 = 2.0 * u.deg
     minor1 = 1.0 * u.deg
