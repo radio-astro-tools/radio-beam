@@ -345,7 +345,7 @@ class Beam(u.Quantity):
                     minor=new_minor,
                     pa=new_pa)
 
-    def __mult__(self, other):
+    def __mul__(self, other):
         return self.convolve(other)
 
     # Does division do the same? Or what? Doesn't have to be defined.
@@ -410,7 +410,10 @@ class Beam(u.Quantity):
         limit = np.min(axes)
         limit = 0.1*limit*limit
 
-        if (alpha < 0) or (beta < 0) or (s < t):
+        # Deal with floating point issues
+        atol_t = 1e-12 * t.unit
+
+        if (alpha < 0) or (beta < 0) or (s < t + atol_t):
             if failure_returns_pointlike:
                 return Beam(major=0, minor=0, pa=0)
             else:
@@ -429,9 +432,18 @@ class Beam(u.Quantity):
                     pa=new_pa)
 
     def __eq__(self, other):
-        if ((self.major == other.major) and
-            (self.minor == other.minor) and
-            (self.pa == other.pa)):
+
+        # Catch floating point issues
+        atol_deg = 1e-12 * u.deg
+
+        this_pa = self.pa.to(u.deg) % (180.0 * u.deg)
+        other_pa = other.pa.to(u.deg) % (180.0 * u.deg)
+
+        equal_pa = True if np.abs(this_pa - other_pa) < atol_deg else False
+        equal_maj = np.abs(self.major - other.major) < atol_deg
+        equal_min = np.abs(self.minor - other.minor) < atol_deg
+
+        if equal_maj and equal_min and equal_pa:
             return True
         else:
             return False
