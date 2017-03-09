@@ -410,7 +410,10 @@ class Beam(u.Quantity):
         limit = np.min(axes)
         limit = 0.1*limit*limit
 
-        if (alpha < 0) or (beta < 0) or (s < t):
+        # Deal with floating point issues
+        atol_t = 1e-12 * t.unit
+
+        if (alpha < 0) or (beta < 0) or (s < t + atol_t):
             if failure_returns_pointlike:
                 return Beam(major=0, minor=0, pa=0)
             else:
