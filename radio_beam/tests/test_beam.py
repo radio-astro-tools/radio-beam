@@ -9,6 +9,7 @@ import os
 import numpy as np
 import numpy.testing as npt
 from astropy.tests.helper import assert_quantity_allclose
+from itertools import product
 
 try:
     from taskinit import ia
@@ -247,6 +248,24 @@ def test_conv_deconv():
     assert beam1 == beam3 - beam2
 
     assert beam3 == beam1 * beam2
+
+
+@pytest.mark.parametrize(('major', 'minor', 'pa', 'return_pointlike'),
+                         [[maj, min, pa, ret] for maj, min, pa, ret in
+                         product([10], np.arange(1, 11),
+                                 np.linspace(0, 180, 10), [True, False])])
+def test_deconv_pointlike(major, minor, pa, return_pointlike):
+
+    beam1 = Beam(major * u.arcsec, major * u.arcsec, pa * u.deg)
+
+    if return_pointlike:
+        point_beam = Beam(0 * u.deg, 0 * u.deg, 0 * u.deg)
+        point_beam == beam1.deconvolve(beam1, failure_returns_pointlike=True)
+    else:
+        try:
+            beam1.deconvolve(beam1, failure_returns_pointlike=False)
+        except ValueError:
+            pass
 
 
 def test_isfinite():
