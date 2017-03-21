@@ -526,18 +526,24 @@ class Beam(u.Quantity):
 
         return value.to(u.K, self.jtok_equiv(freq))
 
-    def ellipse_to_plot(self, xcen, ycen, units=u.deg, wcs=None):
+    def ellipse_to_plot(self, xcen, ycen, pixscale):
         """
         Return a matplotlib ellipse for plotting
 
-        .. todo::
-            Implement this!
+        Parameters
+        ----------
+        xcen : int
+            Center pixel in the x-direction.
+        ycen : int
+            Center pixel in the y-direction.
+        pixscale : `~astropy.units.Quantity`
+            Conversion from degrees to pixels.
         """
-        import matplotlib
-        return matplotlib.patches.Ellipse((xcen,ycen),
-                                          width=self.major.to(u.deg).value/pixscale,
-                                          height=self.minor.to(u.deg).value/pixscale,
-                                          angle=self.pa.to(u.deg).value)
+        from matplotlib.patches import Ellipse
+        return Ellipse((xcen, ycen),
+                       width=self.major.to(u.deg).value / pixscale,
+                       height=self.minor.to(u.deg).value / pixscale,
+                       angle=self.pa.to(u.deg).value)
 
     def as_kernel(self, pixscale, **kwargs):
         """
