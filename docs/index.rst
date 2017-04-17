@@ -20,12 +20,12 @@ Read a beam from a fits header::
 
 Create a beam from scratch::
 
+    >>> from astropy import units as u
     >>> my_beam = Beam(0.5*u.arcsec)
 
 
 Use a beam for Jy -> K conversion::
 
-    >>> from astropy import units as u
     >>> (1*u.Jy).to(u.K, u.brightness_temperature(my_beam, 25*u.GHz))
     <Quantity 7821.571333052632 K>
 
