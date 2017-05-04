@@ -12,9 +12,9 @@ Read a beam from a fits header::
 
     >>> from radio_beam import Beam
     >>> from astropy.io import fits
-    >>> header = fits.getheader('file.fits')
-    >>> my_beam = Beam.from_fits_header(header)
-    >>> print(my_beam)
+    >>> header = fits.getheader('file.fits')  # doctest: +SKIP
+    >>> my_beam = Beam.from_fits_header(header)  # doctest: +SKIP
+    >>> print(my_beam)  # doctest: +SKIP
     Beam: BMAJ=0.038652855902928 arcsec BMIN=0.032841067761183604 arcsec BPA=32.29655838013 deg
 
 
