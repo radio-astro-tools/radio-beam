@@ -538,6 +538,11 @@ class Beam(u.Quantity):
             Center pixel in the y-direction.
         pixscale : `~astropy.units.Quantity`
             Conversion from degrees to pixels.
+
+        Returns
+        -------
+        ~matplotlib.patches.Ellipse
+            Ellipse patch object centered on the given pixel coordinates.
         """
         from matplotlib.patches import Ellipse
         return Ellipse((xcen, ycen),
