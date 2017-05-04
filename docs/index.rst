@@ -33,12 +33,12 @@ Convolve with another beam::
 
     >>> my_asymmetric_beam = Beam(0.75*u.arcsec, 0.25*u.arcsec, 0*u.deg)
     >>> my_other_asymmetric_beam = Beam(0.75*u.arcsec, 0.25*u.arcsec, 90*u.deg)
-    >>> my_asymmetric_beam.convolve(my_other_asymmetric_beam)
+    >>> my_asymmetric_beam.convolve(my_other_asymmetric_beam)  # doctest: +SKIP
     Beam: BMAJ=0.790569415042 arcsec BMIN=0.790569415042 arcsec BPA=45.0 deg
 
 Deconvolve another beam::
 
     >>> my_big_beam = Beam(1.0*u.arcsec, 1.0*u.arcsec, 0*u.deg)
     >>> my_little_beam = Beam(0.5*u.arcsec, 0.5*u.arcsec, 0*u.deg)
-    >>> my_big_beam.deconvolve(my_little_beam)
+    >>> my_big_beam.deconvolve(my_little_beam)  # doctest: +SKIP
     Beam: BMAJ=0.866025403784 arcsec BMIN=0.866025403784 arcsec BPA=0.0 deg
