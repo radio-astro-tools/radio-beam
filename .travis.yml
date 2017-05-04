@@ -25,7 +25,7 @@ env:
         # The following versions are the 'default' for tests, unless
         # overidden underneath. They are defined here in order to save having
         # to repeat them for all configurations.
-        - NUMPY_VERSION=1.9
+        - NUMPY_VERSION=1.11
         # NOTE: This should be reverted to 1.2 once 1.2 is released (circmean
         # is part of 1.2 and is required)
         - ASTROPY_VERSION=development
@@ -59,11 +59,21 @@ matrix:
         - python: 3.4
           env: ASTROPY_VERSION=development
 
-        # Try older numpy versions
+        # Test older numpy versions >=1.9
+        - python: 2.7
+          env: NUMPY_VERSION=1.10
+        - python: 2.7
+          env: NUMPY_VERSION=1.9
         - python: 2.7
           env: NUMPY_VERSION=1.8
         - python: 2.7
           env: NUMPY_VERSION=1.7
+
+        # Test newest numpy version, which won't work with python 3.4
+        - python: 2.7
+          env: NUMPY_VERSION=1.12
+        - python: 3.5
+          env: NUMPY_VERSION=1.12
 
 before_install:
 
@@ -92,14 +102,13 @@ install:
     # As described above, using ci-helpers, you should be able to set up an
     # environment with dependencies installed using conda and pip, but in some
     # cases this may not provide enough flexibility in how to install a
-    # specific dependency (and it will not be able to install non-Python 
+    # specific dependency (and it will not be able to install non-Python
     # dependencies). Therefore, you can also include commands below (as
     # well as at the start of the install section or in the before_install
     # section if they are needed before setting up conda) to install any
     # other dependencies.
 
 script:
-   - if [[ $SETUP_CMD != egg_info ]]; then cd radio_beam/tests/data; make; cd ../../../; fi
    - python setup.py $SETUP_CMD
 
 after_success:
