@@ -62,7 +62,7 @@ class Beams(u.Quantity):
                 warnings.warn("Assuming position angles has been specified in degrees")
                 pa = pa * u.deg
         else:
-            pa = np.zeros_like(major) * u.deg
+            pa = np.zeros_like(major.value) * u.deg
 
         # some sensible defaults
         if minor is None:
@@ -142,7 +142,7 @@ class Beams(u.Quantity):
         """
         major = u.Quantity(bintable.data['BMAJ'], u.arcsec)
         minor = u.Quantity(bintable.data['BMIN'], u.arcsec)
-        pa = u.Quantity(bintable.data['BPA'], u.arcsec)
+        pa = u.Quantity(bintable.data['BPA'], u.deg)
         meta = [{key: row[key] for key in bintable.columns.names
                  if key not in ('BMAJ', 'BPA', 'BMIN')}
                 for row in bintable.data]
