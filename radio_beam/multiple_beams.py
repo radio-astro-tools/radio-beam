@@ -10,7 +10,7 @@ import warnings
 from .beam import Beam, _to_area, SIGMA_TO_FWHM
 
 
-class Beams(object):
+class Beams(u.Quantity):
     """
     An object to handle a set of radio beams for a data cube.
     """
@@ -130,10 +130,10 @@ class Beams(object):
         beams : Beams
             A new Beams object
         """
-        cls.bmaj = u.Quantity(bintable.data['BMAJ'], u.arcsec)
-        cls.bmin = u.Quantity(bintable.data['BMIN'], u.arcsec)
-        cls.bpa = u.Quantity(bintable.data['BPA'], u.arcsec)
-        cls.meta = [{key: row[key] for key in bintable.names
+        cls.majors = u.Quantity(bintable.data['BMAJ'], u.arcsec)
+        cls.minors = u.Quantity(bintable.data['BMIN'], u.arcsec)
+        cls.pas = u.Quantity(bintable.data['BPA'], u.arcsec)
+        cls.meta = [{key: row[key] for key in bintable.columns.names
                      if key not in ('BMAJ','BPA', 'BMIN')}
                     for row in bintable.data]
         goodbeams = cls.isfinite
