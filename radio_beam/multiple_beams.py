@@ -42,13 +42,13 @@ class Beams(u.Quantity):
 
         # give specified values priority
         if majors is not None:
-            if u.deg.is_equivalent(majors):
+            if u.deg.is_equivalent(majors.unit):
                 majors = majors
             else:
                 warnings.warn("Assuming major axes has been specified in degrees")
                 majors = majors * u.deg
         if minors is not None:
-            if u.deg.is_equivalent(minors):
+            if u.deg.is_equivalent(minors.unit):
                 minors = minors
             else:
                 warnings.warn("Assuming minor axes has been specified in degrees")
@@ -56,7 +56,7 @@ class Beams(u.Quantity):
         if pas is not None:
             if len(pas) != len(majors):
                 raise ValueError("Number of position angles must match number of major axis lengths")
-            if u.deg.is_equivalent(pas):
+            if u.deg.is_equivalent(pas.unit):
                 pas = pas
             else:
                 warnings.warn("Assuming position angles has been specified in degrees")
@@ -135,11 +135,11 @@ class Beams(u.Quantity):
         beams : Beams
             A new Beams object
         """
-        cls.majors = u.Quantity(bintable.data['BMAJ'], u.arcsec)
-        cls.minors = u.Quantity(bintable.data['BMIN'], u.arcsec)
-        cls.pas = u.Quantity(bintable.data['BPA'], u.arcsec)
-        cls.meta = [{key: row[key] for key in bintable.columns.names
-                     if key not in ('BMAJ','BPA', 'BMIN')}
-                    for row in bintable.data]
+        majors = u.Quantity(bintable.data['BMAJ'], u.arcsec)
+        minors = u.Quantity(bintable.data['BMIN'], u.arcsec)
+        pas = u.Quantity(bintable.data['BPA'], u.arcsec)
+        meta = [{key: row[key] for key in bintable.columns.names
+                 if key not in ('BMAJ', 'BPA', 'BMIN')}
+                for row in bintable.data]
 
-        return cls
+        return cls(majors=majors, minors=minors, pas=pas, meta=meta)
