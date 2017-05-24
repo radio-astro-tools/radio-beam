@@ -104,14 +104,19 @@ class Beams(u.Quantity):
                 np.isfinite(self.minor) & np.isfinite(self.pa))
 
     def __getitem__(self, view):
-        if isinstance(view, int):
-            return radio_beam.Beam(major=self.major[view],
-                                   minor=self.minor[view],
-                                   pa=self.pa[view],
-                                   meta=self.meta[view])
-        elif isinstance(view, slice):
-            # TODO
-            pass
+        if isinstance(view, (int, slice)):
+            return Beam(major=self.major[view],
+                        minor=self.minor[view],
+                        pa=self.pa[view],
+                        meta=self.meta[view])
+        elif isinstance(view, np.ndarray):
+            if view.dtype.name != 'bool':
+                raise ValueError("If using an array to index beams, it must "
+                                 "be a boolean array.")
+            return Beam(major=self.major[view],
+                        minor=self.minor[view],
+                        pa=self.pa[view],
+                        meta=[x for ii,x in zip(view, self.meta) if ii])
 
 
     @classmethod
