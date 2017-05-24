@@ -25,7 +25,7 @@ unit_format = {u.deg: '\\circ',
 
 class Beam(u.Quantity):
     """
-    An object to handle radio beams.
+    An object to handle single radio beams.
     """
 
     def __new__(cls, major=None, minor=None, pa=None, area=None,
@@ -36,9 +36,15 @@ class Beam(u.Quantity):
         Parameters
         ----------
         major : :class:`~astropy.units.Quantity` with angular equivalency
+            The FWHM major axis
         minor : :class:`~astropy.units.Quantity` with angular equivalency
+            The FWHM minor axis
         pa : :class:`~astropy.units.Quantity` with angular equivalency
+            The beam position angle
         area : :class:`~astropy.units.Quantity` with steradian equivalency
+            The area of the beam.  This is an alternative to specifying the
+            major/minor/PA, and will create those values assuming a circular
+            Gaussian beam.
         default_unit : :class:`~astropy.units.Unit`
             The unit to impose on major, minor if they are specified as floats
         """
@@ -49,6 +55,9 @@ class Beam(u.Quantity):
 
         # ... given an area make a round beam assuming it is Gaussian
         if area is not None:
+            if major is not None:
+                raise ValueError("Can only specify one of {major,minor,pa} "
+                                 "and {area}")
             rad = np.sqrt(area/(2*np.pi)) * u.deg
             major = rad * SIGMA_TO_FWHM
             minor = rad * SIGMA_TO_FWHM
@@ -98,7 +107,8 @@ class Beam(u.Quantity):
     @classmethod
     def from_fits_bintable(cls, bintable, tolerance=0.01):
         """
-        Insantiate a beam from a bintable from a CASA-produced image HDU.
+        Instantiate a single beam from a bintable from a CASA-produced image
+        HDU.  Will return the average beam.
 
         Parameters
         ----------
@@ -107,6 +117,11 @@ class Beam(u.Quantity):
         tolerance : float
             The fractional tolerance on the beam size to include when averaging
             to a single beam
+
+        Returns
+        -------
+        beam : Beam
+            A new beam object that is the average of the table beams
         """
         from astropy.stats import circmean
 
@@ -626,6 +641,7 @@ class Beam(u.Quantity):
                 'BPA':  self.pa.to(u.deg).value,
                 }
 
+Beam.__doc__ = Beam.__doc__ + Beam.__new__.__doc__
 
 def mywcs_to_platescale(mywcs):
     pix_area = wcs.utils.proj_plane_pixel_area(mywcs)

@@ -7,14 +7,14 @@ from astropy.extern import six
 import numpy as np
 import warnings
 
-from .beam import Beam, _to_area
+from .beam import Beam, _to_area, SIGMA_TO_FWHM
 
 
 class Beams(object):
     """
     An object to handle a set of radio beams for a data cube.
     """
-    def __new__(cls, beams=None, majors=None, minors=None, pas=None,
+    def __new__(cls, majors=None, minors=None, pas=None,
                 areas=None, default_unit=u.arcsec, meta=None):
         """
         Create a new set of Gaussian beams
@@ -54,6 +54,8 @@ class Beams(object):
                 warnings.warn("Assuming minor axes has been specified in degrees")
                 minors = minors * u.deg
         if pas is not None:
+            if len(pas) != len(majors):
+                raise ValueError("Number of position angles must match number of major axis lengths")
             if u.deg.is_equivalent(pas):
                 pas = pas
             else:
@@ -65,36 +67,80 @@ class Beams(object):
         # some sensible defaults
         if minors is None:
             minors = majors
-
-        if beams is None:
-            beams = [Beam(major=major, minor=minor, pa=pa)
-                     for major, minor, pa in zip(majors, minors, pas)]
-
+        elif len(minors) != len(majors):
+            raise ValueError("Minor and major axes must have same number of values")
 
         self = super(Beams, cls).__new__(cls, _to_area(majors, minors).value, u.sr)
-        self._majors = majors
-        self._minors = minors
-        self._pas = pas
+        self.majors = majors
+        self.minors = minors
+        self.pas = pas
         self.default_unit = default_unit
 
         if meta is None:
-            self.meta = {}
-        elif isinstance(meta, dict):
-            self.meta = meta
+            self.meta = [{}]*len(self)
         else:
-            raise TypeError("metadata must be a dictionary")
+            self.meta = meta
 
         return self
 
     @property
-    def beams(self):
-        return self._beams
+    def meta(self):
+        return self._meta
 
-    @beams.setter
-    def beams(self, beam_input):
-        for beam in beam_input:
-            if isinstance(beam, Beam):
-                continue
-            raise TypeError("All items in the beam list must be Beam objects.")
+    @meta.setter
+    def meta(self, value):
+        if len(value) == len(self):
+            self._meta = value
+        else:
+            raise TypeError("metadata must be a list of dictionaries")
 
-        self._beams = beam_input
+    def __len__(self):
+        return len(self.majors)
+
+
+    @property
+    def isfinite(self):
+        return ((self.major > 0) & (self.minor > 0) & np.isfinite(self.major) &
+                np.isfinite(self.minor) & np.isfinite(self.pa))
+
+    def __getitem__(self, view):
+        if isinstance(view, int):
+            return radio_beam.Beam(major=self.major[view],
+                                   minor=self.minor[view],
+                                   pa=self.pa[view],
+                                   meta=self.meta[view])
+        elif isinstance(view, slice):
+            # TODO
+            pass
+
+
+    @classmethod
+    def from_fits_bintable(cls, bintable):
+        """
+        Instantiate a Beams list from a bintable from a CASA-produced image
+        HDU.
+
+        Parameters
+        ----------
+        bintable : fits.BinTableHDU
+            The table data containing the beam information
+
+        Returns
+        -------
+        beams : Beams
+            A new Beams object
+        """
+        cls.bmaj = u.Quantity(bintable.data['BMAJ'], u.arcsec)
+        cls.bmin = u.Quantity(bintable.data['BMIN'], u.arcsec)
+        cls.bpa = u.Quantity(bintable.data['BPA'], u.arcsec)
+        cls.meta = [{key: row[key] for key in bintable.names
+                     if key not in ('BMAJ','BPA', 'BMIN')}
+                    for row in bintable.data]
+        goodbeams = cls.isfinite
+
+        if not all(goodbeams):
+            warnings.warn("There were {0} non-finite beams; layers with "
+                          "non-finite beams will be masked out.".format(
+                              np.count_nonzero(~goodbeams)))
+
+        return cls
