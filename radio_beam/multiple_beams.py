@@ -14,6 +14,7 @@ class Beams(u.Quantity):
     """
     An object to handle a set of radio beams for a data cube.
     """
+
     def __new__(cls, major=None, minor=None, pa=None,
                 areas=None, default_unit=u.arcsec, meta=None):
         """
@@ -122,6 +123,8 @@ class Beams(u.Quantity):
                          minor=self.minor[view],
                          pa=self.pa[view],
                          meta=[x for ii,x in zip(view, self.meta) if ii])
+        else:
+            raise ValueError("Invalid slice")
 
 
     @classmethod

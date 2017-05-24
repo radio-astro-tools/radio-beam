@@ -25,6 +25,9 @@ def test_indexing():
 
     beams = Beams(major=[1,1,1,2,3,4]*u.arcsec)
 
+    assert hasattr(beams[slice(0,3)], 'major')
+    assert np.all(beams[slice(0,3)].major.value == [1,1,1])
+
     assert hasattr(beams[:3], 'major')
     assert np.all(beams[:3].major.value == [1,1,1])
 
