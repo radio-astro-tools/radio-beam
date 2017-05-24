@@ -70,7 +70,7 @@ class Beams(u.Quantity):
         elif len(minor) != len(major):
             raise ValueError("Minor and major axes must have same number of values")
 
-        self = super(Beams, cls).__new__(cls, _to_area(major, minor).value, u.sr)
+        self = super(Beams, cls).__new__(cls, value=_to_area(major, minor).value, unit=u.sr)
         self.major = major
         self.minor = minor
         self.pa = pa

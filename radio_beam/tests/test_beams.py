@@ -25,9 +25,12 @@ def test_indexing():
 
     beams = Beams(major=[1,1,1,2,3,4]*u.arcsec)
 
+    assert hasattr(beams[:3], 'major')
     assert np.all(beams[:3].major.value == [1,1,1])
 
+    assert hasattr(beams[3], 'major')
     assert beams[3].major.value == 2
     assert isinstance(beams[4], Beam)
 
+    assert hasattr(beams[np.array([True,False,True,False,True,True], dtype='bool')], 'major')
     assert np.all(beams[np.array([True,False,True,False,True,True], dtype='bool')].major.value == [1,1,3,4])
