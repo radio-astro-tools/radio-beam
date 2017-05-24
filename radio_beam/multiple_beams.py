@@ -14,7 +14,7 @@ class Beams(u.Quantity):
     """
     An object to handle a set of radio beams for a data cube.
     """
-    def __new__(cls, majors=None, minors=None, pas=None,
+    def __new__(cls, major=None, minor=None, pa=None,
                 areas=None, default_unit=u.arcsec, meta=None):
         """
         Create a new set of Gaussian beams
@@ -36,44 +36,44 @@ class Beams(u.Quantity):
         # ... given an area make a round beam assuming it is Gaussian
         if areas is not None:
             rad = np.sqrt(areas / (2 * np.pi)) * u.deg
-            majors = rad * SIGMA_TO_FWHM
-            minors = rad * SIGMA_TO_FWHM
-            pas = np.zeros_like(areas) * u.deg
+            major = rad * SIGMA_TO_FWHM
+            minor = rad * SIGMA_TO_FWHM
+            pa = np.zeros_like(areas) * u.deg
 
         # give specified values priority
-        if majors is not None:
-            if u.deg.is_equivalent(majors.unit):
-                majors = majors
+        if major is not None:
+            if u.deg.is_equivalent(major.unit):
+                pass
             else:
                 warnings.warn("Assuming major axes has been specified in degrees")
-                majors = majors * u.deg
-        if minors is not None:
-            if u.deg.is_equivalent(minors.unit):
-                minors = minors
+                major = major * u.deg
+        if minor is not None:
+            if u.deg.is_equivalent(minor.unit):
+                pass
             else:
                 warnings.warn("Assuming minor axes has been specified in degrees")
-                minors = minors * u.deg
-        if pas is not None:
-            if len(pas) != len(majors):
+                minor = minor * u.deg
+        if pa is not None:
+            if len(pa) != len(major):
                 raise ValueError("Number of position angles must match number of major axis lengths")
-            if u.deg.is_equivalent(pas.unit):
-                pas = pas
+            if u.deg.is_equivalent(pa.unit):
+                pass
             else:
                 warnings.warn("Assuming position angles has been specified in degrees")
-                pas = pas * u.deg
+                pa = pa * u.deg
         else:
-            pas = np.zeros_like(pas) * u.deg
+            pa = np.zeros_like(major) * u.deg
 
         # some sensible defaults
-        if minors is None:
-            minors = majors
-        elif len(minors) != len(majors):
+        if minor is None:
+            minor = major
+        elif len(minor) != len(major):
             raise ValueError("Minor and major axes must have same number of values")
 
-        self = super(Beams, cls).__new__(cls, _to_area(majors, minors).value, u.sr)
-        self.majors = majors
-        self.minors = minors
-        self.pas = pas
+        self = super(Beams, cls).__new__(cls, _to_area(major, minor).value, u.sr)
+        self.major = major
+        self.minor = minor
+        self.pa = pa
         self.default_unit = default_unit
 
         if meta is None:
@@ -95,7 +95,7 @@ class Beams(u.Quantity):
             raise TypeError("metadata must be a list of dictionaries")
 
     def __len__(self):
-        return len(self.majors)
+        return len(self.major)
 
 
     @property
@@ -104,19 +104,24 @@ class Beams(u.Quantity):
                 np.isfinite(self.minor) & np.isfinite(self.pa))
 
     def __getitem__(self, view):
-        if isinstance(view, (int, slice)):
+        if isinstance(view, int):
             return Beam(major=self.major[view],
                         minor=self.minor[view],
                         pa=self.pa[view],
                         meta=self.meta[view])
+        elif isinstance(view, slice):
+            return Beams(major=self.major[view],
+                         minor=self.minor[view],
+                         pa=self.pa[view],
+                         meta=self.meta[view])
         elif isinstance(view, np.ndarray):
             if view.dtype.name != 'bool':
                 raise ValueError("If using an array to index beams, it must "
                                  "be a boolean array.")
-            return Beam(major=self.major[view],
-                        minor=self.minor[view],
-                        pa=self.pa[view],
-                        meta=[x for ii,x in zip(view, self.meta) if ii])
+            return Beams(major=self.major[view],
+                         minor=self.minor[view],
+                         pa=self.pa[view],
+                         meta=[x for ii,x in zip(view, self.meta) if ii])
 
 
     @classmethod
@@ -135,11 +140,11 @@ class Beams(u.Quantity):
         beams : Beams
             A new Beams object
         """
-        majors = u.Quantity(bintable.data['BMAJ'], u.arcsec)
-        minors = u.Quantity(bintable.data['BMIN'], u.arcsec)
-        pas = u.Quantity(bintable.data['BPA'], u.arcsec)
+        major = u.Quantity(bintable.data['BMAJ'], u.arcsec)
+        minor = u.Quantity(bintable.data['BMIN'], u.arcsec)
+        pa = u.Quantity(bintable.data['BPA'], u.arcsec)
         meta = [{key: row[key] for key in bintable.columns.names
                  if key not in ('BMAJ', 'BPA', 'BMIN')}
                 for row in bintable.data]
 
-        return cls(majors=majors, minors=minors, pas=pas, meta=meta)
+        return cls(major=major, minor=minor, pa=pa, meta=meta)

@@ -17,13 +17,13 @@ def test_beams_from_fits_bintable():
 
     beams = Beams.from_fits_bintable(bintable)
 
-    assert (beams.majors.value == bintable.data['BMAJ']).all()
-    assert (beams.minors.value == bintable.data['BMIN']).all()
-    assert (beams.pas.value == bintable.data['BPA']).all()
+    assert (beams.major.value == bintable.data['BMAJ']).all()
+    assert (beams.minor.value == bintable.data['BMIN']).all()
+    assert (beams.pa.value == bintable.data['BPA']).all()
 
 def test_indexing():
 
-    beams = Beams(majors=[1,1,1,2,3,4]*u.arcsec)
+    beams = Beams(major=[1,1,1,2,3,4]*u.arcsec)
 
     assert np.all(beams[:3].major.value == [1,1,1])
 
