@@ -136,11 +136,5 @@ class Beams(u.Quantity):
         cls.meta = [{key: row[key] for key in bintable.columns.names
                      if key not in ('BMAJ','BPA', 'BMIN')}
                     for row in bintable.data]
-        goodbeams = cls.isfinite
-
-        if not all(goodbeams):
-            warnings.warn("There were {0} non-finite beams; layers with "
-                          "non-finite beams will be masked out.".format(
-                              np.count_nonzero(~goodbeams)))
 
         return cls
