@@ -111,10 +111,10 @@ class Beams(u.Quantity):
                         pa=self.pa[view],
                         meta=self.meta[view])
         elif isinstance(view, slice):
-            return Beams(major=self.major[view],
-                         minor=self.minor[view],
-                         pa=self.pa[view],
-                         meta=self.meta[view])
+            return Beams(major=self.major[view])#,
+                         # minor=self.minor[view],
+                         # pa=self.pa[view],
+                         # meta=self.meta[view])
         elif isinstance(view, np.ndarray):
             if view.dtype.name != 'bool':
                 raise ValueError("If using an array to index beams, it must "
@@ -126,6 +126,25 @@ class Beams(u.Quantity):
         else:
             raise ValueError("Invalid slice")
 
+    def __array_finalize__(self, obj):
+        # If our unit is not set and obj has a valid one, use it.
+        if self._unit is None:
+            unit = getattr(obj, '_unit', None)
+            if unit is not None:
+                self._set_unit(unit)
+
+        if isinstance(obj, Beams):
+            self.major = obj.major
+            self.minajor = obj.minor
+            self.pa = obj.pa
+            self.meta = obj.meta
+
+        # Copy info if the original had `info` defined.  Because of the way the
+        # DataInfo works, `'info' in obj.__dict__` is False until the
+        # `info` attribute is accessed or set.  Note that `obj` can be an
+        # ndarray which doesn't have a `__dict__`.
+        if 'info' in getattr(obj, '__dict__', ()):
+            self.info = obj.info
 
     @classmethod
     def from_fits_bintable(cls, bintable):
