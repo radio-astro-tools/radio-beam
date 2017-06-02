@@ -104,6 +104,9 @@ class Beams(u.Quantity):
         return ((self.major > 0) & (self.minor > 0) & np.isfinite(self.major) &
                 np.isfinite(self.minor) & np.isfinite(self.pa))
 
+    def __getslice__(self, start, stop, increment=None):
+        return self.__getitem__(slice(start, stop, increment))
+
     def __getitem__(self, view):
         if isinstance(view, int):
             return Beam(major=self.major[view],
