@@ -2,7 +2,6 @@ language: python
 
 python:
     - 2.7
-    - 3.4
     - 3.5
     - 3.6
 
@@ -90,6 +89,13 @@ matrix:
           env: SETUP_CMD='egg_info'
         - python: 3.3
           env: SETUP_CMD='test' NUMPY_VERSION=1.9
+
+        # Python 3.4 is does not have numpy 1.12 in conda
+
+        - python: 3.4
+          env: SETUP_CMD='egg_info'
+        - python: 3.4
+          env: SETUP_CMD='test' NUMPY_VERSION=1.10
 
         # Try older numpy versions
         - python: 2.7
