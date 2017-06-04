@@ -174,7 +174,7 @@ class Beams(u.Quantity):
 
         return cls(major=major, minor=minor, pa=pa, meta=meta)
 
-    def average_beams(self, includemask=None, raise_for_nan=True):
+    def average_beam(self, includemask=None, raise_for_nan=True):
         """
         Average the beam major, minor, and PA attributes.
 
