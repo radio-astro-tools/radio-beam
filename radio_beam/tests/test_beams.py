@@ -51,18 +51,18 @@ def test_indexing():
     assert np.all(beams[mask].major.value == majors[mask].value)
 
 
-def test_average_beam():
+def test_average_beams():
 
     beams, majors = beams_for_tests()
 
-    assert np.all(beams.average_beams().major.value == majors.mean().value)
+    assert np.all(beams.average_beam().major.value == majors.mean().value)
 
     mask = np.array([True, False, True, False, True, True], dtype='bool')
 
-    assert np.all(beams[mask].average_beams().major.value == majors[mask].mean().value)
+    assert np.all(beams[mask].average_beam().major.value == majors[mask].mean().value)
 
 
-def test_largest_beam():
+def test_largest_beams():
 
     beams, majors = beams_for_tests()
 
@@ -80,7 +80,7 @@ def test_largest_beam():
     assert np.all(beams.largest_beam(mask).minor.value == majors[mask].max().value)
 
 
-def test_smallest_beam():
+def test_smallest_beams():
 
     beams, majors = beams_for_tests()
 
@@ -98,7 +98,7 @@ def test_smallest_beam():
     assert np.all(beams.smallest_beam(mask).minor.value == majors[mask].min().value)
 
 
-def test_extrema_beam():
+def test_extrema_beams():
 
     beams, majors = beams_for_tests()
 
@@ -125,3 +125,35 @@ def test_extrema_beam():
 
     assert np.all(extrema[1].major.value == majors[mask].max().value)
     assert np.all(extrema[1].minor.value == majors[mask].max().value)
+
+
+def test_beams_with_invalid():
+
+    majors = [1, 1, 1, 2, np.NaN, 4] * u.arcsec
+
+    beams = Beams(major=majors)
+
+    # Average
+    assert np.all(beams.average_beam().major.value == np.nanmean(majors).value)
+    # Largest
+    assert np.all(beams.largest_beam().major.value == np.nanmax(majors).value)
+    # Smallest
+    assert np.all(beams.smallest_beam().major.value == np.nanmin(majors).value)
+    # Extrema
+    extrema = beams.extrema_beams()
+    assert np.all(extrema[0].major.value == np.nanmin(majors).value)
+    assert np.all(extrema[1].major.value == np.nanmax(majors).value)
+
+    # Additional masking
+    mask = np.array([True, False, True, False, True, True], dtype='bool')
+
+    # Average
+    assert np.all(beams[mask].average_beam().major.value == np.nanmean(majors[mask]).value)
+    # Largest
+    assert np.all(beams[mask].largest_beam().major.value == np.nanmax(majors[mask]).value)
+    # Smallest
+    assert np.all(beams[mask].smallest_beam().major.value == np.nanmin(majors[mask]).value)
+    # Extrema
+    extrema = beams[mask].extrema_beams()
+    assert np.all(extrema[0].major.value == np.nanmin(majors[mask]).value)
+    assert np.all(extrema[1].major.value == np.nanmax(majors[mask]).value)
