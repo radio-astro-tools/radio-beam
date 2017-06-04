@@ -166,3 +166,12 @@ def test_beams_with_invalid(majors):
     extrema = beams[mask].extrema_beams()
     assert extrema[0].major.value == np.nanmin(majors[combined_mask]).value
     assert extrema[1].major.value == np.nanmax(majors[combined_mask]).value
+
+
+def test_beams_iter():
+
+    beams, majors = beams_for_tests()
+
+    # Ensure iterating through yields the same as slicing
+    for i, beam in enumerate(beams):
+        assert beam == beams[i]
