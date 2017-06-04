@@ -235,3 +235,7 @@ class Beams(u.Quantity):
     def extrema_beams(self, includemask=None):
         return [self.smallest_beam(includemask),
                 self.largest_beam(includemask)]
+
+    def __iter__(self):
+        for i in range(len(self)):
+            yield self[i]
