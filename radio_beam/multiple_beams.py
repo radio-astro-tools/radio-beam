@@ -173,3 +173,65 @@ class Beams(u.Quantity):
                 for row in bintable.data]
 
         return cls(major=major, minor=minor, pa=pa, meta=meta)
+
+    def average_beams(self, includemask=None, raise_for_nan=True):
+        """
+        Average the beam major, minor, and PA attributes.
+
+        This is usually a dumb thing to do!
+        """
+
+        from astropy.stats import circmean
+
+        if includemask is None:
+            includemask = self.isfinite
+        else:
+            includemask = np.logical_or(includemask, self.isfinite)
+
+        new_beam = Beam(major=self.major[includemask].mean(),
+                        minor=self.minor[includemask].mean(),
+                        pa=circmean(self.pa[includemask],
+                                    weights=(self.major / self.minor)[includemask]))
+
+        if raise_for_nan and np.any(np.isnan(new_beam)):
+            raise ValueError("NaNs after averaging.  This is a bug.")
+
+        return new_beam
+
+    def largest_beam(self, includemask=None):
+        """
+        Returns the largest beam (by area) in a list of beams.
+        """
+
+        if includemask is None:
+            includemask = self.isfinite
+        else:
+            includemask = np.logical_or(includemask, self.isfinite)
+
+        largest_idx = (self.major * self.minor)[includemask].argmax()
+        new_beam = Beam(major=self.major[includemask][largest_idx],
+                        minor=self.minor[includemask][largest_idx],
+                        pa=self.pa[includemask][largest_idx])
+
+        return new_beam
+
+    def smallest_beam(self, includemask=None):
+        """
+        Returns the smallest beam (by area) in a list of beams.
+        """
+
+        if includemask is None:
+            includemask = self.isfinite
+        else:
+            includemask = np.logical_or(includemask, self.isfinite)
+
+        largest_idx = (self.major * self.minor)[includemask].argmin()
+        new_beam = Beam(major=self.major[includemask][largest_idx],
+                        minor=self.minor[includemask][largest_idx],
+                        pa=self.pa[includemask][largest_idx])
+
+        return new_beam
+
+    def extrema_beams(self, includemask=None):
+        return [self.smallest_beam(includemask),
+                self.largest_beam(includemask)]
