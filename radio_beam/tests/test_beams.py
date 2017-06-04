@@ -57,6 +57,10 @@ def test_average_beam():
 
     assert np.all(beams.average_beams().major.value == majors.mean().value)
 
+    mask = np.array([True, False, True, False, True, True], dtype='bool')
+
+    assert np.all(beams[mask].average_beams().major.value == majors[mask].mean().value)
+
 
 def test_largest_beam():
 
@@ -65,6 +69,16 @@ def test_largest_beam():
     assert np.all(beams.largest_beam().major.value == majors.max().value)
     assert np.all(beams.largest_beam().minor.value == majors.max().value)
 
+    # Slice the object
+    mask = np.array([True, False, True, False, True, True], dtype='bool')
+
+    assert np.all(beams[mask].largest_beam().major.value == majors[mask].max().value)
+    assert np.all(beams[mask].largest_beam().minor.value == majors[mask].max().value)
+
+    # Apply a mask only for the operation
+    assert np.all(beams.largest_beam(mask).major.value == majors[mask].max().value)
+    assert np.all(beams.largest_beam(mask).minor.value == majors[mask].max().value)
+
 
 def test_smallest_beam():
 
@@ -72,6 +86,16 @@ def test_smallest_beam():
 
     assert np.all(beams.smallest_beam().major.value == majors.min().value)
     assert np.all(beams.smallest_beam().minor.value == majors.min().value)
+
+    # Slice the object
+    mask = np.array([True, False, True, False, True, True], dtype='bool')
+
+    assert np.all(beams[mask].smallest_beam().major.value == majors[mask].min().value)
+    assert np.all(beams[mask].smallest_beam().minor.value == majors[mask].min().value)
+
+    # Apply a mask only for the operation
+    assert np.all(beams.smallest_beam(mask).major.value == majors[mask].min().value)
+    assert np.all(beams.smallest_beam(mask).minor.value == majors[mask].min().value)
 
 
 def test_extrema_beam():
@@ -84,3 +108,20 @@ def test_extrema_beam():
 
     assert np.all(extrema[1].major.value == majors.max().value)
     assert np.all(extrema[1].minor.value == majors.max().value)
+
+    # Slice the object
+    mask = np.array([True, False, True, False, True, True], dtype='bool')
+    extrema = beams[mask].extrema_beams()
+    assert np.all(extrema[0].major.value == majors[mask].min().value)
+    assert np.all(extrema[0].minor.value == majors[mask].min().value)
+
+    assert np.all(extrema[1].major.value == majors[mask].max().value)
+    assert np.all(extrema[1].minor.value == majors[mask].max().value)
+
+    # Apply a mask only for the operation
+    extrema = beams.extrema_beams(mask)
+    assert np.all(extrema[0].major.value == majors[mask].min().value)
+    assert np.all(extrema[0].minor.value == majors[mask].min().value)
+
+    assert np.all(extrema[1].major.value == majors[mask].max().value)
+    assert np.all(extrema[1].minor.value == majors[mask].max().value)
