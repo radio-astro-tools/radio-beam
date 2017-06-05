@@ -12,6 +12,8 @@ from astropy.modeling.models import Ellipse2D, Gaussian2D
 from astropy.convolution import Kernel2D
 from astropy.convolution.kernels import _round_up_to_odd_integer
 
+from .utils import deconvolve, convolve
+
 # Conversion between a twod Gaussian FWHM**2 and effective area
 FWHM_TO_AREA = 2*np.pi/(8*np.log(2))
 SIGMA_TO_FWHM = np.sqrt(8*np.log(2))
@@ -328,33 +330,7 @@ class Beam(u.Quantity):
             The convolved Beam
         """
 
-        # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
-        # (github checkin of MIRIAD, code by Sault)
-
-        alpha = ((self.major*np.cos(self.pa))**2 +
-                 (self.minor*np.sin(self.pa))**2 +
-                 (other.major*np.cos(other.pa))**2 +
-                 (other.minor*np.sin(other.pa))**2)
-
-        beta = ((self.major*np.sin(self.pa))**2 +
-                (self.minor*np.cos(self.pa))**2 +
-                (other.major*np.sin(other.pa))**2 +
-                (other.minor*np.cos(other.pa))**2)
-
-        gamma = (2*((self.minor**2-self.major**2) *
-                    np.sin(self.pa)*np.cos(self.pa) +
-                    (other.minor**2-other.major**2) *
-                    np.sin(other.pa)*np.cos(other.pa)))
-
-        s = alpha + beta
-        t = np.sqrt((alpha-beta)**2 + gamma**2)
-
-        new_major = np.sqrt(0.5*(s+t))
-        new_minor = np.sqrt(0.5*(s-t))
-        if (abs(gamma)+abs(alpha-beta)) == 0:
-            new_pa = 0.0 * u.deg
-        else:
-            new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta)
+        new_major, new_minor, new_pa = convolve(self, other)
 
         return Beam(major=new_major,
                     minor=new_minor,
@@ -393,58 +369,10 @@ class Beam(u.Quantity):
             failure_returns_pointlike
         """
 
-        # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
-        # (githup checkin of MIRIAD, code by Sault)
-
-        # rename to shorter variables for readability
-        maj1,min1,pa1 = self.major,self.minor,self.pa
-        maj2,min2,pa2 = other.major,other.minor,other.pa
-        cos,sin = np.cos,np.sin
-
-        alpha = ((maj1*cos(pa1))**2 +
-                 (min1*sin(pa1))**2 -
-                 (maj2*cos(pa2))**2 -
-                 (min2*sin(pa2))**2)
-
-        beta = ((maj1*sin(pa1))**2 +
-                (min1*cos(pa1))**2 -
-                (maj2*sin(pa2))**2 -
-                (min2*cos(pa2))**2)
-
-        gamma = 2 * ((min1**2 - maj1**2) * sin(pa1)*cos(pa1) -
-                     (min2**2 - maj2**2) * sin(pa2)*cos(pa2))
-
-        s = alpha + beta
-        t = np.sqrt((alpha-beta)**2 + gamma**2)
-
-        # identify the smallest resolution
-        axes = np.array([maj1.to(u.deg).value,
-                         min1.to(u.deg).value,
-                         maj2.to(u.deg).value,
-                         min2.to(u.deg).value])*u.deg
-        limit = np.min(axes)
-        limit = 0.1*limit*limit
-
-        # Deal with floating point issues
-        atol_t = 1e-12 * t.unit
-
-        if (alpha < 0) or (beta < 0) or (s < t + atol_t):
-            if failure_returns_pointlike:
-                return Beam(major=0, minor=0, pa=0)
-            else:
-                raise ValueError("Beam could not be deconvolved")
-        else:
-            new_major = np.sqrt(0.5*(s+t))
-            new_minor = np.sqrt(0.5*(s-t))
-
-            if (abs(gamma)+abs(alpha-beta)) == 0:
-                new_pa = 0.0
-            else:
-                new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta)
-
-        return Beam(major=new_major,
-                    minor=new_minor,
-                    pa=new_pa)
+        new_major, new_minor, new_pa = \
+            deconvolve(self, other,
+                       failure_returns_pointlike=failure_returns_pointlike)
+        return Beam(major=new_major, minor=new_minor, pa=new_pa)
 
     def __eq__(self, other):
 
