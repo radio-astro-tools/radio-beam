@@ -80,7 +80,6 @@ def deconvolve(beam, other, failure_returns_pointlike=False):
     st_cond = s < t + atol_t
 
     if alpha_cond or beta_cond or st_cond:
-        print(alpha, beta, s, t, atol_t)
         if failure_returns_pointlike:
             return 0, 0, 0
         else:
