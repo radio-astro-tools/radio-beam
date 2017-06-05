@@ -8,6 +8,7 @@ import numpy as np
 import warnings
 
 from .beam import Beam, _to_area, SIGMA_TO_FWHM
+from .commonbeam import commonbeam
 
 
 class Beams(u.Quantity):
@@ -235,6 +236,12 @@ class Beams(u.Quantity):
     def extrema_beams(self, includemask=None):
         return [self.smallest_beam(includemask),
                 self.largest_beam(includemask)]
+
+    def common_beam(self, includemask=None):
+        '''
+        Return the smallest common beam size.
+        '''
+        return commonbeam(self if includemask is None else self[includemask])
 
     def __iter__(self):
         for i in range(len(self)):
