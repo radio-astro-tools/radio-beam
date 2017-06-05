@@ -295,6 +295,7 @@ def test_beam_equal(major, minor, pa):
     beam2 = Beam(major * u.deg, minor * u.deg, pa * u.deg)
 
     assert beam1 == beam2
+    assert not beam1 != beam2
 
 
 @pytest.mark.parametrize(("major", "minor", "pa"),
@@ -309,3 +310,4 @@ def test_beam_not_equal(major, minor, pa):
     beam2 = Beam(major * u.deg, minor * u.deg, pa * u.deg)
 
     assert not beam1 == beam2
+    assert beam1 != beam2
