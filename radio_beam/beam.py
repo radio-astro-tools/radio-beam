@@ -391,6 +391,9 @@ class Beam(u.Quantity):
         else:
             return False
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     # Is it astropy convention to access properties through methods?
     @property
     def sr(self):
