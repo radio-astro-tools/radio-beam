@@ -94,6 +94,12 @@ def deconvolve(beam, other, failure_returns_pointlike=False):
         else:
             new_pa = 0.5 * np.arctan2(-1. * gamma, alpha - beta)
 
+    # In the limiting case, the axes can be zero to within precision
+    # Add the precision level onto each axis so a deconvolvable beam
+    # is always has beam.isfinite == True
+    new_major += np.finfo(new_major.dtype).eps * new_major.unit
+    new_minor += np.finfo(new_minor.dtype).eps * new_minor.unit
+
     return new_major, new_minor, new_pa
 
 
