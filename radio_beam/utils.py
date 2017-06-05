@@ -69,9 +69,18 @@ def deconvolve(beam, other, failure_returns_pointlike=False):
     limit = 0.1 * limit * limit
 
     # Deal with floating point issues
-    atol_t = 1e-12 * t.unit
+    atol_t = np.finfo(t.dtype).eps * t.unit
 
-    if (alpha < 0) or (beta < 0) or (s < t + atol_t):
+    # To deconvolve, the beam must satisfy:
+    # alpha < 0
+    alpha_cond = alpha.value + np.finfo(alpha.dtype).eps < 0
+    # beta < 0
+    beta_cond = beta.value + np.finfo(beta.dtype).eps < 0
+    # s < t
+    st_cond = s < t + atol_t
+
+    if alpha_cond or beta_cond or st_cond:
+        print(alpha, beta, s, t, atol_t)
         if failure_returns_pointlike:
             return 0, 0, 0
         else:
