@@ -115,10 +115,10 @@ class Beams(u.Quantity):
                         pa=self.pa[view],
                         meta=self.meta[view])
         elif isinstance(view, slice):
-            return Beams(major=self.major[view])#,
-                         # minor=self.minor[view],
-                         # pa=self.pa[view],
-                         # meta=self.meta[view])
+            return Beams(major=self.major[view],
+                         minor=self.minor[view],
+                         pa=self.pa[view],
+                         meta=self.meta[view])
         elif isinstance(view, np.ndarray):
             if view.dtype.name != 'bool':
                 raise ValueError("If using an array to index beams, it must "

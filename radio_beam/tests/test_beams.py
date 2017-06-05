@@ -175,3 +175,29 @@ def test_beams_iter():
     # Ensure iterating through yields the same as slicing
     for i, beam in enumerate(beams):
         assert beam == beams[i]
+
+
+def test_commonbeam_notlargest():
+
+    beams = Beams(major=[3, 4] * u.arcsec, minor=[3, 2.5] * u.arcsec)
+
+    scale_factor = 1.0 + 1e-8
+
+    target_beam = Beam(major=4 * u.arcsec * scale_factor,
+                       minor=3 * u.arcsec * scale_factor)
+
+    assert beams.common_beam() == target_beam
+
+
+def test_commonbeam_largest():
+
+    beams, majors = beams_for_tests()
+
+    assert beams.common_beam() == beams.largest_beam()
+
+    # With masking
+    mask = np.array([True, False, True, True, True, False], dtype='bool')
+
+    assert beams[mask].common_beam() == beams[mask].largest_beam()
+
+    assert beams.common_beam(mask) == beams.largest_beam(mask)
