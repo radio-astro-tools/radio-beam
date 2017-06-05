@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.testing as npt
 
 from astropy import units as u
 from astropy.io import fits
@@ -11,11 +12,30 @@ from ..beam import Beam
 from .test_beam import data_path
 
 
-def beams_for_tests():
+def symm_beams_for_tests():
 
     majors = [1, 1, 1, 2, 3, 4] * u.arcsec
+    minors = majors
+    pas = [0] * 6 * u.deg
 
-    return Beams(major=majors), majors
+    return Beams(major=majors, minor=minors, pa=pas), majors, minors, pas
+
+
+def asymm_beams_for_tests():
+
+    majors = [1, 1, 1, 2, 3, 4] * u.arcsec
+    minors = majors / 2.
+    pas = [-36, 20, 80, 41, -82, 11] * u.deg
+
+    return Beams(major=majors, minor=minors, pa=pas), majors, minors, pas
+
+
+def load_commonbeam_comparisons():
+
+    common_beams = np.loadtxt(data_path("commonbeam_CASA_comparison.csv"),
+                              delimiter=',')
+
+    return common_beams
 
 
 def test_beams_from_fits_bintable():
@@ -33,7 +53,7 @@ def test_beams_from_fits_bintable():
 
 def test_indexing():
 
-    beams, majors = beams_for_tests()
+    beams, majors = symm_beams_for_tests()[:2]
 
     assert hasattr(beams[slice(0, 3)], 'major')
     assert np.all(beams[slice(0, 3)].major.value == majors[:3].value)
@@ -55,7 +75,7 @@ def test_indexing():
 
 def test_average_beams():
 
-    beams, majors = beams_for_tests()
+    beams, majors = symm_beams_for_tests()[:2]
 
     assert np.all(beams.average_beam().major.value == majors.mean().value)
 
@@ -64,71 +84,73 @@ def test_average_beams():
     assert np.all(beams[mask].average_beam().major.value == majors[mask].mean().value)
 
 
-def test_largest_beams():
-
-    beams, majors = beams_for_tests()
+@pytest.mark.parametrize(("beams", "majors", "minors", "pas"),
+                         [symm_beams_for_tests(), asymm_beams_for_tests()])
+def test_largest_beams(beams, majors, minors, pas):
 
     assert beams.largest_beam().major.value == majors.max().value
-    assert beams.largest_beam().minor.value == majors.max().value
+    assert beams.largest_beam().minor.value == minors.max().value
 
     # Slice the object
     mask = np.array([True, False, True, False, True, True], dtype='bool')
 
     assert beams[mask].largest_beam().major.value == majors[mask].max().value
-    assert beams[mask].largest_beam().minor.value == majors[mask].max().value
+    assert beams[mask].largest_beam().minor.value == minors[mask].max().value
 
     # Apply a mask only for the operation
     assert beams.largest_beam(mask).major.value == majors[mask].max().value
-    assert beams.largest_beam(mask).minor.value == majors[mask].max().value
+    assert beams.largest_beam(mask).minor.value == minors[mask].max().value
 
 
-def test_smallest_beams():
-
-    beams, majors = beams_for_tests()
+@pytest.mark.parametrize(("beams", "majors", "minors", "pas"),
+                         [symm_beams_for_tests(), asymm_beams_for_tests()])
+def test_smallest_beams(beams, majors, minors, pas):
 
     assert beams.smallest_beam().major.value == majors.min().value
-    assert beams.smallest_beam().minor.value == majors.min().value
+    assert beams.smallest_beam().minor.value == minors.min().value
 
     # Slice the object
     mask = np.array([True, False, True, False, True, True], dtype='bool')
 
     assert beams[mask].smallest_beam().major.value == majors[mask].min().value
-    assert beams[mask].smallest_beam().minor.value == majors[mask].min().value
+    assert beams[mask].smallest_beam().minor.value == minors[mask].min().value
 
     # Apply a mask only for the operation
     assert beams.smallest_beam(mask).major.value == majors[mask].min().value
-    assert beams.smallest_beam(mask).minor.value == majors[mask].min().value
+    assert beams.smallest_beam(mask).minor.value == minors[mask].min().value
 
 
-def test_extrema_beams():
-
-    beams, majors = beams_for_tests()
+@pytest.mark.parametrize(("beams", "majors", "minors", "pas"),
+                         [symm_beams_for_tests(), asymm_beams_for_tests()])
+def test_extrema_beams(beams, majors, minors, pas):
 
     extrema = beams.extrema_beams()
     assert extrema[0].major.value == majors.min().value
-    assert extrema[0].minor.value == majors.min().value
+    assert extrema[0].minor.value == minors.min().value
 
     assert extrema[1].major.value == majors.max().value
-    assert extrema[1].minor.value == majors.max().value
+    assert extrema[1].minor.value == minors.max().value
 
     # Slice the object
     mask = np.array([True, False, True, False, True, True], dtype='bool')
     extrema = beams[mask].extrema_beams()
     assert extrema[0].major.value == majors[mask].min().value
-    assert extrema[0].minor.value == majors[mask].min().value
+    assert extrema[0].minor.value == minors[mask].min().value
 
     assert extrema[1].major.value == majors[mask].max().value
-    assert extrema[1].minor.value == majors[mask].max().value
+    assert extrema[1].minor.value == minors[mask].max().value
 
     # Apply a mask only for the operation
     extrema = beams.extrema_beams(mask)
     assert extrema[0].major.value == majors[mask].min().value
-    assert extrema[0].minor.value == majors[mask].min().value
+    assert extrema[0].minor.value == minors[mask].min().value
 
     assert extrema[1].major.value == majors[mask].max().value
-    assert extrema[1].minor.value == majors[mask].max().value
+    assert extrema[1].minor.value == minors[mask].max().value
 
-@pytest.mark.parametrize("majors", [[1, 1, 1, 2, np.NaN, 4], [0, 1, 1, 2, 3, 4]])
+
+@pytest.mark.parametrize("majors", [[1, 1, 1, 2, np.NaN, 4],
+                                    [0, 1, 1, 2, 3, 4]])
 def test_beams_with_invalid(majors):
 
     majors = np.asarray(majors) * u.arcsec
@@ -170,11 +192,32 @@ def test_beams_with_invalid(majors):
 
 def test_beams_iter():
 
-    beams, majors = beams_for_tests()
+    beams, majors = symm_beams_for_tests()[:2]
 
     # Ensure iterating through yields the same as slicing
     for i, beam in enumerate(beams):
         assert beam == beams[i]
+
+
+# @pytest.mark.parametrize('comp_vals',
+#                          [vals for vals in load_commonbeam_comparisons()])
+# def test_commonbeam_casa_compare(comp_vals):
+
+#     # These are the common beam parameters assuming 2 beams:
+#     # 1) 3"x3"
+#     # 2) 4"x2.5", varying the PA in 1 deg increments from 0 to 179 deg
+#     # See data/generate_commonbeam_table.py
+
+#     pa, com_major, com_minor, com_pa = comp_vals
+
+#     beams = Beams(major=[3, 4] * u.arcsec, minor=[3, 2.5] * u.arcsec,
+#                   pa=[0, pa] * u.deg)
+
+#     common_beam = beams.common_beam()
+
+#     # npt.assert_almost_equal(common_beam.major.value, com_major)
+#     # npt.assert_almost_equal(common_beam.minor.value, com_minor)
+#     npt.assert_almost_equal(common_beam.pa.to(u.deg).value, com_pa)
 
 
 def test_commonbeam_notlargest():
@@ -190,8 +233,11 @@ def test_commonbeam_notlargest():
 
 
 def test_commonbeam_largest():
+    '''
+    commonbeam is the largest in this set.
+    '''
 
-    beams, majors = beams_for_tests()
+    beams, majors = symm_beams_for_tests()[:2]
 
     assert beams.common_beam() == beams.largest_beam()
 
