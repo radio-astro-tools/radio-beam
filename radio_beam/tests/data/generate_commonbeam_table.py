@@ -44,3 +44,28 @@ for pa in orig_pas:
 
 common_beams = np.array([orig_pas, majors, minors, pas]).T
 np.savetxt("commonbeam_CASA_comparison.csv", common_beams, delimiter=",")
+
+# im1 = ia.newimagefromarray(pixels=ia.makearray(0, [4, 4, 1, 4]))
+# for i, pa in enumerate([0, 20, 40, 60]):
+#     im1.setrestoringbeam(channel=i, major='4arcsec', minor='3arcsec',
+#                          pa="{}deg".format(pa))
+
+# im2 = ia.newimagefromarray(pixels=ia.makearray(0, [4, 4, 1, 4]))
+# for i, pa in enumerate([0, 60, 20, 40]):
+#     im2.setrestoringbeam(channel=i, major='4arcsec', minor='3arcsec',
+#                          pa="{}deg".format(pa))
+
+# im3 = ia.newimagefromarray(pixels=ia.makearray(0, [4, 4, 1, 4]))
+# for i, pa in enumerate([60, 40, 20, 0]):
+#     im3.setrestoringbeam(channel=i, major='4arcsec', minor='3arcsec',
+#                          pa="{}deg".format(pa))
+
+# im4 = ia.newimagefromarray(pixels=ia.makearray(0, [4, 4, 1, 4]))
+# for i, pa in enumerate([60, 0, 20, 40]):
+#     im4.setrestoringbeam(channel=i, major='4arcsec', minor='3arcsec',
+#                          pa="{}deg".format(pa))
+
+# print(im1.commonbeam())
+# print(im2.commonbeam())
+# print(im3.commonbeam())
+# print(im4.commonbeam())
