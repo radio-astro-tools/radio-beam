@@ -1,0 +1,216 @@
+SIMPLE  =                    T /                                                
+BITPIX  =                  -32 /                                                
+NAXIS   =                    2 /                                                
+NAXIS1  =                 2707 /                                                
+NAXIS2  =                 2707 /                                                
+EXTEND  =                    T /Tables following main image                     
+BLOCKED =                    T /Tape may be blocked                             
+OBJECT  = 'omega_ce'           /Source name                                     
+TELESCOP= 'ATCA    '           /                                                
+INSTRUME= '        '           /                                                
+OBSERVER= ''           			 /                                                
+DATE-OBS= '2010-01-22'         /Obs start date YYYY-MM-DD                       
+DATE-MAP= '2016-07-20'         /Last processing date YYYY-MM-DD                 
+BSCALE  =    1.00000000000E+00 /REAL = TAPE * BSCALE + BZERO                    
+BZERO   =    0.00000000000E+00 /                                                
+BUNIT   = 'Jy/beam '           /Units of flux                                   
+EQUINOX =      2.000000000E+03 /Epoch of RA DEC                                 
+VELREF  =                  259 />256 RADIO, 1 LSR 2 HEL 3 OBS                   
+ALTRVAL =   -6.85933178146E+07 /Altenate FREQ/VEL ref value                     
+ALTRPIX =      1.000000000E+00 /Altenate FREQ/VEL ref pixel                     
+OBSRA   =    2.01691208348E+02 /Antenna pointing RA                             
+OBSDEC  =   -4.74768611168E+01 /Antenna pointing DEC                            
+DATAMAX =      3.216996155E+02 /Maximum pixel value                             
+DATAMIN =     -6.924145508E+01 /Minimum pixel value                             
+CTYPE1  = 'RA---SIN'           /                                                
+CRVAL1  =    2.01691208348E+02 /                                                
+CDELT1  =     -9.166666860E-05 /                                                
+CRPIX1  =      1.356000000E+03 /                                                
+CROTA1  =      0.000000000E+00 /                                                
+CTYPE2  = 'DEC--SIN'           /                                                
+CRVAL2  =   -4.74768611168E+01 /                                                
+CDELT2  =      9.166666860E-05 /                                                
+CRPIX2  =      1.356000000E+03 /                                                
+CROTA2  =      0.000000000E+00 /                                                
+HISTORY                                / History of input map 1                 
+HISTORY --------------------------------------------------------------------    
+HISTORY /Begin "HISTORY" information found in fits tape header by IMLOD         
+HISTORY EXTEND  =                    T / File may contain extensions            
+HISTORY IRAF-TLM= '2015-07-27T09:00:19' / Time of last modification             
+HISTORY BTYPE   = 'Intensity'                                                   
+HISTORY RADESYS = 'FK5     '                                                    
+HISTORY LONPOLE =   1.800000000000E+02                                          
+HISTORY LATPOLE =  -4.747686111680E+01                                          
+HISTORY PC01_01 =   1.000000000000E+00                                          
+HISTORY PC02_01 =   0.000000000000E+00                                          
+HISTORY PC03_01 =   0.000000000000E+00                                          
+HISTORY PC04_01 =   0.000000000000E+00                                          
+HISTORY PC01_02 =   0.000000000000E+00                                          
+HISTORY PC02_02 =   1.000000000000E+00                                          
+HISTORY PC03_02 =   0.000000000000E+00                                          
+HISTORY PC04_02 =   0.000000000000E+00                                          
+HISTORY PC01_03 =   0.000000000000E+00                                          
+HISTORY PC02_03 =   0.000000000000E+00                                          
+HISTORY PC03_03 =   1.000000000000E+00                                          
+HISTORY PC04_03 =   0.000000000000E+00                                          
+HISTORY PC01_04 =   0.000000000000E+00                                          
+HISTORY PC02_04 =   0.000000000000E+00                                          
+HISTORY PC03_04 =   0.000000000000E+00                                          
+HISTORY PC04_04 =   1.000000000000E+00                                          
+HISTORY CUNIT1  = 'deg     '                                                    
+HISTORY CUNIT2  = 'deg     '                                                    
+HISTORY CUNIT3  = 'Hz      '                                                    
+HISTORY CUNIT4  = '        '                                                    
+HISTORY PV2_1   =   0.000000000000E+00                                          
+HISTORY PV2_2   =   0.000000000000E+00                                          
+HISTORY RESTFRQ =   4.475999873410E+09 /Rest Frequency (Hz)                     
+HISTORY SPECSYS = 'TOPOCENT'           /Spectral reference frame                
+HISTORY casacore non-standard usage: 4 LSD, 5 GEO, 6 SOU, 7 GAL                 
+HISTORY TIMESYS = 'UTC     '                                                    
+HISTORY OBSGEO-X=  -4.750915837000E+06                                          
+HISTORY OBSGEO-Y=   2.792906182000E+06                                          
+HISTORY OBSGEO-Z=  -3.200483747000E+06                                          
+HISTORY WCSDIM  =                    4                                          
+HISTORY CD1_1   =  -9.1666666666670E-5                                          
+HISTORY CD2_2   =  9.16666666666702E-5                                          
+HISTORY CD3_3   =       2049241561.325                                          
+HISTORY CD4_4   =                   1.                                          
+HISTORY LTV1    =               -1205.                                          
+HISTORY LTV2    =               -1205.                                          
+HISTORY LTM1_1  =                   1.                                          
+HISTORY LTM2_2  =                   1.                                          
+HISTORY LTM3_3  =                   1.                                          
+HISTORY LTM4_4  =                   1.                                          
+HISTORY WAXMAP01= '1 0 2 0 0 0 0 0 '                                            
+HISTORY WAT0_001= 'system=image'                                                
+HISTORY WAT1_001= 'wtype=sin axtype=ra'                                         
+HISTORY WAT2_001= 'wtype=sin axtype=dec'                                        
+HISTORY WAT3_001= 'label=freq'                                                  
+HISTORY WAT4_001= 'label=stokes'                                                
+HISTORY /END FITS tape header "HISTORY" information                             
+HISTORY --------------------------------------------------------------------    
+HISTORY IMLOD OUTNAME ='WCEN_LOW    '      OUTCLASS ='ICLN  '                   
+HISTORY IMLOD OUTSEQ =    0     INTAPE = 1     OUTDISK= 1                       
+HISTORY IMLOD INFILE = 'PWD:wcen/wcen_atca_5500_pbcor_c.fits            '       
+HISTORY IMLOD RELEASE = '31DEC14'                                               
+HISTORY                                / History of input map 2                 
+HISTORY --------------------------------------------------------------------    
+HISTORY /Begin "HISTORY" information found in fits tape header by IMLOD         
+HISTORY EXTEND  =                    T /Tables following main image             
+HISTORY BLOCKED =                    T /Tape may be blocked                     
+HISTORY / IEEE not-a-number used for blanked f.p. pixels                        
+HISTORY --------------------------------------------------------------------    
+HISTORY /Begin "HISTORY" information found in fits tape header by IMLOD         
+HISTORY EXTEND  =                    T / File may contain extensions            
+HISTORY IRAF-TLM= '2015-07-27T09:11:10' / Time of last modification             
+HISTORY BTYPE   = 'Intensity'                                                   
+HISTORY RADESYS = 'FK5     '                                                    
+HISTORY LONPOLE =   1.800000000000E+02                                          
+HISTORY LATPOLE =  -4.747808335040E+01                                          
+HISTORY PC01_01 =   1.000000000000E+00                                          
+HISTORY PC02_01 =   0.000000000000E+00                                          
+HISTORY PC03_01 =   0.000000000000E+00                                          
+HISTORY PC04_01 =   0.000000000000E+00                                          
+HISTORY PC01_02 =   0.000000000000E+00                                          
+HISTORY PC02_02 =   1.000000000000E+00                                          
+HISTORY PC03_02 =   0.000000000000E+00                                          
+HISTORY PC04_02 =   0.000000000000E+00                                          
+HISTORY PC01_03 =   0.000000000000E+00                                          
+HISTORY PC02_03 =   0.000000000000E+00                                          
+HISTORY PC03_03 =   1.000000000000E+00                                          
+HISTORY PC04_03 =   0.000000000000E+00                                          
+HISTORY PC01_04 =   0.000000000000E+00                                          
+HISTORY PC02_04 =   0.000000000000E+00                                          
+HISTORY PC03_04 =   0.000000000000E+00                                          
+HISTORY PC04_04 =   1.000000000000E+00                                          
+HISTORY CUNIT1  = 'deg     '                                                    
+HISTORY CUNIT2  = 'deg     '                                                    
+HISTORY CUNIT3  = 'Hz      '                                                    
+HISTORY CUNIT4  = '        '                                                    
+HISTORY PV2_1   =   0.000000000000E+00                                          
+HISTORY PV2_2   =   0.000000000000E+00                                          
+HISTORY RESTFRQ =   7.975999774420E+09 /Rest Frequency (Hz)                     
+HISTORY SPECSYS = 'TOPOCENT'           /Spectral reference frame                
+HISTORY casacore non-standard usage: 4 LSD, 5 GEO, 6 SOU, 7 GAL                 
+HISTORY TIMESYS = 'UTC     '                                                    
+HISTORY OBSGEO-X=  -4.750915837000E+06                                          
+HISTORY OBSGEO-Y=   2.792906182000E+06                                          
+HISTORY OBSGEO-Z=  -3.200483747000E+06                                          
+HISTORY WCSDIM  =                    4                                          
+HISTORY CD1_1   =  -6.6666666666670E-5                                          
+HISTORY CD2_2   =  6.66666666666701E-5                                          
+HISTORY CD3_3   =        2049361403.91                                          
+HISTORY CD4_4   =                   1.                                          
+HISTORY LTV1    =                -784.                                          
+HISTORY LTV2    =                -784.                                          
+HISTORY LTM1_1  =                   1.                                          
+HISTORY LTM2_2  =                   1.                                          
+HISTORY LTM3_3  =                   1.                                          
+HISTORY LTM4_4  =                   1.                                          
+HISTORY WAXMAP01= '1 0 2 0 0 0 0 0 '                                            
+HISTORY WAT0_001= 'system=image'                                                
+HISTORY WAT1_001= 'wtype=sin axtype=ra'                                         
+HISTORY WAT2_001= 'wtype=sin axtype=dec'                                        
+HISTORY WAT3_001= 'label=freq'                                                  
+HISTORY WAT4_001= 'label=stokes'                                                
+HISTORY /END FITS tape header "HISTORY" information                             
+HISTORY --------------------------------------------------------------------    
+HISTORY IMLOD OUTNAME ='WCENUP      '      OUTCLASS ='ICLN  '                   
+HISTORY IMLOD OUTSEQ =    0     INTAPE = 1     OUTDISK= 1                       
+HISTORY IMLOD INFILE = 'PWD:wcen_atca_9000_pbcor_c.fits                 '       
+HISTORY IMLOD RELEASE = '31DEC14'                                               
+HISTORY CONVL RELEASE ='31DEC14 '  /********* Start 16-JUL-2016   18:59:57      
+HISTORY CONVL INNAME='WCENUP      '   INCLASS='ICLN  '                          
+HISTORY CONVL INSEQ=    1   INDISK=  1                                          
+HISTORY CONVL OUTNAME='WCEN_CONV   '   OUTCLASS='CONVL '                        
+HISTORY CONVL OUTSEQ=    1   OUTDISK=  1                                        
+HISTORY CONVL BLC=    1.    1.    1.    1.    1.    1.    1./BLC                
+HISTORY CONVL TRC= 2275. 2275.    1.    1.    1.    1.    1./TRC                
+HISTORY CONVL FACTOR= 2.23193E+00 / Units scaling factor                        
+HISTORY CONVL BMAJ=  2.9700 BMIN=  1.6500 BPA= -15.1/Output beam                
+HISTORY CONVL / plane     1 conv with   2.17968 x   1.23466 at 168.0            
+HISTORY CONVL OPCODE='    ' /Operation requested                                
+HISTORY CONVL DOBLANK = 1   / Blanks restored after FFT                         
+HISTORY OHGEO RELEASE ='31DEC14 '  /********* Start 16-JUL-2016   19:00:16      
+HISTORY OHGEO INNAME ='WCEN_CONV'                                               
+HISTORY OHGEO INCLASS ='CONVL'                                                  
+HISTORY OHGEO INSEQ =       1                                                   
+HISTORY OHGEO INDISK =       1                                                  
+HISTORY OHGEO IN2NAME ='WCENLOW'                                                
+HISTORY OHGEO IN2CLASS ='ICLN'                                                  
+HISTORY OHGEO IN2SEQ =       1                                                  
+HISTORY OHGEO IN2DISK =       1                                                 
+HISTORY OHGEO REWEIGHT(  1) = 1.00000E+00                                       
+HISTORY OHGEO REWEIGHT(  2) = 3.33400E-01                                       
+HISTORY OHGEO APARM(  9) = 1.00000E+00                                          
+HISTORY FITTP DATAOUT = 'PWD:wcen_up_ohgeo.fits' / data written to disk file    
+HISTORY /END FITS tape header "HISTORY" information                             
+HISTORY --------------------------------------------------------------------    
+HISTORY IMLOD OUTNAME ='WCEN_OHGEO  '      OUTCLASS ='ICLN  '                   
+HISTORY IMLOD OUTSEQ =    0     INTAPE = 1     OUTDISK= 1                       
+HISTORY IMLOD INFILE = 'PWD:wcen/wcen_up_ohgeo.fits                     '       
+HISTORY IMLOD RELEASE = '31DEC14'                                               
+HISTORY                                / End of old histories                   
+HISTORY COMB  RELEASE='31DEC14 '                                                
+HISTORY COMB  INNAME='WCEN_LOW    '   INCLASS='ICLN  '                          
+HISTORY COMB  INSEQ=    1   INDISK=  1                                          
+HISTORY COMB  IN2NAME='WCEN_OHGEO  '   IN2CLASS='ICLN  '                        
+HISTORY COMB  IN2SEQ=    1   IN2DISK=  1                                        
+HISTORY COMB  OUTNAME='WCEN_ST     '   OUTCLASS='MEAN  '                        
+HISTORY COMB  OUTSEQ=    1   OUTDISK=  1                                        
+HISTORY COMB  USERID=    5                                                      
+HISTORY COMB  CTYPE='MEAN'                   /Mean                              
+HISTORY COMB  BLC=    1    1    1    1    1    1    1 / Bottom left corner      
+HISTORY COMB  TRC= 2707 2707    1    1    1    1    1 / Top right corner        
+HISTORY COMB  A(1)=  6.9856E-01  A(2)=  3.0144E-01                              
+HISTORY COMB  / Undefined pixels magic-value blanked                            
+HISTORY FITTP DATAOUT = 'PWD:wcen/wcen_stacked.fits' / data written to disk file
+ORIGIN  = 'AIPSmacbook-pro 	               31DEC14'    /                  
+DATE    = '2016-07-20'   / File written on Greenwich yyyy-mm-dd                 
+HISTORY AIPS   IMNAME='WCEN_ST     ' IMCLASS='MEAN  ' IMSEQ=   1     /          
+HISTORY AIPS   USERNO=    5            /                                        
+COMMENT   FITS (Flexible Image Transport System) format is defined in 'Astronomy
+COMMENT   and Astrophysics', volume 376, page 359; bibcode: 2001A&A...376..359H 
+HISTORY AIPS   CLEAN BMAJ=  8.2477E-04 BMIN=  4.5736E-04 BPA= -15.06            
+HISTORY AIPS   CLEAN NITER=        0 PRODUCT=0   / DIRTY MAP                    
+END 

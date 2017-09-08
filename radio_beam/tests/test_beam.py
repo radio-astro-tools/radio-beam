@@ -309,3 +309,10 @@ def test_beam_not_equal(major, minor, pa):
     beam2 = Beam(major * u.deg, minor * u.deg, pa * u.deg)
 
     assert not beam1 == beam2
+
+def test_from_aips_issue43():
+    """ regression test for issue 43 """
+    aips_fname = data_path("header_aips.hdr")
+    aips_hdr = fits.Header.fromtextfile(aips_fname)
+    aips_beam_hdr = Beam.from_fits_header(aips_hdr)
+    npt.assert_almost_equal(aips_beam_hdr.pa.value, -15.06)
