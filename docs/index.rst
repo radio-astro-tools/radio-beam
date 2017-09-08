@@ -27,7 +27,7 @@ Create a beam from scratch::
 Use a beam for Jy -> K conversion::
 
     >>> (1*u.Jy).to(u.K, u.brightness_temperature(my_beam, 25*u.GHz))
-    <Quantity 7821.571333052632 K>
+    <Quantity 7821.572919292681 K>
 
 Convolve with another beam::
 
