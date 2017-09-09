@@ -98,7 +98,9 @@ class Beam(u.Quantity):
     @classmethod
     def from_fits_bintable(cls, bintable, tolerance=0.01):
         """
-        Insantiate a beam from a bintable from a CASA-produced image HDU.
+        Insantiate a single beam from a bintable from a CASA-produced image
+        HDU.  The beams in the BinTableHDU will be averaged to form a single
+        beam.
 
         Parameters
         ----------
