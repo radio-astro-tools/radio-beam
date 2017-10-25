@@ -241,7 +241,8 @@ class Beams(u.Quantity):
         '''
         Return the smallest common beam size.
         '''
-        return commonbeam(self if includemask is None else self[includemask])
+        raise NotImplementedError("")
+        # return commonbeam(self if includemask is None else self[includemask])
 
     def __iter__(self):
         for i in range(len(self)):
