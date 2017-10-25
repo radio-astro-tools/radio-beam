@@ -1,7 +1,6 @@
 from astropy import units as u
 from astropy.io import fits
 from astropy import constants
-import astropy.units as u
 from astropy import wcs
 from astropy.extern import six
 import numpy as np
@@ -178,6 +177,58 @@ class Beams(u.Quantity):
                 for row in bintable.data]
 
         return cls(major=major, minor=minor, pa=pa, meta=meta)
+
+    @classmethod
+    def from_casa_image(cls, imagename):
+        '''
+        Instantiate beams from a CASA image. Cannot currently handle beams for
+        different polarizations.
+
+        ** Must be run in a CASA environment! **
+
+        Parameters
+        ----------
+        imagename : str
+            Name of CASA image.
+        '''
+
+        try:
+            import casac
+        except ImportError:
+            raise ImportError("Could not import CASA (casac) and therefore"
+                              " cannot read CASA .image files")
+
+        ia.open(imagename)
+        beam_props = ia.restoringbeam()
+        ia.close()
+
+        nchans = beam_props['nChannels']
+
+        # Assuming there is always a 0th channel...
+        maj_unit = u.Unit(beam_props['beams']['*0']['*0']['major']['unit'])
+        min_unit = u.Unit(beam_props['beams']['*0']['*0']['minor']['unit'])
+        pa_unit = u.Unit(beam_props['beams']['*0']['*0']['positionangle']['unit'])
+
+        major = np.empty((nchans)) * maj_unit
+        minor = np.empty((nchans)) * min_unit
+        pa = np.empty((nchans)) * pa_unit
+
+        for chan in range(nchans):
+
+            chan_name = '*{}'.format(chan)
+            chanbeam_props = beam_props['beams'][chan_name]['*0']
+
+            # Can CASA have mixes of units between channels? Let's test just
+            # in case
+            assert maj_unit == u.Unit(chanbeam_props['major']['unit'])
+            assert min_unit == u.Unit(chanbeam_props['minor']['unit'])
+            assert pa_unit == u.Unit(chanbeam_props['positionangle']['unit'])
+
+            major[chan] = chanbeam_props['major']['value'] * maj_unit
+            minor[chan] = chanbeam_props['minor']['value'] * min_unit
+            pa[chan] = chanbeam_props['positionangle']['value'] * pa_unit
+
+        return cls(major=major, minor=minor, pa=pa)
 
     def average_beam(self, includemask=None, raise_for_nan=True):
         """
