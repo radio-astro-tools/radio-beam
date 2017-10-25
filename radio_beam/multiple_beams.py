@@ -8,7 +8,7 @@ import numpy as np
 import warnings
 
 from .beam import Beam, _to_area, SIGMA_TO_FWHM
-from .commonbeam import commonbeam
+# from .commonbeam import commonbeam
 
 
 class Beams(u.Quantity):
