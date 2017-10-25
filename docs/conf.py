@@ -80,7 +80,7 @@ copyright = '{0}, {1}'.format(
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
-__import__(setup_cfg['package_name'])
+__import__(setup_cfg['package_name'].replace("-","_"))
 package = sys.modules[setup_cfg['package_name']]
 
 # The short X.Y version.
