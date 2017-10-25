@@ -150,6 +150,10 @@ class Beams(u.Quantity):
         if 'info' in getattr(obj, '__dict__', ()):
             self.info = obj.info
 
+    @property
+    def sr(self):
+        return _to_area(self.major, self.minor)
+
     @classmethod
     def from_fits_bintable(cls, bintable):
         """
@@ -192,7 +196,7 @@ class Beams(u.Quantity):
         new_beam = Beam(major=self.major[includemask].mean(),
                         minor=self.minor[includemask].mean(),
                         pa=circmean(self.pa[includemask],
-                                    weights=(self.major / self.minor)[includemask]))
+                        weights=(self.major / self.minor)[includemask]))
 
         if raise_for_nan and np.any(np.isnan(new_beam)):
             raise ValueError("NaNs after averaging.  This is a bug.")

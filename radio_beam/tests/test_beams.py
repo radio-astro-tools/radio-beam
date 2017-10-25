@@ -38,6 +38,16 @@ def load_commonbeam_comparisons():
     return common_beams
 
 
+def test_beam_areas():
+
+    beams, majors = symm_beams_for_tests()[:2]
+
+    areas = 2 * np.pi / (8 * np.log(2)) * (majors.to(u.rad)**2).to(u.sr)
+
+    assert np.all(areas.value == beams.sr.value)
+    assert np.all(beams.value == beams.sr.value)
+
+
 def test_beams_from_fits_bintable():
 
     fname = data_path("m33_beams_bintable.fits.gz")
@@ -81,7 +91,8 @@ def test_average_beams():
 
     mask = np.array([True, False, True, False, True, True], dtype='bool')
 
-    assert np.all(beams[mask].average_beam().major.value == majors[mask].mean().value)
+    assert np.all(beams[mask].average_beam().major.value ==
+                  majors[mask].mean().value)
 
 
 @pytest.mark.parametrize(("beams", "majors", "minors", "pas"),
@@ -158,14 +169,17 @@ def test_beams_with_invalid(majors):
     beams = Beams(major=majors)
 
     # Average
-    assert beams.average_beam().major.value == np.nanmean(majors[np.nonzero(majors)]).value
+    assert beams.average_beam().major.value == np.nanmean(
+        majors[np.nonzero(majors)]).value
     # Largest
     assert beams.largest_beam().major.value == np.nanmax(majors).value
     # Smallest
-    assert beams.smallest_beam().major.value == np.nanmin(majors[np.nonzero(majors)]).value
+    assert beams.smallest_beam().major.value == np.nanmin(
+        majors[np.nonzero(majors)]).value
     # Extrema
     extrema = beams.extrema_beams()
-    assert extrema[0].major.value == np.nanmin(majors[np.nonzero(majors)]).value
+    assert extrema[0].major.value == np.nanmin(
+        majors[np.nonzero(majors)]).value
     assert extrema[1].major.value == np.nanmax(majors).value
 
     # Additional masking
@@ -179,11 +193,14 @@ def test_beams_with_invalid(majors):
     combined_mask = np.logical_and(mask, bad_mask)
 
     # Average
-    assert beams[mask].average_beam().major.value == np.nanmean(majors[combined_mask]).value
+    assert beams[mask].average_beam().major.value == np.nanmean(
+        majors[combined_mask]).value
     # Largest
-    assert beams[mask].largest_beam().major.value == np.nanmax(majors[combined_mask]).value
+    assert beams[mask].largest_beam().major.value == np.nanmax(
+        majors[combined_mask]).value
     # Smallest
-    assert beams[mask].smallest_beam().major.value == np.nanmin(majors[combined_mask]).value
+    assert beams[mask].smallest_beam().major.value == np.nanmin(
+        majors[combined_mask]).value
     # Extrema
     extrema = beams[mask].extrema_beams()
     assert extrema[0].major.value == np.nanmin(majors[combined_mask]).value
