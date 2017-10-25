@@ -80,8 +80,10 @@ copyright = '{0}, {1}'.format(
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
-__import__(setup_cfg['package_name'].replace("-","_"))
-package = sys.modules[setup_cfg['package_name']]
+PACKAGENAME = setup_cfg['package_name'].replace("-","_")
+
+__import__(PACKAGENAME)
+package = sys.modules[PACKAGENAME]
 
 # The short X.Y version.
 version = package.__version__.split('-', 1)[0]
@@ -148,7 +150,7 @@ man_pages = [('index', project.lower(), project + u' Documentation',
 if eval(setup_cfg.get('edit_on_github')):
     extensions += ['astropy_helpers.sphinx.ext.edit_on_github']
 
-    versionmod = __import__(setup_cfg['package_name'] + '.version')
+    versionmod = __import__(PACKAGENAME + '.version')
     edit_on_github_project = setup_cfg['github_project']
     if versionmod.version.release:
         edit_on_github_branch = "v" + versionmod.version.version
