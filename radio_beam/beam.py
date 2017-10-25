@@ -504,17 +504,19 @@ class Beam(u.Quantity):
         """
         Returns an elliptical Gaussian kernel of the beam.
 
+        .. warning::
+            This method is not aware of any misalignment between pixel
+            and world coordinates.
+
         Parameters
         ----------
-        pixscale : Quantity
-            deg -> pixels
-        **kwargs : passed to EllipticalGaussian2DKernel
+        pixscale : `~astropy.units.Quantity`
+            Conversion from angular to pixel size.
+        kwargs : passed to EllipticalGaussian2DKernel
         """
         # do something here involving matrices
         # need to rotate the kernel into the wcs pixel space, kinda...
         # at the least, need to rescale the kernel axes into pixels
-        warnings.warn("as_kernel is not aware of any misaligment "
-                      " between pixel and world coordinates")
 
         stddev_maj = (self.major.to(u.deg)/(pixscale.to(u.deg) *
                                             SIGMA_TO_FWHM)).decompose()
@@ -543,16 +545,16 @@ class Beam(u.Quantity):
             \\sigma_{\\mathrm{Tophat}} = \\sqrt{2}\\sigma_{\\mathrm{Gauss}}
             \\end{array}
 
+        .. warning::
+            This method is not aware of any misalignment between pixel
+            and world coordinates.
+
         Parameters
         ----------
         pixscale : float
             deg -> pixels
         **kwargs : passed to EllipticalTophat2DKernel
         '''
-
-        # Same as above...
-        warnings.warn("as_tophat_kernel is not aware of any misaligment "
-                      " between pixel and world coordinates")
 
         # Based on Gaussian to Tophat area conversion
         # A_gaussian = 2 * pi * sigma^2 / (sqrt(8*log(2))^2
