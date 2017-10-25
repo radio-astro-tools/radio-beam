@@ -80,11 +80,11 @@ def test_bintable():
     beam = Beam.from_fits_bintable(beams)
 
     npt.assert_almost_equal(beam.minor.to(u.arcsec).value,
-                                   0.10002226)
+                            0.10002226, decimal=4)
     npt.assert_almost_equal(beam.major.to(u.arcsec).value,
-                                   0.19999751)
+                            0.19999751, decimal=4)
     npt.assert_almost_equal(beam.pa.to(u.deg).value,
-                                   45.10050065568665)
+                            45.10050065568665, decimal=4)
 
 
 @pytest.mark.skipif("not HAS_CASA")
@@ -295,6 +295,7 @@ def test_beam_equal(major, minor, pa):
     beam2 = Beam(major * u.deg, minor * u.deg, pa * u.deg)
 
     assert beam1 == beam2
+    assert not beam1 != beam2
 
 
 @pytest.mark.parametrize(("major", "minor", "pa"),
@@ -308,7 +309,7 @@ def test_beam_not_equal(major, minor, pa):
 
     beam2 = Beam(major * u.deg, minor * u.deg, pa * u.deg)
 
-    assert not beam1 == beam2
+    assert beam1 != beam2
 
 def test_from_aips_issue43():
     """ regression test for issue 43 """

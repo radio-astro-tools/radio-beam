@@ -12,6 +12,8 @@ from astropy.modeling.models import Ellipse2D, Gaussian2D
 from astropy.convolution import Kernel2D
 from astropy.convolution.kernels import _round_up_to_odd_integer
 
+from .utils import deconvolve, convolve
+
 # Conversion between a twod Gaussian FWHM**2 and effective area
 FWHM_TO_AREA = 2*np.pi/(8*np.log(2))
 SIGMA_TO_FWHM = np.sqrt(8*np.log(2))
@@ -28,7 +30,7 @@ unit_format = {u.deg: '\\circ',
 
 class Beam(u.Quantity):
     """
-    An object to handle radio beams.
+    An object to handle single radio beams.
     """
 
     def __new__(cls, major=None, minor=None, pa=None, area=None,
@@ -39,9 +41,15 @@ class Beam(u.Quantity):
         Parameters
         ----------
         major : :class:`~astropy.units.Quantity` with angular equivalency
+            The FWHM major axis
         minor : :class:`~astropy.units.Quantity` with angular equivalency
+            The FWHM minor axis
         pa : :class:`~astropy.units.Quantity` with angular equivalency
+            The beam position angle
         area : :class:`~astropy.units.Quantity` with steradian equivalency
+            The area of the beam.  This is an alternative to specifying the
+            major/minor/PA, and will create those values assuming a circular
+            Gaussian beam.
         default_unit : :class:`~astropy.units.Unit`
             The unit to impose on major, minor if they are specified as floats
         """
@@ -52,6 +60,9 @@ class Beam(u.Quantity):
 
         # ... given an area make a round beam assuming it is Gaussian
         if area is not None:
+            if major is not None:
+                raise ValueError("Can only specify one of {major,minor,pa} "
+                                 "and {area}")
             rad = np.sqrt(area/(2*np.pi)) * u.deg
             major = rad * SIGMA_TO_FWHM
             minor = rad * SIGMA_TO_FWHM
@@ -101,7 +112,7 @@ class Beam(u.Quantity):
     @classmethod
     def from_fits_bintable(cls, bintable, tolerance=0.01):
         """
-        Insantiate a single beam from a bintable from a CASA-produced image
+        Instantiate a single beam from a bintable from a CASA-produced image
         HDU.  The beams in the BinTableHDU will be averaged to form a single
         beam.
 
@@ -112,6 +123,11 @@ class Beam(u.Quantity):
         tolerance : float
             The fractional tolerance on the beam size to include when averaging
             to a single beam
+
+        Returns
+        -------
+        beam : Beam
+            A new beam object that is the average of the table beams
         """
         from astropy.stats import circmean
 
@@ -238,7 +254,7 @@ class Beam(u.Quantity):
         '''
 
         try:
-            from taskinit import ia
+            import casac
         except ImportError:
             raise ImportError("Could not import CASA (casac) and therefore"
                               " cannot read CASA .image files")
@@ -318,33 +334,7 @@ class Beam(u.Quantity):
             The convolved Beam
         """
 
-        # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
-        # (github checkin of MIRIAD, code by Sault)
-
-        alpha = ((self.major*np.cos(self.pa))**2 +
-                 (self.minor*np.sin(self.pa))**2 +
-                 (other.major*np.cos(other.pa))**2 +
-                 (other.minor*np.sin(other.pa))**2)
-
-        beta = ((self.major*np.sin(self.pa))**2 +
-                (self.minor*np.cos(self.pa))**2 +
-                (other.major*np.sin(other.pa))**2 +
-                (other.minor*np.cos(other.pa))**2)
-
-        gamma = (2*((self.minor**2-self.major**2) *
-                    np.sin(self.pa)*np.cos(self.pa) +
-                    (other.minor**2-other.major**2) *
-                    np.sin(other.pa)*np.cos(other.pa)))
-
-        s = alpha + beta
-        t = np.sqrt((alpha-beta)**2 + gamma**2)
-
-        new_major = np.sqrt(0.5*(s+t))
-        new_minor = np.sqrt(0.5*(s-t))
-        if (abs(gamma)+abs(alpha-beta)) == 0:
-            new_pa = 0.0 * u.deg
-        else:
-            new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta)
+        new_major, new_minor, new_pa = convolve(self, other)
 
         return Beam(major=new_major,
                     minor=new_minor,
@@ -383,58 +373,10 @@ class Beam(u.Quantity):
             failure_returns_pointlike
         """
 
-        # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
-        # (githup checkin of MIRIAD, code by Sault)
-
-        # rename to shorter variables for readability
-        maj1,min1,pa1 = self.major,self.minor,self.pa
-        maj2,min2,pa2 = other.major,other.minor,other.pa
-        cos,sin = np.cos,np.sin
-
-        alpha = ((maj1*cos(pa1))**2 +
-                 (min1*sin(pa1))**2 -
-                 (maj2*cos(pa2))**2 -
-                 (min2*sin(pa2))**2)
-
-        beta = ((maj1*sin(pa1))**2 +
-                (min1*cos(pa1))**2 -
-                (maj2*sin(pa2))**2 -
-                (min2*cos(pa2))**2)
-
-        gamma = 2 * ((min1**2 - maj1**2) * sin(pa1)*cos(pa1) -
-                     (min2**2 - maj2**2) * sin(pa2)*cos(pa2))
-
-        s = alpha + beta
-        t = np.sqrt((alpha-beta)**2 + gamma**2)
-
-        # identify the smallest resolution
-        axes = np.array([maj1.to(u.deg).value,
-                         min1.to(u.deg).value,
-                         maj2.to(u.deg).value,
-                         min2.to(u.deg).value])*u.deg
-        limit = np.min(axes)
-        limit = 0.1*limit*limit
-
-        # Deal with floating point issues
-        atol_t = 1e-12 * t.unit
-
-        if (alpha < 0) or (beta < 0) or (s < t + atol_t):
-            if failure_returns_pointlike:
-                return Beam(major=0, minor=0, pa=0)
-            else:
-                raise ValueError("Beam could not be deconvolved")
-        else:
-            new_major = np.sqrt(0.5*(s+t))
-            new_minor = np.sqrt(0.5*(s-t))
-
-            if (abs(gamma)+abs(alpha-beta)) == 0:
-                new_pa = 0.0
-            else:
-                new_pa = 0.5*np.arctan2(-1.*gamma, alpha-beta)
-
-        return Beam(major=new_major,
-                    minor=new_minor,
-                    pa=new_pa)
+        new_major, new_minor, new_pa = \
+            deconvolve(self, other,
+                       failure_returns_pointlike=failure_returns_pointlike)
+        return Beam(major=new_major, minor=new_minor, pa=new_pa)
 
     def __eq__(self, other):
 
@@ -452,6 +394,9 @@ class Beam(u.Quantity):
             return True
         else:
             return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     # Is it astropy convention to access properties through methods?
     @property
@@ -559,17 +504,19 @@ class Beam(u.Quantity):
         """
         Returns an elliptical Gaussian kernel of the beam.
 
+        .. warning::
+            This method is not aware of any misalignment between pixel
+            and world coordinates.
+
         Parameters
         ----------
-        pixscale : Quantity
-            deg -> pixels
-        **kwargs : passed to EllipticalGaussian2DKernel
+        pixscale : `~astropy.units.Quantity`
+            Conversion from angular to pixel size.
+        kwargs : passed to EllipticalGaussian2DKernel
         """
         # do something here involving matrices
         # need to rotate the kernel into the wcs pixel space, kinda...
         # at the least, need to rescale the kernel axes into pixels
-        warnings.warn("as_kernel is not aware of any misaligment "
-                      " between pixel and world coordinates")
 
         stddev_maj = (self.major.to(u.deg)/(pixscale.to(u.deg) *
                                             SIGMA_TO_FWHM)).decompose()
@@ -598,16 +545,16 @@ class Beam(u.Quantity):
             \\sigma_{\\mathrm{Tophat}} = \\sqrt{2}\\sigma_{\\mathrm{Gauss}}
             \\end{array}
 
+        .. warning::
+            This method is not aware of any misalignment between pixel
+            and world coordinates.
+
         Parameters
         ----------
         pixscale : float
             deg -> pixels
         **kwargs : passed to EllipticalTophat2DKernel
         '''
-
-        # Same as above...
-        warnings.warn("as_tophat_kernel is not aware of any misaligment "
-                      " between pixel and world coordinates")
 
         # Based on Gaussian to Tophat area conversion
         # A_gaussian = 2 * pi * sigma^2 / (sqrt(8*log(2))^2
@@ -631,6 +578,7 @@ class Beam(u.Quantity):
                 'BPA':  self.pa.to(u.deg).value,
                 }
 
+Beam.__doc__ = Beam.__doc__ + Beam.__new__.__doc__
 
 def mywcs_to_platescale(mywcs):
     pix_area = wcs.utils.proj_plane_pixel_area(mywcs)

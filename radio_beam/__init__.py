@@ -14,3 +14,4 @@ from ._astropy_init import *
 if not _ASTROPY_SETUP_:
     from .beam import Beam, EllipticalGaussian2DKernel, \
         EllipticalTophat2DKernel
+    from .multiple_beams import Beams
