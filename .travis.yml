@@ -27,9 +27,7 @@ env:
         # overidden underneath. They are defined here in order to save having
         # to repeat them for all configurations.
         - NUMPY_VERSION=1.11
-        # NOTE: This should be reverted to 1.2 once 1.2 is released (circmean
-        # is part of 1.2 and is required)
-        - ASTROPY_VERSION=development
+        - ASTROPY_VERSION=2
         - SETUP_CMD='test'
         - PIP_DEPENDENCIES=''
         # For this package-template, we include examples of Cython modules,
@@ -51,13 +49,13 @@ matrix:
 
         # Check for sphinx doc build warnings - we do this first because it
         # may run for a long time
-        - python: 2.7
-          env: SETUP_CMD='build_sphinx -w'
+        - python: 3.6
+          env: SETUP_CMD='build_docs -w'
 
         # Try Astropy development version
-        - python: 2.7
+        - python: 3.5
           env: ASTROPY_VERSION=development
-        - python: 3.4
+        - python: 3.6
           env: ASTROPY_VERSION=development
 
         # Test older numpy versions >=1.9
