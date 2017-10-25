@@ -18,6 +18,9 @@ from .utils import deconvolve, convolve
 FWHM_TO_AREA = 2*np.pi/(8*np.log(2))
 SIGMA_TO_FWHM = np.sqrt(8*np.log(2))
 
+class NoBeamException(Exception):
+    pass
+
 def _to_area(major,minor):
     return (major * minor * FWHM_TO_AREA).to(u.sr)
 
@@ -109,8 +112,9 @@ class Beam(u.Quantity):
     @classmethod
     def from_fits_bintable(cls, bintable, tolerance=0.01):
         """
-        Instantiate a single beam from a bintable from a CASA-produced image
-        HDU.  Will return the average beam.
+        Insantiate a single beam from a bintable from a CASA-produced image
+        HDU.  The beams in the BinTableHDU will be averaged to form a single
+        beam.
 
         Parameters
         ----------
@@ -175,7 +179,7 @@ class Beam(u.Quantity):
             if hist_beam is not None:
                 return hist_beam
             else:
-                raise TypeError("No BMAJ found and does not appear to be a CASA/AIPS header.")
+                raise NoBeamException("No BMAJ found and does not appear to be a CASA/AIPS header.")
 
         # Fill out the minor axis and position angle if they are
         # present. Else they will default .
