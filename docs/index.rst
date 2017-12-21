@@ -42,3 +42,11 @@ Deconvolve another beam::
     >>> my_little_beam = Beam(0.5*u.arcsec, 0.5*u.arcsec, 0*u.deg)
     >>> my_big_beam.deconvolve(my_little_beam)  # doctest: +SKIP
     Beam: BMAJ=0.866025403784 arcsec BMIN=0.866025403784 arcsec BPA=0.0 deg
+
+Getting started
+^^^^^^^^^^^^^^^
+
+.. toctree::
+   :maxdepth: 1
+
+   install.rst
