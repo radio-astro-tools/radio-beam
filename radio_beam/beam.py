@@ -496,8 +496,8 @@ class Beam(u.Quantity):
         """
         from matplotlib.patches import Ellipse
         return Ellipse((xcen, ycen),
-                       width=self.major.to(u.deg).value / pixscale,
-                       height=self.minor.to(u.deg).value / pixscale,
+                       width=(self.major.to(u.deg) / pixscale).to(u.dimensionless_unscaled).value,
+                       height=(self.minor.to(u.deg) / pixscale).to(u.dimensionless_unscaled).value,
                        angle=self.pa.to(u.deg).value)
 
     def as_kernel(self, pixscale, **kwargs):
