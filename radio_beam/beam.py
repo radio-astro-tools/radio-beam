@@ -498,7 +498,9 @@ class Beam(u.Quantity):
         return Ellipse((xcen, ycen),
                        width=(self.major.to(u.deg) / pixscale).to(u.dimensionless_unscaled).value,
                        height=(self.minor.to(u.deg) / pixscale).to(u.dimensionless_unscaled).value,
-                       angle=self.pa.to(u.deg).value)
+                       # PA is 90 deg offset from x-y axes by convention
+                       # (it is angle from NCP)
+                       angle=(self.pa+90*u.deg).to(u.deg).value)
 
     def as_kernel(self, pixscale, **kwargs):
         """
@@ -569,8 +571,13 @@ class Beam(u.Quantity):
         min_eff = gauss_to_top * self.minor.to(u.deg) / \
             (pixscale * SIGMA_TO_FWHM)
 
+        # position angle is defined as CCW from north
+        # "angle" is conventionally defined as CCW from "west".
+        # Therefore, add 90 degrees
+        angle = (90*u.deg+self.pa).to(u.radian).value,
+
         return EllipticalTophat2DKernel(maj_eff.value, min_eff.value,
-                                        self.pa.to(u.radian).value, **kwargs)
+                                        angle, **kwargs)
 
     def to_header_keywords(self):
         return {'BMAJ': self.major.to(u.deg).value,
