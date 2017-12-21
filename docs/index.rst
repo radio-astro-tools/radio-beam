@@ -49,4 +49,4 @@ Getting started
 .. toctree::
    :maxdepth: 1
 
-   installing.rst
+   install.rst
