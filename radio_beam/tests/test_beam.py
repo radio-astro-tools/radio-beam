@@ -284,10 +284,12 @@ def test_isfinite():
 
 
 @pytest.mark.parametrize(("major", "minor", "pa"),
-                           [(10, 10, 60),
-                            (10, 10, -120),
-                            (10, 10, -300),
-                            (10, 10, 240)])
+                         [(10, 10, 60),
+                          (10, 10, -120),
+                          (10, 10, -300),
+                          (10, 10, 240),
+                          (10, 10, 59),
+                          (10, 10, -121)])
 def test_beam_equal(major, minor, pa):
 
     beam1 = Beam(10 * u.deg, 10 * u.deg, 60 * u.deg)
@@ -299,10 +301,8 @@ def test_beam_equal(major, minor, pa):
 
 
 @pytest.mark.parametrize(("major", "minor", "pa"),
-                           [(10, 8, 60),
-                            (12, 10, 60),
-                            (10, 10, 59),
-                            (10, 10, -121)])
+                         [(10, 8, 60),
+                          (12, 10, 60)])
 def test_beam_not_equal(major, minor, pa):
 
     beam1 = Beam(10 * u.deg, 10 * u.deg, 60 * u.deg)
