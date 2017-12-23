@@ -214,7 +214,8 @@ def myobjective_regularized(p, bmajvec, bminvec, bpavec):
         return obj * 1e30
 
 
-def common_manybeams(beams, p0=None, optdict=None, verbose=True):
+def common_manybeams(beams, p0=None, optdict=None, verbose=False, brute=True,
+                     brute_steps=40):
 
     if not HAS_SCIPY:
         raise ImportError("common_manybeams requires scipy.optimize.")
@@ -233,31 +234,54 @@ def common_manybeams(beams, p0=None, optdict=None, verbose=True):
         p0 = (1.1 * p0[0], 1.1 * p0[1], p0[2])
 
     if optdict is None:
-        optdict = {'maxiter': 5000, 'ftol': 1e-11, 'maxfev': 5000}
+        optdict = {'maxiter': 5000, 'ftol': 1e-14, 'maxfev': 5000}
 
-    result = opt.minimize(myobjective_regularized, p0, method='Nelder-Mead',
-                          args=(bmaj, bmin, bpa), options=optdict,
-                          tol=1e-12)
+    if brute:
+        maj_range = [beams.major.max(), 1.5 * beams.major.max()]
+        maj_step = (maj_range[1] - maj_range[0]) / brute_steps
+        min_range = [beams.minor.min(), 1.5 * beams.major.max()]
+        min_step = (min_range[1] - min_range[0]) / brute_steps
+        rranges = (slice(maj_range[0], maj_range[1], maj_step),
+                   slice(min_range[0], min_range[1], min_step),
+                   slice(0, 179.9, 180. / brute_steps))
+        result = opt.brute(myobjective_regularized, rranges,
+                           args=(bmaj, bmin, bpa),
+                           full_output=True,
+                           finish=opt.fmin)
+        params = result[0]
 
-    if verbose:
-        print(result.viewitems())
+    else:
+        result = opt.minimize(myobjective_regularized, p0,
+                              method='Nelder-Mead',
+                              args=(bmaj, bmin, bpa),
+                              options=optdict,
+                              tol=1e-14)
+        params = result.x
 
-    if not result.success:
-        raise Warning("Optimization failed")
+        if verbose:
+            print(result.viewitems())
 
-    com_beam = Beam(result.x[0] * beams.major.unit,
-                    result.x[1] * beams.major.unit,
-                    result.x[2] * u.rad)
+        if not result.success:
+            raise Warning("Optimization failed")
+
+    com_beam = Beam(params[0] * beams.major.unit,
+                    params[1] * beams.major.unit,
+                    (params[2] % np.pi) * u.rad)
+
+    # Test if it deconvolves all
+    if not fits_in_largest(beams, com_beam):
+        raise BeamError("Could not find common beam to deconvolve all beams.")
 
     return com_beam
 
 
-def fits_in_largest(beams):
+def fits_in_largest(beams, large_beam=None):
     '''
     Test if all beams can be deconvolved by the largest beam
     '''
 
-    large_beam = beams.largest_beam()
+    if large_beam is None:
+        large_beam = beams.largest_beam()
 
     for beam in beams:
         if large_beam == beam:
@@ -270,10 +294,11 @@ def fits_in_largest(beams):
     return True
 
 
-def plotellipse(ax, bmaj, bmin, bpa, **kwargs):
+def plotellipse(ax, beam, **kwargs):
     testphi = np.linspace(0, 2 * np.pi, 1001)
-    x = bmaj * np.cos(testphi)
-    y = bmin * np.sin(testphi)
+    x = beam.major.to(u.deg).value * np.cos(testphi)
+    y = beam.minor.to(u.deg).value * np.sin(testphi)
+    bpa = beam.pa.to(u.rad).value
     xr = x * np.cos(bpa) - y * np.sin(bpa)
     yr = x * np.sin(bpa) + y * np.cos(bpa)
     ax.plot(xr, yr, **kwargs)
