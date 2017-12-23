@@ -7,7 +7,7 @@ import numpy as np
 import warnings
 
 from .beam import Beam, _to_area, SIGMA_TO_FWHM
-# from .commonbeam import commonbeam
+from .commonbeam import commonbeam
 
 
 class Beams(u.Quantity):
@@ -296,8 +296,7 @@ class Beams(u.Quantity):
         '''
         Return the smallest common beam size.
         '''
-        raise NotImplementedError("")
-        # return commonbeam(self if includemask is None else self[includemask])
+        return commonbeam(self if includemask is None else self[includemask])
 
     def __iter__(self):
         for i in range(len(self)):
