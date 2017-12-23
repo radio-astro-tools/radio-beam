@@ -81,7 +81,7 @@ def deconvolve(beam, other, failure_returns_pointlike=False):
 
     if alpha_cond or beta_cond or st_cond:
         if failure_returns_pointlike:
-            return 0, 0, 0
+            return 0 * maj1.unit, 0 * min1.unit, 0 * pa1.unit
         else:
             raise ValueError("Beam could not be deconvolved")
     else:
