@@ -8,6 +8,7 @@ import pytest
 
 from ..multiple_beams import Beams
 from ..beam import Beam
+from ..commonbeam import common_2beams, common_manybeams
 
 from .test_beam import data_path
 
@@ -238,107 +239,193 @@ def test_beams_iter():
 #     npt.assert_almost_equal(common_beam.pa.to(u.deg).value, pa)
 
 
-# def test_commonbeam_notlargest():
+def test_common_beam_smallcircular():
+    '''
+    Simple solution if the smallest beam is circular with a radius larger:
+    Major axis is from the largest beam, minor axis is the radius of the
+    smaller, and the PA is from the largest beam.
+    '''
 
-#     beams = Beams(major=[3, 4] * u.arcsec, minor=[3, 2.5] * u.arcsec)
+    for pa in [0., 18., 68., 122.]:
+        beams = Beams(major=[3, 4] * u.arcsec,
+                      minor=[3, 2.5] * u.arcsec,
+                      pa=[0, pa] * u.deg)
 
-#     target_beam = Beam(major=4 * u.arcsec,
-#                        minor=3 * u.arcsec)
+        targ_beam = Beam(4 * u.arcsec, 3 * u.arcsec, pa * u.deg)
 
-#     assert beams.common_beam() == target_beam
-
-
-# def test_commonbeam_largest():
-#     '''
-#     commonbeam is the largest in this set.
-#     '''
-
-#     beams, majors = symm_beams_for_tests()[:2]
-
-#     assert beams.common_beam() == beams.largest_beam()
-
-#     # With masking
-#     mask = np.array([True, False, True, True, True, False], dtype='bool')
-
-#     assert beams[mask].common_beam() == beams[mask].largest_beam()
-
-#     assert beams.common_beam(mask) == beams.largest_beam(mask)
+        assert targ_beam == beams.common_beam()
 
 
-# # Implements the same test suite used in CASA
+def test_commonbeam_notlargest():
 
-# def casa_commonbeam_suite():
+    beams = Beams(major=[3, 4] * u.arcsec, minor=[3, 2.5] * u.arcsec)
 
-#     cases = []
+    target_beam = Beam(major=4 * u.arcsec,
+                       minor=3 * u.arcsec)
 
-#     # https://open-bitbucket.nrao.edu/projects/CASA/repos/casa/browse/code/imageanalysis/ImageAnalysis/test/tCasaImageBeamSet.cc
-
-#     # 1
-#     cases.append((Beams(major=[4] * 2 * u.arcsec, minor=[2] * 2 * u.arcsec,
-#                         pa=[0, 60] * u.deg),
-#                   Beam(major=4.4856 * u.arcsec, minor=3.2916 * u.arcsec,
-#                        pa=30.0 * u.deg)))
-#     # 2
-#     cases.append((Beams(major=[4] * 2 * u.arcsec, minor=[2] * 2 * u.arcsec,
-#                         pa=[20, 80] * u.deg),
-#                   Beam(major=4.4856 * u.arcsec, minor=3.2916 * u.arcsec,
-#                        pa=50.0 * u.deg)))
-#     # 3
-#     cases.append((Beams(major=[4] * 2 * u.arcsec, minor=[2] * 2 * u.arcsec,
-#                         pa=[1, 89] * u.deg),
-#                   Beam(major=4.042 * u.arcsec, minor=3.958 * u.arcsec,
-#                        pa=45.0 * u.deg)))
-#     # 4
-#     cases.append((Beams(major=[4] * 2 * u.arcsec, minor=[2] * 2 * u.arcsec,
-#                         pa=[0, 90] * u.deg),
-#                   Beam(major=4 * u.arcsec, minor=4 * u.arcsec,
-#                        pa=0.0 * u.deg)))
-#     # 5
-#     cases.append((Beams(major=[4, 1.5] * u.arcsec, minor=[2, 1] * u.arcsec,
-#                         pa=[0, 90] * u.deg),
-#                   Beam(major=4 * u.arcsec, minor=2 * u.arcsec,
-#                        pa=0.0 * u.deg)))
-#     # 6
-#     cases.append((Beams(major=[8, 4] * u.arcsec, minor=[1, 1] * u.arcsec,
-#                         pa=[0, 20] * u.deg),
-#                   Beam(major=8.377 * u.arcsec, minor=1.628 * u.arcsec,
-#                        pa=2.7679 * u.deg)))
-#     # 7
-#     cases.append((Beams(major=[4, 8] * u.arcsec, minor=[1, 1] * u.arcsec,
-#                         pa=[0, 20] * u.deg),
-#                   Beam(major=8.369 * u.arcsec, minor=1.626 * u.arcsec,
-#                        pa=17.232 * u.deg)))
-#     # 8
-#     cases.append((Beams(major=[4] * 4 * u.arcsec, minor=[2] * 4 * u.arcsec,
-#                         pa=[0, 60, 20, 40] * u.deg),
-#                   Beam(major=4.485 * u.arcsec, minor=3.291 * u.arcsec,
-#                        pa=30 * u.deg)))
-#     # 9
-#     # THE COMPARISON BEAM IS NOT CORRECT! There is an ordering issue to
-#     # work out! This will fail until it is corrected.
-#     cases.append((Beams(major=[4] * 4 * u.arcsec, minor=[2] * 4 * u.arcsec,
-#                         pa=[0, 20, 40, 60] * u.deg),
-#                   Beam(major=4.485 * u.arcsec, minor=3.291 * u.arcsec,
-#                        pa=30 * u.deg)))
-#     # 10
-#     cases.append((Beams(major=[4, 1] * u.arcsec, minor=[2, 1] * u.arcsec,
-#                         pa=[0, 0] * u.deg),
-#                   Beam(major=4 * u.arcsec, minor=2 * u.arcsec,
-#                        pa=0.0 * u.deg)))
-
-#     return cases
+    assert beams.common_beam() == target_beam
 
 
-# @pytest.mark.parametrize(("beams", "target_beam"), casa_commonbeam_suite())
-# def test_commonbeam_angleoffset(beams, target_beam):
+def test_commonbeam_largest():
+    '''
+    commonbeam is the largest in this set.
+    '''
 
-#     # https://open-bitbucket.nrao.edu/projects/CASA/repos/casa/browse/code/imageanalysis/ImageAnalysis/test/tCasaImageBeamSet.cc#447
+    beams, majors = symm_beams_for_tests()[:2]
 
-#     common_beam = beams.common_beam()
+    assert beams.common_beam() == beams.largest_beam()
 
-#     npt.assert_almost_equal(common_beam.major.value, target_beam.major.value,
-#                             decimal=3)
-#     npt.assert_almost_equal(common_beam.minor.value, target_beam.minor.value,
-#                             decimal=3)
-#     npt.assert_almost_equal(common_beam.pa.to(u.deg).value,
-#                             target_beam.pa.value, decimal=3)
+    # With masking
+    mask = np.array([True, False, True, True, True, False], dtype='bool')
+
+    assert beams[mask].common_beam() == beams[mask].largest_beam()
+
+    assert beams.common_beam(mask) == beams.largest_beam(mask)
+
+
+# Implements the same test suite used in CASA
+
+def casa_commonbeam_suite():
+
+    cases = []
+
+    # https://open-bitbucket.nrao.edu/projects/CASA/repos/casa/browse/code/imageanalysis/ImageAnalysis/test/tCasaImageBeamSet.cc
+
+    # In some cases, I find smaller common beams than are listed in the CASA
+    # tests. The values for the CASA tests are commented out.
+
+    # 1
+    cases.append((Beams(major=[4] * 2 * u.arcsec, minor=[2] * 2 * u.arcsec,
+                        pa=[0, 60] * u.deg),
+                  Beam(major=4.4812 * u.arcsec, minor=3.2883 * u.arcsec,
+                       pa=30.0 * u.deg)))
+                  # Beam(major=4.4856 * u.arcsec, minor=3.2916 * u.arcsec,
+                  #      pa=30.0 * u.deg)))
+    # 2
+    cases.append((Beams(major=[4] * 2 * u.arcsec, minor=[2] * 2 * u.arcsec,
+                        pa=[20, 80] * u.deg),
+                  Beam(major=4.4812 * u.arcsec, minor=3.2883 * u.arcsec,
+                       pa=50.0 * u.deg)))
+                  # Beam(major=4.4856 * u.arcsec, minor=3.2916 * u.arcsec,
+                  #      pa=50.0 * u.deg)))
+    # 3
+    cases.append((Beams(major=[4] * 2 * u.arcsec, minor=[2] * 2 * u.arcsec,
+                        pa=[1, 89] * u.deg),
+                  Beam(major=4.042 * u.arcsec, minor=3.958 * u.arcsec,
+                       pa=45.0 * u.deg)))
+    # 4
+    cases.append((Beams(major=[4] * 2 * u.arcsec, minor=[2] * 2 * u.arcsec,
+                        pa=[0, 90] * u.deg),
+                  Beam(major=4 * u.arcsec, minor=4 * u.arcsec,
+                       pa=0.0 * u.deg)))
+    # 5
+    cases.append((Beams(major=[4, 1.5] * u.arcsec, minor=[2, 1] * u.arcsec,
+                        pa=[0, 90] * u.deg),
+                  Beam(major=4 * u.arcsec, minor=2 * u.arcsec,
+                       pa=0.0 * u.deg)))
+    # 6
+    cases.append((Beams(major=[8, 4] * u.arcsec, minor=[1, 1] * u.arcsec,
+                        pa=[0, 20] * u.deg),
+                  Beam(major=8.3684 * u.arcsec, minor=1.6253 * u.arcsec,
+                       pa=2.7679 * u.deg)))
+                  # Beam(major=8.377 * u.arcsec, minor=1.628 * u.arcsec,
+                  #      pa=2.7679 * u.deg)))
+    # 7
+    cases.append((Beams(major=[4, 8] * u.arcsec, minor=[1, 1] * u.arcsec,
+                        pa=[0, 20] * u.deg),
+                  Beam(major=8.369 * u.arcsec, minor=1.626 * u.arcsec,
+                       pa=17.232 * u.deg)))
+
+    # 10
+    cases.append((Beams(major=[4, 1] * u.arcsec, minor=[2, 1] * u.arcsec,
+                        pa=[0, 0] * u.deg),
+                  Beam(major=4 * u.arcsec, minor=2 * u.arcsec,
+                       pa=0.0 * u.deg)))
+
+    return cases
+
+
+@pytest.mark.parametrize(("beams", "target_beam"), casa_commonbeam_suite())
+def test_commonbeam_angleoffset(beams, target_beam):
+
+    # https://open-bitbucket.nrao.edu/projects/CASA/repos/casa/browse/code/imageanalysis/ImageAnalysis/test/tCasaImageBeamSet.cc#447
+
+    common_beam = beams.common_beam()
+
+    npt.assert_almost_equal(common_beam.major.value, target_beam.major.value,
+                            decimal=3)
+    npt.assert_almost_equal(common_beam.minor.value, target_beam.minor.value,
+                            decimal=3)
+    npt.assert_almost_equal(common_beam.pa.to(u.deg).value,
+                            target_beam.pa.value, decimal=3)
+
+
+def casa_commonbeam_suite_multiple():
+
+    cases = []
+
+    # 8
+    cases.append((Beams(major=[4] * 4 * u.arcsec, minor=[2] * 4 * u.arcsec,
+                        pa=[0, 60, 20, 40] * u.deg),
+                  Beam(major=4. * u.arcsec, minor=4 * u.arcsec,
+                       pa=30 * u.deg)))
+    # This is the test value from CASA. But if you plot this beam, if does NOT
+    # encompass all of the beams
+                  # Beam(major=4.485 * u.arcsec, minor=3.291 * u.arcsec,
+                  #      pa=30 * u.deg)))
+    # 9
+    # THE COMPARISON BEAM IS NOT CORRECT! There is an ordering issue to
+    # work out! This will fail until it is corrected.
+    # cases.append((Beams(major=[4] * 4 * u.arcsec, minor=[2] * 4 * u.arcsec,
+    #                     pa=[0, 20, 40, 60] * u.deg),
+    #               Beam(major=4.485 * u.arcsec, minor=3.291 * u.arcsec,
+    #                    pa=30 * u.deg)))
+
+    return cases
+
+
+@pytest.mark.parametrize(("beams", "target_beam"),
+                         casa_commonbeam_suite_multiple())
+def test_commonbeam_multiple(beams, target_beam):
+
+    # https://open-bitbucket.nrao.edu/projects/CASA/repos/casa/browse/code/imageanalysis/ImageAnalysis/test/tCasaImageBeamSet.cc#447
+
+    common_beam = beams.common_beam()
+
+    assert common_beam == target_beam
+
+    # npt.assert_almost_equal(common_beam.major.value, target_beam.major.value,
+    #                         decimal=3)
+    # npt.assert_almost_equal(common_beam.minor.value, target_beam.minor.value,
+    #                         decimal=3)
+    # npt.assert_almost_equal(common_beam.pa.to(u.deg).value,
+    #                         target_beam.pa.value, decimal=3)
+
+
+def test_commonbeam_methods():
+
+    beams = Beams([4., 3.] * u.deg, [2.5, 3.] * u.deg,
+                  [0., 60.] * u.deg)
+
+    beams = Beams([4, 3.] * u.deg, [1., 0.5] * u.deg,
+                  [29, 176] * u.deg)
+
+    two_beam_method = common_2beams(beams)
+    many_beam_method = common_manybeams(beams)
+
+    print(two_beam_method)
+    print(many_beam_method)
+
+    # Good to 1 microarcsec
+    npt.assert_allclose(two_beam_method.major.to(u.arcsec).value,
+                        many_beam_method.major.to(u.arcsec).value,
+                        rtol=1e-5)
+    npt.assert_allclose(two_beam_method.minor.to(u.arcsec).value,
+                        many_beam_method.minor.to(u.arcsec).value,
+                        rtol=1e-5)
+
+    # Good to 0.1 deg
+    npt.assert_allclose(two_beam_method.pa.to(u.deg).value,
+                        many_beam_method.pa.to(u.deg).value,
+                        atol=0.1)
+
