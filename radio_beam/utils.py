@@ -178,7 +178,6 @@ def transform_ellipse(major, minor, pa, x_scale, y_scale):
     # This code is based on the implementation in CASA:
     # https://open-bitbucket.nrao.edu/projects/CASA/repos/casa/browse/code/imageanalysis/ImageAnalysis/CasaImageBeamSet.cc
 
-
     major = major.to(u.arcsec)
     minor = minor.to(u.arcsec)
     pa = pa.to(u.rad)
