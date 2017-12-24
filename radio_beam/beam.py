@@ -428,7 +428,7 @@ class Beam(u.Quantity):
 
     def iscircular(self, rtol=1e-6):
 
-        frac_diff = (self.major - self.minor) / self.major
+        frac_diff = (self.major - self.minor).to(u.deg) / self.major.to(u.deg)
 
         return frac_diff <= rtol
 
