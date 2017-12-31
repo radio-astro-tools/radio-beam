@@ -4,6 +4,7 @@ import astropy.units as u
 
 try:
     from scipy import optimize as opt
+    from scipy.spatial import ConvexHull
     HAS_SCIPY = True
 except ImportError:
     HAS_SCIPY = False
@@ -12,7 +13,7 @@ from .beam import Beam
 from .utils import BeamError, transform_ellipse
 
 
-def commonbeam(beams):
+def commonbeam(beams, method='pts', **method_kwargs):
     '''
     Use analytic method if there are only two beams. Otherwise use constrained
     optimization to find the common beam.
@@ -20,10 +21,23 @@ def commonbeam(beams):
 
     if beams.size == 1:
         return beams[0]
-    if beams.size == 2:
-        return common_2beams(beams)
+    elif fits_in_largest(beams):
+        return beams.largest_beam()
     else:
-        return common_manybeams(beams)
+        if beams.size == 2:
+            try:
+                return common_2beams(beams)
+            # Sometimes this method can fail. Use the many beam solution in
+            # this case
+            except (ValueError, BeamError):
+                pass
+
+        if method == 'pts':
+            return common_manybeams_mve(beams, **method_kwargs)
+        elif method == 'opt':
+            return common_manybeams_opt(beams, **method_kwargs)
+        else:
+            raise ValueError("method must be 'pts' or 'opt'.")
 
 
 def common_2beams(beams):
@@ -214,15 +228,40 @@ def myobjective_regularized(p, bmajvec, bminvec, bpavec):
         return obj * 1e30
 
 
-def common_manybeams(beams, p0=None, optdict=None, verbose=False, brute=True,
-                     brute_steps=40):
+def common_manybeams_opt(beams, p0=None, optdict=None, verbose=False,
+                         brute=False, brute_steps=40):
+    '''
+    Optimize the common beam solution by maximizing the determinant of the
+    common beam.
+
+    ..note:: This method is experimental and requires further testing.
+
+    Parameters
+    ----------
+    beams : `~radio_beam.Beams`
+        Beams object.
+    p0 : tuple, optional
+        Initial guess parameters (`major, minor, pa`).
+    optdict : dict, optional
+        Dictionary parameters passed to `~scipy.optimize.minimize`.
+    verbose : bool, optional
+        Print the full output from `~scipy.optimize.minimize`.
+    brute : bool, optional
+        Use `~scipy.optimize.brute` to find the optimal solution.
+    brute_steps : int, optional
+        Number of positions to sample in each parameter (3).
+
+    Returns
+    -------
+    com_beam : `~radio_beam.Beam`
+        Common beam.
+    '''
+
+    raise NotImplementedError("This method is not fully tested. Remove this "
+                              "line for testing purposes.")
 
     if not HAS_SCIPY:
-        raise ImportError("common_manybeams requires scipy.optimize.")
-
-    # First check if the largest beam is the common beam
-    if fits_in_largest(beams):
-        return beams.largest_beam()
+        raise ImportError("common_manybeams_opt requires scipy.optimize.")
 
     bmaj = beams.major.value
     bmin = beams.minor.value
@@ -286,7 +325,8 @@ def fits_in_largest(beams, large_beam=None):
     for beam in beams:
         if large_beam == beam:
             continue
-        deconv_beam = large_beam.deconvolve(beam, failure_returns_pointlike=True)
+        deconv_beam = large_beam.deconvolve(beam,
+                                            failure_returns_pointlike=True)
 
         if not deconv_beam.isfinite:
             return False
@@ -294,11 +334,178 @@ def fits_in_largest(beams, large_beam=None):
     return True
 
 
-def plotellipse(ax, beam, **kwargs):
-    testphi = np.linspace(0, 2 * np.pi, 1001)
-    x = beam.major.to(u.deg).value * np.cos(testphi)
-    y = beam.minor.to(u.deg).value * np.sin(testphi)
+def getMinVolEllipse(P, tolerance=1e-5, maxiter=1e5):
+    """
+    Use the Khachiyan Algorithm to compute that minimum volume ellipsoid.
+
+    Adapted code from: https://github.com/minillinim/ellipsoid/blob/master/ellipsoid.py
+
+    This code was further adapted from:
+
+    Based on work by Nima Moshtagh
+    http://www.mathworks.com/matlabcentral/fileexchange/9542
+    and also by looking at:
+    http://cctbx.sourceforge.net/current/python/scitbx.math.minimum_covering_ellipsoid.html
+    Which is based on the first reference anyway!
+
+    Parameters
+    ----------
+    P : `~numpy.ndarray`
+        Points to compute solution.
+    tolerance : float, optional
+        Allowed error range in the Khachiyan Algorithm. Decreasing the
+        tolerance by an order of magnitude requires an order of magnitude
+        more iterations to converge.
+    maxiter : int, optional
+        Maximum iterations.
+
+    Returns
+    -------
+    center : `~numpy.ndarray`
+        Center point of the ellipse. Is required to be smaller than the
+        tolerance.
+    radii : `~numpy.ndarray`
+        Radii of the ellipse.
+    rotation : `~numpy.ndarray`
+        Rotation matrix of the ellipse.
+
+    """
+    N, d = P.shape
+    d = float(d)
+
+    # Q will be our working array
+    Q = np.vstack([np.copy(P.T), np.ones(N)])
+    QT = Q.T
+
+    # initializations
+    err = 1.0
+    u = np.ones(N) / N
+
+    # Khachiyan Algorithm
+    i = 0
+    while err > tolerance:
+        V = np.dot(Q, np.dot(np.diag(u), QT))
+        # M the diagonal vector of an NxN matrix
+        M = np.diag(np.dot(QT, np.dot(np.linalg.inv(V), Q)))
+        j = np.argmax(M)
+        maximum = M[j]
+        step_size = (maximum - d - 1.0) / ((d + 1.0) * (maximum - 1.0))
+        new_u = (1.0 - step_size) * u
+        err = np.linalg.norm(new_u - u)
+        if err <= tolerance:
+            break
+        new_u[j] += step_size
+        u = new_u
+        i += 1
+        if i == maxiter:
+            raise ValueError("Reached maximum iterations without converging."
+                             " Try increasing the tolerance.")
+
+    # center of the ellipse
+    center = np.atleast_2d(np.dot(P.T, u))
+
+    # For our purposes, the centre should always be very small
+    center_square = np.outer(center, center)
+    if not (center_square < tolerance**2).any():
+        raise ValueError("The solved centre ({0}) is larger than the tolerance"
+                         " ({1}). Check the input data.".format(center,
+                                                                tolerance))
+
+    # the A matrix for the ellipse
+    A = np.linalg.inv(np.dot(P.T, np.dot(np.diag(u), P)) -
+                      center_square) / d
+
+    # ellip_vals = np.dot(P - center, np.dot(A, (P - center).T))
+    # assert (ellip_vals <= 1. + tolerance).all()
+
+    # Get the values we'd like to return
+    U, s, rotation = np.linalg.svd(A)
+    radii = 1.0 / np.sqrt(s)
+    radii *= 1. + tolerance
+
+    return center, radii, rotation
+
+
+def ellipse_edges(beam, npts=300, epsilon=1e-3):
+    '''
+    Return the edge points of the beam.
+
+    Parameters
+    ----------
+    beam : `~radio_beam.Beam`
+        Beam object.
+    npts : int, optional
+        Number of samples.
+    epsilon : float
+        Increase the radii of the ellipse by 1 + epsilon.
+
+    Returns
+    -------
+    pts : `~numpy.ndarray`
+        The x, y coordinates of the ellipse edge.
+    '''
+
     bpa = beam.pa.to(u.rad).value
+    major = beam.major.to(u.deg).value * (1. + epsilon)
+    minor = beam.minor.to(u.deg).value * (1. + epsilon)
+
+    phi = np.linspace(0, 2 * np.pi, npts)
+
+    x = major * np.cos(phi)
+    y = minor * np.sin(phi)
+
     xr = x * np.cos(bpa) - y * np.sin(bpa)
     yr = x * np.sin(bpa) + y * np.cos(bpa)
-    ax.plot(xr, yr, **kwargs)
+
+    pts = np.vstack([xr, yr])
+    return pts
+
+
+def common_manybeams_mve(beams, tolerance=1e-4, nsamps=200, epsilon=1e-3):
+    '''
+    Calculate a common beam size using the Khachiyan Algorithm to find the
+    minimum enclosing ellipse from all beam edges.
+
+    Parameters
+    ----------
+    beams : `~radio_beam.Beams`
+        Beams object.
+    tolerance : float, optional
+        Allowed error range in the Khachiyan Algorithm. Decreasing the
+        tolerance by an order of magnitude requires an order of magnitude
+        more iterations to converge.
+    nsamps : int, optional
+        Number of edge points to sample from each beam.
+    epsilon : float, optional
+        Increase the radii of each beam by a factor of 1 + epsilon to ensure
+        the common beam can marginally be deconvolved for all beams. Small
+        deviations result from the finite sampling of points and the choice
+        of the tolerance.
+
+    Returns
+    -------
+    com_beam : `~radio_beam.Beam`
+        The common beam for all beams in the set.
+    '''
+
+    pts = []
+
+    for beam in beams:
+        pts.append(ellipse_edges(beam, nsamps, epsilon=epsilon))
+
+    all_pts = np.hstack(pts).T
+
+    # Now find the outer edges of the convex hull.
+    hull = ConvexHull(all_pts)
+    edge_pts = all_pts[hull.vertices]
+
+    center, radii, rotation = \
+        getMinVolEllipse(edge_pts, tolerance=tolerance)
+
+    com_beam = Beam(major=radii.max() * u.deg, minor=radii.min() * u.deg,
+                    pa=- np.arcsin(rotation[0, 0]) * u.rad)
+
+    if not fits_in_largest(beams, com_beam):
+        raise BeamError("Could not find common beam to deconvolve all beams.")
+
+    return com_beam
