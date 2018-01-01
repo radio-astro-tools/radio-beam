@@ -294,7 +294,21 @@ class Beams(u.Quantity):
 
     def common_beam(self, includemask=None, method='pts', **kwargs):
         '''
-        Return the smallest common beam size.
+        Return the smallest common beam size. For set of two beams,
+        the solution is solved analytically. All larger sets solve for the
+        minimum volume ellipse using the
+        `Khachiyan Algorithm <http://www.mathworks.com/matlabcentral/fileexchange/9542>`_,
+        where the convex hull of the set of ellipse edges is used to find the
+        boundaries of the set.
+
+        Parameters
+        ----------
+        includemask : `~numpy.ndarray`, optional
+            Boolean mask.
+        method : {'pts'}, optional
+            Many beam method. Only `pts` is currently available.
+        kwargs : Passed to `~radio_beam.commonbeam`.
+
         '''
         return commonbeam(self if includemask is None else self[includemask],
                           method=method, **kwargs)
