@@ -418,7 +418,7 @@ def test_commonbeam_methods(beams, target_beam):
     many_beam_method = common_manybeams_mve(beams, epsilon=epsilon,
                                             tolerance=tolerance)
 
-    # Good to 1 microarcsec
+    # Good to ~5x the given epsilon
     npt.assert_allclose(two_beam_method.major.to(u.arcsec).value,
                         many_beam_method.major.to(u.arcsec).value,
                         rtol=3e-3)
