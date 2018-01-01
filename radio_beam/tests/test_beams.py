@@ -8,7 +8,7 @@ import pytest
 
 from ..multiple_beams import Beams
 from ..beam import Beam
-from ..commonbeam import common_2beams, common_manybeams
+from ..commonbeam import common_2beams, common_manybeams_mve
 
 from .test_beam import data_path
 
@@ -367,19 +367,20 @@ def casa_commonbeam_suite_multiple():
     # 8
     cases.append((Beams(major=[4] * 4 * u.arcsec, minor=[2] * 4 * u.arcsec,
                         pa=[0, 60, 20, 40] * u.deg),
-                  Beam(major=4. * u.arcsec, minor=4 * u.arcsec,
-                       pa=30 * u.deg)))
-    # This is the test value from CASA. But if you plot this beam, if does NOT
-    # encompass all of the beams
+                  Beam(major=4.48904471492 * u.arcsec,
+                       minor=3.28268221138 * u.arcsec,
+                       pa=30.0001561178 * u.deg)))
+
+    # This is the beam size in the CASA tests. The MVE method finds a slightly
+    # smaller beam area, so that's what is tested against above and below.
                   # Beam(major=4.485 * u.arcsec, minor=3.291 * u.arcsec,
                   #      pa=30 * u.deg)))
     # 9
-    # THE COMPARISON BEAM IS NOT CORRECT! There is an ordering issue to
-    # work out! This will fail until it is corrected.
-    # cases.append((Beams(major=[4] * 4 * u.arcsec, minor=[2] * 4 * u.arcsec,
-    #                     pa=[0, 20, 40, 60] * u.deg),
-    #               Beam(major=4.485 * u.arcsec, minor=3.291 * u.arcsec,
-    #                    pa=30 * u.deg)))
+    cases.append((Beams(major=[4] * 4 * u.arcsec, minor=[2] * 4 * u.arcsec,
+                        pa=[0, 20, 40, 60] * u.deg),
+                  Beam(major=4.48904471492 * u.arcsec,
+                       minor=3.28268221138 * u.arcsec,
+                       pa=30.0001561178 * u.deg)))
 
     return cases
 
@@ -390,42 +391,47 @@ def test_commonbeam_multiple(beams, target_beam):
 
     # https://open-bitbucket.nrao.edu/projects/CASA/repos/casa/browse/code/imageanalysis/ImageAnalysis/test/tCasaImageBeamSet.cc#447
 
-    common_beam = beams.common_beam()
+    common_beam = beams.common_beam(epsilon=1e-4)
 
-    assert common_beam == target_beam
+    # The above should be using the MVE method
+    common_beam_check = common_manybeams_mve(beams, epsilon=1e-4)
 
-    # npt.assert_almost_equal(common_beam.major.value, target_beam.major.value,
-    #                         decimal=3)
-    # npt.assert_almost_equal(common_beam.minor.value, target_beam.minor.value,
-    #                         decimal=3)
-    # npt.assert_almost_equal(common_beam.pa.to(u.deg).value,
-    #                         target_beam.pa.value, decimal=3)
+    assert common_beam == common_beam_check
+
+    npt.assert_almost_equal(common_beam.major.to(u.arcsec).value,
+                            target_beam.major.value,
+                            decimal=6)
+    npt.assert_almost_equal(common_beam.minor.to(u.arcsec).value,
+                            target_beam.minor.value,
+                            decimal=6)
+    npt.assert_almost_equal(common_beam.pa.to(u.deg).value,
+                            target_beam.pa.value, decimal=6)
 
 
-def test_commonbeam_methods():
+@pytest.mark.parametrize(("beams", "target_beam"), casa_commonbeam_suite())
+def test_commonbeam_methods(beams, target_beam):
 
-    beams = Beams([4., 3.] * u.deg, [2.5, 3.] * u.deg,
-                  [0., 60.] * u.deg)
-
-    beams = Beams([4, 3.] * u.deg, [1., 0.5] * u.deg,
-                  [29, 176] * u.deg)
+    epsilon = 5e-4
+    tolerance = 1e-4
 
     two_beam_method = common_2beams(beams)
-    many_beam_method = common_manybeams(beams)
-
-    print(two_beam_method)
-    print(many_beam_method)
+    many_beam_method = common_manybeams_mve(beams, epsilon=epsilon,
+                                            tolerance=tolerance)
 
     # Good to 1 microarcsec
     npt.assert_allclose(two_beam_method.major.to(u.arcsec).value,
                         many_beam_method.major.to(u.arcsec).value,
-                        rtol=1e-5)
+                        rtol=3e-3)
     npt.assert_allclose(two_beam_method.minor.to(u.arcsec).value,
                         many_beam_method.minor.to(u.arcsec).value,
-                        rtol=1e-5)
+                        rtol=3e-3)
 
-    # Good to 0.1 deg
-    npt.assert_allclose(two_beam_method.pa.to(u.deg).value,
-                        many_beam_method.pa.to(u.deg).value,
-                        atol=0.1)
-
+    # Only test if the beam is
+    circ_check = not two_beam_method.iscircular(rtol=3e-3) or \
+        not many_beam_method.iscircular(rtol=3e-3)
+    if circ_check:
+        # The pa can be sensitive to small changes so give it a larger
+        # acceptable tolerance range.
+        npt.assert_allclose(two_beam_method.pa.to(u.deg).value,
+                            many_beam_method.pa.to(u.deg).value,
+                            rtol=5e-3)
