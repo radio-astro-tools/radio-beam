@@ -502,8 +502,11 @@ def common_manybeams_mve(beams, tolerance=1e-4, nsamps=200, epsilon=1e-3):
     center, radii, rotation = \
         getMinVolEllipse(edge_pts, tolerance=tolerance)
 
+    # The rotation matrix is coming out as:
+    # ((sin theta, cos theta)
+    #  (cos theta, - sin theta))
     com_beam = Beam(major=radii.max() * u.deg, minor=radii.min() * u.deg,
-                    pa=- np.arcsin(rotation[0, 0]) * u.rad)
+                    pa=np.arctan2(- rotation[0, 0], rotation[1, 0]) * u.rad)
 
     if not fits_in_largest(beams, com_beam):
         raise BeamError("Could not find common beam to deconvolve all beams.")
