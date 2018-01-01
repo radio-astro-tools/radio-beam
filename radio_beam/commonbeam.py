@@ -488,6 +488,9 @@ def common_manybeams_mve(beams, tolerance=1e-4, nsamps=200, epsilon=5e-4):
         The common beam for all beams in the set.
     '''
 
+    if not HAS_SCIPY:
+        raise ImportError("common_manybeams_mve requires scipy.optimize.")
+
     pts = []
 
     for beam in beams:
