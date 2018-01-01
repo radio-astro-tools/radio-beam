@@ -435,3 +435,16 @@ def test_commonbeam_methods(beams, target_beam):
         npt.assert_allclose(two_beam_method.pa.to(u.deg).value,
                             many_beam_method.pa.to(u.deg).value,
                             rtol=5e-3)
+
+
+def test_catch_common_beam_opt():
+    '''
+    The optimization method is close to working, but requires more testing.
+    Ensure it cannot be used.
+    '''
+
+    beams = Beams(major=[4] * 4 * u.arcsec, minor=[2] * 4 * u.arcsec,
+                  pa=[0, 20, 40, 60] * u.deg)
+
+    with pytest.raises(NotImplementedError):
+        beams.common_beam(method='opt')
