@@ -237,6 +237,9 @@ class Beams(u.Quantity):
         This is usually a dumb thing to do!
         """
 
+        warnings.warn("Do not use the average beam for convolution! Use the"
+                      " smallest common beam from `Beams.common_beam()`.")
+
         from astropy.stats import circmean
 
         if includemask is None:
