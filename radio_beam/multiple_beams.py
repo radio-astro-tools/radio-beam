@@ -292,11 +292,12 @@ class Beams(u.Quantity):
         return [self.smallest_beam(includemask),
                 self.largest_beam(includemask)]
 
-    def common_beam(self, includemask=None):
+    def common_beam(self, includemask=None, **kwargs):
         '''
         Return the smallest common beam size.
         '''
-        return commonbeam(self if includemask is None else self[includemask])
+        return commonbeam(self if includemask is None else self[includemask],
+                          **kwargs)
 
     def __iter__(self):
         for i in range(len(self)):
