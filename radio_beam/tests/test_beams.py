@@ -357,12 +357,12 @@ def test_commonbeam_angleoffset(beams, target_beam):
 
     assert common_beam == common_beam_rev
 
-    npt.assert_almost_equal(common_beam.major.value, target_beam.major.value,
-                            decimal=3)
-    npt.assert_almost_equal(common_beam.minor.value, target_beam.minor.value,
-                            decimal=3)
-    npt.assert_almost_equal(common_beam.pa.to(u.deg).value,
-                            target_beam.pa.value, decimal=3)
+    npt.assert_allclose(common_beam.major.value, target_beam.major.value,
+                        rtol=1e-3)
+    npt.assert_allclose(common_beam.minor.value, target_beam.minor.value,
+                        rtol=1e-3)
+    npt.assert_allclose(common_beam.pa.to(u.deg).value,
+                        target_beam.pa.value, rtol=1e-3)
 
 
 def casa_commonbeam_suite_multiple():
