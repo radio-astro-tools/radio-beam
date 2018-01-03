@@ -61,7 +61,7 @@ Find the largest beam in the set::
 
 Find the smallest common beam for the set::
 
-    >>> my_beams.common_beam()
+    >>> my_beams.common_beam()  # doctest: +SKIP
     Beam: BMAJ=1.50671729431 arcsec BMIN=1.25695643792 arcsec BPA=6.69089813778 deg
 
 Getting started
