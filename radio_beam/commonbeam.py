@@ -189,10 +189,17 @@ def common_2beams(beams):
 
 def boundingcircle(bmaj, bmin, bpa):
     thisone = np.argmax(bmaj)
+    # PA really shouldn't matter here. But the minimization performed better
+    # in some cases with a non-zero PA. Presumably this is b/c the PA of the
+    # common beam is affected more by the beam with the largest major axis.
     return bmaj[thisone], bmaj[thisone], bpa[thisone]
 
 
 def PtoA(bmaj, bmin, bpa):
+    '''
+    Express the ellipse parameters into
+    `center-form <https://en.wikipedia.org/wiki/Matrix_representation_of_conic_sections>`_.
+    '''
     A = np.zeros((2, 2))
     A[0, 0] = np.cos(bpa)**2 / bmaj**2 + np.sin(bpa)**2 / bmin**2
     A[1, 0] = np.cos(bpa) * np.sin(bpa) * (1 / bmaj**2 - 1 / bmin**2)
@@ -228,7 +235,10 @@ def myobjective_regularized(p, bmajvec, bminvec, bpavec):
         return obj * 1e30
 
 
-def common_manybeams_opt(beams, p0=None, optdict=None, verbose=False,
+def common_manybeams_opt(beams, p0=None, opt_method='Nelder-Mead',
+                         optdict={'maxiter': 5000, 'ftol': 1e-14,
+                                  'maxfev': 5000},
+                         verbose=False,
                          brute=False, brute_steps=40):
     '''
     Optimize the common beam solution by maximizing the determinant of the
@@ -242,6 +252,10 @@ def common_manybeams_opt(beams, p0=None, optdict=None, verbose=False,
         Beams object.
     p0 : tuple, optional
         Initial guess parameters (`major, minor, pa`).
+    opt_method : str, optional
+        Optimization method to use. See `~scipy.optimize.minimize`.
+        The default of Nelder-Mead is the only method we have had
+        some success with.
     optdict : dict, optional
         Dictionary parameters passed to `~scipy.optimize.minimize`.
     verbose : bool, optional
@@ -272,9 +286,6 @@ def common_manybeams_opt(beams, p0=None, optdict=None, verbose=False,
         # It seems to help to make the initial guess slightly larger
         p0 = (1.1 * p0[0], 1.1 * p0[1], p0[2])
 
-    if optdict is None:
-        optdict = {'maxiter': 5000, 'ftol': 1e-14, 'maxfev': 5000}
-
     if brute:
         maj_range = [beams.major.max(), 1.5 * beams.major.max()]
         maj_step = (maj_range[1] - maj_range[0]) / brute_steps
@@ -291,7 +302,7 @@ def common_manybeams_opt(beams, p0=None, optdict=None, verbose=False,
 
     else:
         result = opt.minimize(myobjective_regularized, p0,
-                              method='Nelder-Mead',
+                              method=opt_method,
                               args=(bmaj, bmin, bpa),
                               options=optdict,
                               tol=1e-14)
@@ -338,15 +349,15 @@ def getMinVolEllipse(P, tolerance=1e-5, maxiter=1e5):
     """
     Use the Khachiyan Algorithm to compute that minimum volume ellipsoid.
 
+    For the purposes of finding a common beam, there is an added check that
+    requires the center to be within the tolerance range.
+
     Adapted code from: https://github.com/minillinim/ellipsoid/blob/master/ellipsoid.py
 
-    This code was further adapted from:
-
-    Based on work by Nima Moshtagh
+    That implementation relies on the original work by Nima Moshtagh:
     http://www.mathworks.com/matlabcentral/fileexchange/9542
-    and also by looking at:
+    and an alternate python version from:
     http://cctbx.sourceforge.net/current/python/scitbx.math.minimum_covering_ellipsoid.html
-    Which is based on the first reference anyway!
 
     Parameters
     ----------
@@ -437,7 +448,9 @@ def ellipse_edges(beam, npts=300, epsilon=1e-3):
     npts : int, optional
         Number of samples.
     epsilon : float
-        Increase the radii of the ellipse by 1 + epsilon.
+        Increase the radii of the ellipse by 1 + epsilon. This is to ensure
+        that `getMinVolEllipse` returns a marginally deconvolvable beam to
+        within the error tolerance.
 
     Returns
     -------

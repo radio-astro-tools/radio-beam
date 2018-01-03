@@ -352,6 +352,11 @@ def test_commonbeam_angleoffset(beams, target_beam):
 
     common_beam = beams.common_beam()
 
+    # Order shouldn't matter
+    common_beam_rev = beams[::-1].common_beam()
+
+    assert common_beam == common_beam_rev
+
     npt.assert_almost_equal(common_beam.major.value, target_beam.major.value,
                             decimal=3)
     npt.assert_almost_equal(common_beam.minor.value, target_beam.minor.value,
