@@ -81,7 +81,7 @@ def deconvolve(beam, other, failure_returns_pointlike=False):
 
     if alpha_cond or beta_cond or st_cond:
         if failure_returns_pointlike:
-            return 0, 0, 0
+            return 0 * maj1.unit, 0 * min1.unit, 0 * pa1.unit
         else:
             raise ValueError("Beam could not be deconvolved")
     else:
@@ -177,7 +177,6 @@ def transform_ellipse(major, minor, pa, x_scale, y_scale):
 
     # This code is based on the implementation in CASA:
     # https://open-bitbucket.nrao.edu/projects/CASA/repos/casa/browse/code/imageanalysis/ImageAnalysis/CasaImageBeamSet.cc
-
 
     major = major.to(u.arcsec)
     minor = minor.to(u.arcsec)

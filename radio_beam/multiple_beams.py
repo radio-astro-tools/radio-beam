@@ -7,7 +7,7 @@ import numpy as np
 import warnings
 
 from .beam import Beam, _to_area, SIGMA_TO_FWHM
-# from .commonbeam import commonbeam
+from .commonbeam import commonbeam
 
 
 class Beams(u.Quantity):
@@ -237,6 +237,9 @@ class Beams(u.Quantity):
         This is usually a dumb thing to do!
         """
 
+        warnings.warn("Do not use the average beam for convolution! Use the"
+                      " smallest common beam from `Beams.common_beam()`.")
+
         from astropy.stats import circmean
 
         if includemask is None:
@@ -292,12 +295,26 @@ class Beams(u.Quantity):
         return [self.smallest_beam(includemask),
                 self.largest_beam(includemask)]
 
-    def common_beam(self, includemask=None):
+    def common_beam(self, includemask=None, method='pts', **kwargs):
         '''
-        Return the smallest common beam size.
+        Return the smallest common beam size. For set of two beams,
+        the solution is solved analytically. All larger sets solve for the
+        minimum volume ellipse using the
+        `Khachiyan Algorithm <http://www.mathworks.com/matlabcentral/fileexchange/9542>`_,
+        where the convex hull of the set of ellipse edges is used to find the
+        boundaries of the set.
+
+        Parameters
+        ----------
+        includemask : `~numpy.ndarray`, optional
+            Boolean mask.
+        method : {'pts'}, optional
+            Many beam method. Only `pts` is currently available.
+        kwargs : Passed to `~radio_beam.commonbeam`.
+
         '''
-        raise NotImplementedError("")
-        # return commonbeam(self if includemask is None else self[includemask])
+        return commonbeam(self if includemask is None else self[includemask],
+                          method=method, **kwargs)
 
     def __iter__(self):
         for i in range(len(self)):

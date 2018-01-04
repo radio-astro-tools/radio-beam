@@ -386,7 +386,11 @@ class Beam(u.Quantity):
         this_pa = self.pa.to(u.deg) % (180.0 * u.deg)
         other_pa = other.pa.to(u.deg) % (180.0 * u.deg)
 
-        equal_pa = True if np.abs(this_pa - other_pa) < atol_deg else False
+        if self.iscircular():
+            equal_pa = True
+        else:
+            equal_pa = True if np.abs(this_pa - other_pa) < atol_deg else False
+
         equal_maj = np.abs(self.major - other.major) < atol_deg
         equal_min = np.abs(self.minor - other.minor) < atol_deg
 
@@ -421,6 +425,12 @@ class Beam(u.Quantity):
     def isfinite(self):
         return ((self.major > 0) & (self.minor > 0) & np.isfinite(self.major) &
                 np.isfinite(self.minor) & np.isfinite(self.pa))
+
+    def iscircular(self, rtol=1e-6):
+
+        frac_diff = (self.major - self.minor).to(u.deg) / self.major.to(u.deg)
+
+        return frac_diff <= rtol
 
     def beam_projected_area(self, distance):
         """

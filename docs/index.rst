@@ -43,6 +43,27 @@ Deconvolve another beam::
     >>> my_big_beam.deconvolve(my_little_beam)  # doctest: +SKIP
     Beam: BMAJ=0.866025403784 arcsec BMIN=0.866025403784 arcsec BPA=0.0 deg
 
+Read a table of beams::
+
+    >>> from radio_beam import Beams
+    >>> from astropy.io import fits
+    >>> bin_hdu = fits.open('file.fits')[1]  # doctest: +SKIP
+    >>> beams = Beams.from_fits_bintable(bin_hdu)  # doctest: +SKIP
+
+Create a table of beams::
+
+    >>> my_beams = Beams([1.5, 1.3] * u.arcsec, [1., 1.2] * u.arcsec, [0, 50] * u.deg)
+
+Find the largest beam in the set::
+
+    >>> my_beams.largest_beam()
+    Beam: BMAJ=1.3 arcsec BMIN=1.2 arcsec BPA=50.0 deg
+
+Find the smallest common beam for the set::
+
+    >>> my_beams.common_beam()  # doctest: +SKIP
+    Beam: BMAJ=1.50671729431 arcsec BMIN=1.25695643792 arcsec BPA=6.69089813778 deg
+
 Getting started
 ^^^^^^^^^^^^^^^
 
