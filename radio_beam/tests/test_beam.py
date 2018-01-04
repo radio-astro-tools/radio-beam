@@ -302,7 +302,25 @@ def test_beam_equal(major, minor, pa):
 
 @pytest.mark.parametrize(("major", "minor", "pa"),
                          [(10, 8, 60),
-                          (12, 10, 60)])
+                          (10, 8, -120),
+                          (10, 8, 240)])
+def test_beam_equal_noncirc(major, minor, pa):
+    '''
+    Beams with PA +/- 180 deg are equal
+    '''
+
+    beam1 = Beam(10 * u.deg, 8 * u.deg, 60 * u.deg)
+
+    beam2 = Beam(major * u.deg, minor * u.deg, pa * u.deg)
+
+    assert beam1 == beam2
+    assert not beam1 != beam2
+
+
+@pytest.mark.parametrize(("major", "minor", "pa"),
+                         [(10, 8, 60),
+                          (12, 10, 60),
+                          (12, 10, 59)])
 def test_beam_not_equal(major, minor, pa):
 
     beam1 = Beam(10 * u.deg, 10 * u.deg, 60 * u.deg)
