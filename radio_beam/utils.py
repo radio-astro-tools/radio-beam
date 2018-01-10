@@ -140,7 +140,8 @@ def convolve(beam, other):
 
     new_major = np.sqrt(0.5 * (s + t))
     new_minor = np.sqrt(0.5 * (s - t))
-    if np.isclose((abs(gamma) + abs(alpha - beta)).value, 0):
+    # absolute tolerance needs to be <<1 microarcsec
+    if np.isclose((abs(gamma) + abs(alpha - beta)).value, 0, atol=1e-12):
         new_pa = 0.0 * u.deg
     else:
         new_pa = 0.5 * np.arctan2(-1. * gamma, alpha - beta)
