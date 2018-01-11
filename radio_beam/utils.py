@@ -88,7 +88,8 @@ def deconvolve(beam, other, failure_returns_pointlike=False):
         new_major = np.sqrt(0.5 * (s + t))
         new_minor = np.sqrt(0.5 * (s - t))
 
-        if np.isclose((abs(gamma) + abs(alpha - beta)).value, 0):
+        # absolute tolerance needs to be <<1 microarcsec
+        if np.isclose(((abs(gamma) + abs(alpha - beta))**0.5).to(u.arcsec).value, 1e-7):
             new_pa = 0.0
         else:
             new_pa = 0.5 * np.arctan2(-1. * gamma, alpha - beta)
@@ -141,7 +142,7 @@ def convolve(beam, other):
     new_major = np.sqrt(0.5 * (s + t))
     new_minor = np.sqrt(0.5 * (s - t))
     # absolute tolerance needs to be <<1 microarcsec
-    if np.isclose((abs(gamma) + abs(alpha - beta)).value, 0, atol=1e-12):
+    if np.isclose(((abs(gamma) + abs(alpha - beta))**0.5).to(u.arcsec).value, 1e-7):
         new_pa = 0.0 * u.deg
     else:
         new_pa = 0.5 * np.arctan2(-1. * gamma, alpha - beta)
