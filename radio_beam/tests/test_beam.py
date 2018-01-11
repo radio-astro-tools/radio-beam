@@ -338,8 +338,8 @@ def test_from_aips_issue43():
 
 def test_small_beam_convolution():
     # regression test for #68
-    beam1 = Beam(0.1*u.arcsec, 0.001*u.arcsec, 30*u.deg)
-    beam2 = Beam(0.3*u.arcsec, 0.001*u.arcsec, 120*u.deg)
+    beam1 = Beam((0.1*u.arcsec).to(u.deg), (0.00001*u.arcsec).to(u.deg), 30*u.deg)
+    beam2 = Beam((0.3*u.arcsec).to(u.deg), (0.00001*u.arcsec).to(u.deg), 120*u.deg)
     conv = beam1.convolve(beam2)
 
     np.testing.assert_almost_equal(conv.pa.to(u.deg).value, -60)

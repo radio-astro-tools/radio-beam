@@ -73,9 +73,9 @@ def deconvolve(beam, other, failure_returns_pointlike=False):
 
     # To deconvolve, the beam must satisfy:
     # alpha < 0
-    alpha_cond = alpha.value + np.finfo(alpha.dtype).eps < 0
+    alpha_cond = alpha.to(u.arcsec**2).value + np.finfo(alpha.dtype).eps < 0
     # beta < 0
-    beta_cond = beta.value + np.finfo(beta.dtype).eps < 0
+    beta_cond = beta.to(u.arcsec**2).value + np.finfo(beta.dtype).eps < 0
     # s < t
     st_cond = s < t + atol_t
 
