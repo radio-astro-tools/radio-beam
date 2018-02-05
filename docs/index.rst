@@ -26,7 +26,7 @@ Create a beam from scratch::
 
 Use a beam for Jy -> K conversion::
 
-    >>> (1*u.Jy).to(u.K, u.brightness_temperature(my_beam, 25*u.GHz))
+    >>> (1*u.Jy).to(u.K, u.brightness_temperature(my_beam, 25*u.GHz)) # doctest: +FLOAT_CMP
     <Quantity 7821.572919292681 K>
 
 Convolve with another beam::

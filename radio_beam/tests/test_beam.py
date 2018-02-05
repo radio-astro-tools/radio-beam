@@ -335,3 +335,11 @@ def test_from_aips_issue43():
     aips_hdr = fits.Header.fromtextfile(aips_fname)
     aips_beam_hdr = Beam.from_fits_header(aips_hdr)
     npt.assert_almost_equal(aips_beam_hdr.pa.value, -15.06)
+
+def test_small_beam_convolution():
+    # regression test for #68
+    beam1 = Beam((0.1*u.arcsec).to(u.deg), (0.00001*u.arcsec).to(u.deg), 30*u.deg)
+    beam2 = Beam((0.3*u.arcsec).to(u.deg), (0.00001*u.arcsec).to(u.deg), 120*u.deg)
+    conv = beam1.convolve(beam2)
+
+    np.testing.assert_almost_equal(conv.pa.to(u.deg).value, -60)
