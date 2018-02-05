@@ -284,10 +284,12 @@ def test_isfinite():
 
 
 @pytest.mark.parametrize(("major", "minor", "pa"),
-                           [(10, 10, 60),
-                            (10, 10, -120),
-                            (10, 10, -300),
-                            (10, 10, 240)])
+                         [(10, 10, 60),
+                          (10, 10, -120),
+                          (10, 10, -300),
+                          (10, 10, 240),
+                          (10, 10, 59),
+                          (10, 10, -121)])
 def test_beam_equal(major, minor, pa):
 
     beam1 = Beam(10 * u.deg, 10 * u.deg, 60 * u.deg)
@@ -299,10 +301,26 @@ def test_beam_equal(major, minor, pa):
 
 
 @pytest.mark.parametrize(("major", "minor", "pa"),
-                           [(10, 8, 60),
-                            (12, 10, 60),
-                            (10, 10, 59),
-                            (10, 10, -121)])
+                         [(10, 8, 60),
+                          (10, 8, -120),
+                          (10, 8, 240)])
+def test_beam_equal_noncirc(major, minor, pa):
+    '''
+    Beams with PA +/- 180 deg are equal
+    '''
+
+    beam1 = Beam(10 * u.deg, 8 * u.deg, 60 * u.deg)
+
+    beam2 = Beam(major * u.deg, minor * u.deg, pa * u.deg)
+
+    assert beam1 == beam2
+    assert not beam1 != beam2
+
+
+@pytest.mark.parametrize(("major", "minor", "pa"),
+                         [(10, 8, 60),
+                          (12, 10, 60),
+                          (12, 10, 59)])
 def test_beam_not_equal(major, minor, pa):
 
     beam1 = Beam(10 * u.deg, 10 * u.deg, 60 * u.deg)
@@ -317,3 +335,11 @@ def test_from_aips_issue43():
     aips_hdr = fits.Header.fromtextfile(aips_fname)
     aips_beam_hdr = Beam.from_fits_header(aips_hdr)
     npt.assert_almost_equal(aips_beam_hdr.pa.value, -15.06)
+
+def test_small_beam_convolution():
+    # regression test for #68
+    beam1 = Beam((0.1*u.arcsec).to(u.deg), (0.00001*u.arcsec).to(u.deg), 30*u.deg)
+    beam2 = Beam((0.3*u.arcsec).to(u.deg), (0.00001*u.arcsec).to(u.deg), 120*u.deg)
+    conv = beam1.convolve(beam2)
+
+    np.testing.assert_almost_equal(conv.pa.to(u.deg).value, -60)

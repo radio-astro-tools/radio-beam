@@ -386,7 +386,11 @@ class Beam(u.Quantity):
         this_pa = self.pa.to(u.deg) % (180.0 * u.deg)
         other_pa = other.pa.to(u.deg) % (180.0 * u.deg)
 
-        equal_pa = True if np.abs(this_pa - other_pa) < atol_deg else False
+        if self.iscircular():
+            equal_pa = True
+        else:
+            equal_pa = True if np.abs(this_pa - other_pa) < atol_deg else False
+
         equal_maj = np.abs(self.major - other.major) < atol_deg
         equal_min = np.abs(self.minor - other.minor) < atol_deg
 
@@ -421,6 +425,12 @@ class Beam(u.Quantity):
     def isfinite(self):
         return ((self.major > 0) & (self.minor > 0) & np.isfinite(self.major) &
                 np.isfinite(self.minor) & np.isfinite(self.pa))
+
+    def iscircular(self, rtol=1e-6):
+
+        frac_diff = (self.major - self.minor).to(u.deg) / self.major.to(u.deg)
+
+        return frac_diff <= rtol
 
     def beam_projected_area(self, distance):
         """
@@ -496,9 +506,11 @@ class Beam(u.Quantity):
         """
         from matplotlib.patches import Ellipse
         return Ellipse((xcen, ycen),
-                       width=self.major.to(u.deg).value / pixscale,
-                       height=self.minor.to(u.deg).value / pixscale,
-                       angle=self.pa.to(u.deg).value)
+                       width=(self.major.to(u.deg) / pixscale).to(u.dimensionless_unscaled).value,
+                       height=(self.minor.to(u.deg) / pixscale).to(u.dimensionless_unscaled).value,
+                       # PA is 90 deg offset from x-y axes by convention
+                       # (it is angle from NCP)
+                       angle=(self.pa+90*u.deg).to(u.deg).value)
 
     def as_kernel(self, pixscale, **kwargs):
         """
@@ -569,8 +581,13 @@ class Beam(u.Quantity):
         min_eff = gauss_to_top * self.minor.to(u.deg) / \
             (pixscale * SIGMA_TO_FWHM)
 
+        # position angle is defined as CCW from north
+        # "angle" is conventionally defined as CCW from "west".
+        # Therefore, add 90 degrees
+        angle = (90*u.deg+self.pa).to(u.radian).value,
+
         return EllipticalTophat2DKernel(maj_eff.value, min_eff.value,
-                                        self.pa.to(u.radian).value, **kwargs)
+                                        angle, **kwargs)
 
     def to_header_keywords(self):
         return {'BMAJ': self.major.to(u.deg).value,
