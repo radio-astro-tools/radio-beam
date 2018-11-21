@@ -12,6 +12,9 @@ except ImportError:
 from .beam import Beam
 from .utils import BeamError, transform_ellipse
 
+__all__ = ['commonbeam', 'common_2beams', 'getMinVolEllipse',
+           'common_manybeams_mve']
+
 
 def commonbeam(beams, method='pts', **method_kwargs):
     '''
