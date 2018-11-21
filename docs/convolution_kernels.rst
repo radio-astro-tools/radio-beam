@@ -31,7 +31,7 @@ Top-Hat
 
 `tophat_kern` is a `~radio_beam.beam.EllipticalTophat2DKernel` object, also derived from `Kernel2D <http://docs.astropy.org/en/stable/api/astropy.convolution.Kernel2D.html#astropy.convolution.Kernel2D>`__ in astropy's convolution package. Keyword arguments can be passed to `~radio_beam.Beam.as_tophat_kernel`.
 
-The values in the kernel are normalized to unity and is suitable for convolution.  However, the top-hat kernel is also useful for masking purposes, in which case a boolean version of the kernel is useful.  To make a boolean version, we need to access the array in the kernel object and look for non-zero values::
+The values in the kernel are normalized to unity, and it is suitable for convolution.  However, the top-hat kernel is also useful for masking purposes, in which case a boolean version of the kernel is useful.  To make a boolean version, we need to access the array in the kernel object and look for non-zero values::
 
     >>> tophat_kern_bool = tophat_kern.array > 0
 
