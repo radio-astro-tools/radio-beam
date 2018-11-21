@@ -745,12 +745,13 @@ class EllipticalTophat2DKernel(Kernel2D):
 
         import matplotlib.pyplot as plt
         from radio_beam import EllipticalTophat2DKernel
-        gaussian_2D_kernel = EllipticalTophat2DKernel(10, 5, np.pi/4)
+        tophat_2D_kernel = EllipticalTophat2DKernel(10, 5, np.pi/4)
         plt.imshow(tophat_2D_kernel, interpolation='none', origin='lower')
         plt.xlabel('x [pixels]')
         plt.ylabel('y [pixels]')
         plt.colorbar()
         plt.show()
+
     """
 
     _is_bool = True
