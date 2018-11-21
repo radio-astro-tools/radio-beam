@@ -52,6 +52,7 @@ class Beam(u.Quantity):
             Gaussian beam.
         default_unit : :class:`~astropy.units.Unit`
             The unit to impose on major, minor if they are specified as floats
+
         """
 
         # improve to some kwargs magic later
