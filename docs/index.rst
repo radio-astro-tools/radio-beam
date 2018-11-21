@@ -59,7 +59,7 @@ Find the largest beam in the set::
     >>> my_beams.largest_beam()
     Beam: BMAJ=1.3 arcsec BMIN=1.2 arcsec BPA=50.0 deg
 
-Find the smallest common beam for the set::
+Find the smallest common beam for the set (see :ref:`here <com_beam>` for more on common beams)::
 
     >>> my_beams.common_beam()  # doctest: +SKIP
     Beam: BMAJ=1.50671729431 arcsec BMIN=1.25695643792 arcsec BPA=6.69089813778 deg
@@ -71,3 +71,4 @@ Getting started
    :maxdepth: 1
 
    install.rst
+   commonbeam.rst
