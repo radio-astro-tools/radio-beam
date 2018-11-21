@@ -48,4 +48,3 @@ From a `~radio_beam.Beams` object, a convolution kernel can be made for each bea
     >>> beams = Beams.from_fits_bintable(bin_hdu)  # doctest: +SKIP
     >>> beams[0].as_kernel(pix_scale)  # doctest: +SKIP
 
-Kernels can be created for each individual beam in the set.
