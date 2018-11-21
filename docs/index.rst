@@ -68,7 +68,8 @@ Getting started
 ^^^^^^^^^^^^^^^
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    install.rst
    commonbeam.rst
+   convolution_kernels.rst
