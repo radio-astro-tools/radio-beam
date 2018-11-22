@@ -24,9 +24,10 @@ class NoBeamException(Exception):
 def _to_area(major,minor):
     return (major * minor * FWHM_TO_AREA).to(u.sr)
 
-unit_format = {u.deg: '\\circ',
+unit_format = {u.deg: r'\\circ',
                u.arcsec: "''",
                u.arcmin: "'"}
+
 
 class Beam(u.Quantity):
     """
@@ -595,7 +596,7 @@ class Beam(u.Quantity):
                 'BPA':  self.pa.to(u.deg).value,
                 }
 
-Beam.__doc__ = Beam.__doc__ + Beam.__new__.__doc__
+# Beam.__doc__ = Beam.__doc__ + Beam.__new__.__doc__
 
 def mywcs_to_platescale(mywcs):
     pix_area = wcs.utils.proj_plane_pixel_area(mywcs)
@@ -745,12 +746,13 @@ class EllipticalTophat2DKernel(Kernel2D):
 
         import matplotlib.pyplot as plt
         from radio_beam import EllipticalTophat2DKernel
-        gaussian_2D_kernel = EllipticalTophat2DKernel(10, 5, np.pi/4)
+        tophat_2D_kernel = EllipticalTophat2DKernel(10, 5, np.pi/4)
         plt.imshow(tophat_2D_kernel, interpolation='none', origin='lower')
         plt.xlabel('x [pixels]')
         plt.ylabel('y [pixels]')
         plt.colorbar()
         plt.show()
+
     """
 
     _is_bool = True

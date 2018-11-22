@@ -73,3 +73,4 @@ Getting started
    install.rst
    commonbeam.rst
    convolution_kernels.rst
+   api.rst
