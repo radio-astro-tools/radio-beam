@@ -23,9 +23,15 @@ class Beams(u.Quantity):
         Parameters
         ----------
         major : :class:`~astropy.units.Quantity` with angular equivalency
+            The FWHM major axes
         minor : :class:`~astropy.units.Quantity` with angular equivalency
+            The FWHM minor axes
         pa : :class:`~astropy.units.Quantity` with angular equivalency
+            The beam position angles
         area : :class:`~astropy.units.Quantity` with steradian equivalency
+            The area of the beams.  This is an alternative to specifying the
+            major/minor/PA, and will create those values assuming a circular
+            Gaussian beam.
         default_unit : :class:`~astropy.units.Unit`
             The unit to impose on major, minor if they are specified as floats
         """
