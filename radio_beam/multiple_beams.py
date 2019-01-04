@@ -114,7 +114,7 @@ class Beams(u.Quantity):
         return self.__getitem__(slice(start, stop, increment))
 
     def __getitem__(self, view):
-        if isinstance(view, int):
+        if isinstance(view, (int, np.int64)):
             return Beam(major=self.major[view],
                         minor=self.minor[view],
                         pa=self.pa[view],
