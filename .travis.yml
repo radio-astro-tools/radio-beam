@@ -35,12 +35,12 @@ env:
         - PIP_DEPENDENCIES=''
         - EVENT_TYPE='pull_request push'
 
-        
+
         # For this package-template, we include examples of Cython modules,
         # so Cython is required for testing. If your package does not include
         # Cython code, you can set CONDA_DEPENDENCIES=''
         - CONDA_DEPENDENCIES='Cython scipy'
-        
+
         # List other runtime dependencies for the package that are available as
         # pip packages here.
         # - PIP_DEPENDENCIES=''
@@ -97,13 +97,11 @@ matrix:
         # time.
 
         - os: linux
-          env: PYTHON_VERSION=2.7 NUMPY_VERSION=1.9
+          env: PYTHON_VERSION=3.5 NUMPY_VERSION=1.12
         - os: linux
-          env: PYTHON_VERSION=3.4 NUMPY_VERSION=1.10
+          env: PYTHON_VERSION=3.6 NUMPY_VERSION=1.13
         - os: linux
-          env: PYTHON_VERSION=3.5 NUMPY_VERSION=1.11
-        - os: linux
-          env: NUMPY_VERSION=1.12
+          env: NUMPY_VERSION=1.14
 
         # Try numpy pre-release
         - os: linux
