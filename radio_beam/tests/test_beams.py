@@ -79,6 +79,13 @@ def test_indexing():
     assert beams[3].minor.value == 2
     assert isinstance(beams[4], Beam)
 
+    # Also test int64
+    chan = np.int64(3)
+    assert hasattr(beams[chan], 'major')
+    assert beams[chan].major.value == 2
+    assert beams[chan].minor.value == 2
+    assert isinstance(beams[chan], Beam)
+
     mask = np.array([True, False, True, False, True, True], dtype='bool')
     assert hasattr(beams[mask], 'major')
     assert np.all(beams[mask].major.value == majors[mask].value)

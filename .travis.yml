@@ -35,12 +35,12 @@ env:
         - PIP_DEPENDENCIES=''
         - EVENT_TYPE='pull_request push'
 
-        
+
         # For this package-template, we include examples of Cython modules,
         # so Cython is required for testing. If your package does not include
         # Cython code, you can set CONDA_DEPENDENCIES=''
         - CONDA_DEPENDENCIES='Cython scipy'
-        
+
         # List other runtime dependencies for the package that are available as
         # pip packages here.
         # - PIP_DEPENDENCIES=''
@@ -97,13 +97,15 @@ matrix:
         # time.
 
         - os: linux
-          env: PYTHON_VERSION=2.7 NUMPY_VERSION=1.9
+          env: PYTHON_VERSION=3.5 NUMPY_VERSION=1.12
         - os: linux
-          env: PYTHON_VERSION=3.4 NUMPY_VERSION=1.10
+          env: PYTHON_VERSION=3.6 NUMPY_VERSION=1.13
         - os: linux
-          env: PYTHON_VERSION=3.5 NUMPY_VERSION=1.11
+          env: NUMPY_VERSION=1.14
+
+        # CASA 5.4.0 is using numpy 1.11.1. Try testing this version in py 2.7
         - os: linux
-          env: NUMPY_VERSION=1.12
+          env: PYTHON_VERSION=2.7 NUMPY_VERSION=1.11 ASTROPY_VERSION=lts
 
         # Try numpy pre-release
         - os: linux
@@ -111,14 +113,14 @@ matrix:
                EVENT_TYPE='pull_request push cron'
 
         # Do a PEP8 test with pycodestyle
-        - os: linux
-          env: MAIN_CMD='pycodestyle packagename --count' SETUP_CMD=''
+    #     - os: linux
+    #       env: MAIN_CMD='pycodestyle packagename --count' SETUP_CMD=''
 
-    allow_failures:
-        # Do a PEP8 test with pycodestyle
-        # (allow to fail unless your code completely compliant)
-        - os: linux
-          env: MAIN_CMD='pycodestyle packagename --count' SETUP_CMD=''
+    # allow_failures:
+    #     # Do a PEP8 test with pycodestyle
+    #     # (allow to fail unless your code completely compliant)
+    #     - os: linux
+    #       env: MAIN_CMD='pycodestyle packagename --count' SETUP_CMD=''
 
 install:
 
