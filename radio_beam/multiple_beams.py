@@ -144,7 +144,7 @@ class Beams(u.Quantity):
 
         if isinstance(obj, Beams):
             self.major = obj.major
-            self.minajor = obj.minor
+            self.minor = obj.minor
             self.pa = obj.pa
             self.meta = obj.meta
 
