@@ -143,10 +143,17 @@ class Beams(u.Quantity):
                 self._set_unit(unit)
 
         if isinstance(obj, Beams):
-            self.major = obj.major
-            self.minor = obj.minor
+            # Multiplication and division should change the area,
+            # but not the PA or major/minor ratio
+            sqrt_ratios = np.sqrt(obj.sr / self.sr)
+
+            self.major = sqrt_ratios * obj.major
+            self.minor = sqrt_ratios * obj.minor
+
             self.pa = obj.pa
             self.meta = obj.meta
+
+            self.sr = obj.sr
 
         # Copy info if the original had `info` defined.  Because of the way the
         # DataInfo works, `'info' in obj.__dict__` is False until the
