@@ -91,6 +91,20 @@ def test_indexing():
     assert np.all(beams[mask].major.value == majors[mask].value)
 
 
+# Arithmetic like this only works for circular beams
+# Keep commented out for now.
+# def test_beams_arithmetic():
+
+#     beams, majors = symm_beams_for_tests()[:2]
+
+#     areas = 2 * np.pi / (8 * np.log(2)) * (majors.to(u.rad)**2).to(u.sr)
+
+#     new_beams = beams * 2
+
+#     assert np.all(areas.value == beams.sr.value)
+#     assert np.all(beams.value == beams.sr.value)
+
+
 def test_average_beams():
 
     beams, majors = symm_beams_for_tests()[:2]
