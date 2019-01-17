@@ -9,6 +9,7 @@ import pytest
 from ..multiple_beams import Beams
 from ..beam import Beam
 from ..commonbeam import common_2beams, common_manybeams_mve
+from ..utils import InvalidBeamOperationError
 
 from .test_beam import data_path
 
@@ -62,6 +63,97 @@ def test_beams_from_fits_bintable():
     assert (beams.pa.value == bintable.data['BPA']).all()
 
 
+def test_beams_from_list_of_beam():
+
+    beams, majors = symm_beams_for_tests()[:2]
+
+    new_beams = Beams(beams=[beam for beam in beams])
+
+    assert beams == new_beams
+
+
+def test_beams_equality_beams():
+
+    beams, majors = symm_beams_for_tests()[:2]
+
+    assert beams == beams
+
+    assert not beams != beams
+
+    abeams, amajors = asymm_beams_for_tests()[:2]
+
+    assert not (beams == abeams)
+
+    assert beams != abeams
+
+
+def test_beams_equality_beam():
+
+    # Test whether all are equal to a single beam
+    beams = Beams([1.] * 5 * u.arcsec)
+
+    beam = Beam(1 * u.arcsec)
+
+    assert np.all(beams == beam)
+
+    assert not np.any(beams != beam)
+
+
+@pytest.mark.xfail(raises=InvalidBeamOperationError, strict=True)
+def test_beams_equality_fail():
+
+    # Test whether all are equal to a single beam
+    beams = Beams([1.] * 5 * u.arcsec)
+
+    beams == 2
+
+
+@pytest.mark.xfail(raises=InvalidBeamOperationError, strict=True)
+def test_beams_notequality_fail():
+
+    # Test whether all are equal to a single beam
+    beams = Beams([1.] * 5 * u.arcsec)
+
+    beams != 2
+
+
+@pytest.mark.xfail(raises=InvalidBeamOperationError, strict=True)
+def test_beams_equality_fail_shape():
+
+    # Test whether all are equal to a single beam
+    beams = Beams([1.] * 5 * u.arcsec)
+
+    assert np.all(beams == beams[1:])
+
+
+def test_beams_mult_convolution():
+
+    beams, majors = asymm_beams_for_tests()[:2]
+
+    beam = Beam(1 * u.arcsec)
+
+    conv_beams = beams * beam
+
+    individ_conv_beams = [beam_i.convolve(beam) for beam_i in beams]
+    new_beams = Beams(beams=individ_conv_beams)
+
+    assert conv_beams == new_beams
+
+
+def test_beams_div_deconvolution():
+
+    beams, majors = asymm_beams_for_tests()[:2]
+
+    beam = Beam(0.25 * u.arcsec)
+
+    deconv_beams = beams / beam
+
+    individ_deconv_beams = [beam_i.deconvolve(beam) for beam_i in beams]
+    new_beams = Beams(beams=individ_deconv_beams)
+
+    assert deconv_beams == new_beams
+
+
 def test_indexing():
 
     beams, majors = symm_beams_for_tests()[:2]
@@ -91,20 +183,10 @@ def test_indexing():
     assert np.all(beams[mask].major.value == majors[mask].value)
 
 
-# Arithmetic like this only works for circular beams
-# Keep commented out for now.
-def test_beams_arithmetic():
+# def test_beams_mult_convolution():
 
-    beams, majors = symm_beams_for_tests()[:2]
+#     beams, majors = symm_beams_for_tests()[:2]
 
-    new_beams = beams * 2
-
-    assert np.all(new_beams.sr.value == 2 * beams.sr.value)
-
-    sqrt_2 = np.sqrt(2)
-    # Major and minor axes should be sqrt(2) larger
-    assert np.all(new_beams.major.value == sqrt_2 * beams.major.value)
-    assert np.all(new_beams.minor.value == sqrt_2 * beams.minor.value)
 
 
 def test_average_beams():
