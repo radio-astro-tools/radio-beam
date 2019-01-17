@@ -218,12 +218,6 @@ def test_indexing():
     assert np.all(beams[mask].major.value == majors[mask].value)
 
 
-# def test_beams_mult_convolution():
-
-#     beams, majors = symm_beams_for_tests()[:2]
-
-
-
 def test_average_beams():
 
     beams, majors = symm_beams_for_tests()[:2]
