@@ -358,7 +358,7 @@ class Beams(u.Quantity):
                                             " with a given beam. Must be "
                                             "divided by a Beam object.")
 
-        return Beams(beams=[beam - other for beam in self])
+        return Beams(beams=[beam / other for beam in self])
 
     def __add__(self, other):
         raise InvalidBeamOperationError("Addition of a set of Beams "
