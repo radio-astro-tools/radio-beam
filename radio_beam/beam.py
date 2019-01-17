@@ -12,7 +12,7 @@ from astropy.modeling.models import Ellipse2D, Gaussian2D
 from astropy.convolution import Kernel2D
 from astropy.convolution.kernels import _round_up_to_odd_integer
 
-from .utils import deconvolve, convolve
+from .utils import deconvolve, convolve, RadioBeamDeprecationWarning
 
 # Conversion between a twod Gaussian FWHM**2 and effective area
 FWHM_TO_AREA = 2*np.pi/(8*np.log(2))
@@ -346,6 +346,9 @@ class Beam(u.Quantity):
 
     # Does division do the same? Or what? Doesn't have to be defined.
     def __sub__(self, other):
+        warnings.warn("Subtraction-as-deconvolution is deprecated. "
+                      "Use division instead.",
+                      RadioBeamDeprecationWarning)
         return self.deconvolve(other)
 
     def __truediv__(self, other):
