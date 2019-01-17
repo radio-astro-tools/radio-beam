@@ -6,6 +6,7 @@ from ..beam import Beam
 from astropy.io import fits
 from astropy import units as u
 import os
+import warnings
 import numpy as np
 import numpy.testing as npt
 from astropy.tests.helper import assert_quantity_allclose
@@ -16,6 +17,9 @@ try:
     HAS_CASA = True
 except ImportError:
     HAS_CASA = False
+
+from ..utils import RadioBeamDeprecationWarning
+
 
 data_dir = os.path.join(os.path.dirname(__file__), 'data')
 
@@ -244,8 +248,20 @@ def test_conv_deconv():
     assert beam1.convolve(beam2) == beam2.convolve(beam1)
 
     # Test multiplication and subtraction (i.e., convolution and deconvolution)
-    assert beam2 == beam3 - beam1
-    assert beam1 == beam3 - beam2
+    # subtraction-as-deconvolution is deprecated. Check that one of the gives
+    # the warning
+
+    with warnings.catch_warnings(record=True) as w:
+        assert beam2 == beam3 - beam1
+
+    assert len(w) == 1
+    assert w[0].category == RadioBeamDeprecationWarning
+    assert str(w[0].message) == ("Subtraction-as-deconvolution is deprecated. "
+                                 "Use division instead.")
+
+    # Dividing should give the same thing
+    assert beam2 == beam3 / beam1
+    assert beam1 == beam3 / beam2
 
     assert beam3 == beam1 * beam2
 

@@ -1,5 +1,8 @@
 0.3 (unreleased)
 ----------------
+ - Set mult/div for convolution/deconvolution in `Beam` and `Beams`.
+   The `==` and `!=` operators also work with `Beams` now.
+   (https://github.com/radio-astro-tools/radio-beam/pull/75)
  - Added common beam operations to `Beams`.
    (https://github.com/radio-astro-tools/radio-beam/pull/67)
  - Fix PA usage for plotting and kernel routines.
