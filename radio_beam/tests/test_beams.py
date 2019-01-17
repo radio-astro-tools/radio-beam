@@ -125,6 +125,41 @@ def test_beams_equality_fail_shape():
 
     assert np.all(beams == beams[1:])
 
+@pytest.mark.xfail(raises=InvalidBeamOperationError, strict=True)
+def test_beams_add_fail():
+
+    # Test whether all are equal to a single beam
+    beams = Beams([1.] * 5 * u.arcsec)
+
+    beams + 2
+
+
+@pytest.mark.xfail(raises=InvalidBeamOperationError, strict=True)
+def test_beams_sub_fail():
+
+    # Test whether all are equal to a single beam
+    beams = Beams([1.] * 5 * u.arcsec)
+
+    beams - 2
+
+
+@pytest.mark.xfail(raises=InvalidBeamOperationError, strict=True)
+def test_beams_mult_fail():
+
+    # Test whether all are equal to a single beam
+    beams = Beams([1.] * 5 * u.arcsec)
+
+    beams * 2
+
+
+@pytest.mark.xfail(raises=InvalidBeamOperationError, strict=True)
+def test_beams_div_fail():
+
+    # Test whether all are equal to a single beam
+    beams = Beams([1.] * 5 * u.arcsec)
+
+    beams / 2
+
 
 def test_beams_mult_convolution():
 
