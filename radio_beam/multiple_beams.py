@@ -349,7 +349,7 @@ class Beams(u.Quantity):
 
         return Beams(beams=[beam * other for beam in self])
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         # Other must be a single beam. Assume dividing is deconvolving
         # as set of beams with a given beam
         if not isinstance(other, Beam):
