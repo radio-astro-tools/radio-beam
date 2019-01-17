@@ -247,6 +247,10 @@ def test_conv_deconv():
     assert beam2 == beam3 - beam1
     assert beam1 == beam3 - beam2
 
+    # Dividing should give the same thing
+    assert beam2 == beam3 / beam1
+    assert beam1 == beam3 / beam2
+
     assert beam3 == beam1 * beam2
 
 

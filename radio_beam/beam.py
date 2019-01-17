@@ -348,6 +348,9 @@ class Beam(u.Quantity):
     def __sub__(self, other):
         return self.deconvolve(other)
 
+    def __truediv__(self, other):
+        return self.deconvolve(other)
+
     def deconvolve(self, other, failure_returns_pointlike=False):
         """
         Deconvolve a beam from another
