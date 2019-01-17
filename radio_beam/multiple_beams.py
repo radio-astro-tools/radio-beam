@@ -8,6 +8,7 @@ import warnings
 
 from .beam import Beam, _to_area, SIGMA_TO_FWHM
 from .commonbeam import commonbeam
+from .utils import InvalidBeamOperationError
 
 
 class Beams(u.Quantity):
@@ -16,7 +17,8 @@ class Beams(u.Quantity):
     """
 
     def __new__(cls, major=None, minor=None, pa=None,
-                areas=None, default_unit=u.arcsec, meta=None):
+                areas=None, default_unit=u.arcsec, meta=None,
+                beams=None):
         """
         Create a new set of Gaussian beams
 
@@ -34,11 +36,19 @@ class Beams(u.Quantity):
             Gaussian beam.
         default_unit : :class:`~astropy.units.Unit`
             The unit to impose on major, minor if they are specified as floats
+        beams : List of :class:`~radio_beam.Beam` objects
+            List of individual `Beam` objects. The resulting `Beams` object will
+            have major and minor axes in degrees.
         """
 
         # improve to some kwargs magic later
 
         # error checking
+
+        if beams is not None:
+            major = [beam.major.to(u.deg).value for beam in beams] * u.deg
+            minor = [beam.major.to(u.deg).value for beam in beams] * u.deg
+            pa = [beam.pa.to(u.deg).value for beam in beams] * u.deg
 
         # ... given an area make a round beam assuming it is Gaussian
         if areas is not None:
@@ -145,15 +155,10 @@ class Beams(u.Quantity):
         if isinstance(obj, Beams):
             # Multiplication and division should change the area,
             # but not the PA or major/minor ratio
-            sqrt_ratios = np.sqrt(obj.sr / self.sr)
-
-            self.major = sqrt_ratios * obj.major
-            self.minor = sqrt_ratios * obj.minor
-
+            self.major = obj.major
+            self.minor = obj.minor
             self.pa = obj.pa
             self.meta = obj.meta
-
-            self.sr = obj.sr
 
         # Copy info if the original had `info` defined.  Because of the way the
         # DataInfo works, `'info' in obj.__dict__` is False until the
@@ -332,3 +337,60 @@ class Beams(u.Quantity):
     def __iter__(self):
         for i in range(len(self)):
             yield self[i]
+
+    def __mul__(self, other):
+        # Other must be a single beam. Assume multiplying is convolving
+        # as set of beams with a given beam
+        if not isinstance(other, Beam):
+            raise InvalidBeamOperationError("Multiplication is defined as a "
+                                            "convolution of the set of beams "
+                                            "with a given beam. Must be "
+                                            "multiplied with a Beam object.")
+
+        return Beams(beams=[beam * other for beam in self])
+
+    def __div__(self, other):
+        # Other must be a single beam. Assume dividing is deconvolving
+        # as set of beams with a given beam
+        if not isinstance(other, Beam):
+            raise InvalidBeamOperationError("Division is defined as a "
+                                            "deconvolution of the set of beams"
+                                            " with a given beam. Must be "
+                                            "divided by a Beam object.")
+
+        return Beams(beams=[beam - other for beam in self])
+
+    def __add__(self, other):
+        raise InvalidBeamOperationError("Addition of a set of Beams "
+                                        "is not defined.")
+
+    def __sub__(self, other):
+        raise InvalidBeamOperationError("Addition of a set of Beams "
+                                        "is not defined.")
+
+    def __eq__(self, other):
+        # other should be a single beam, or a another Beams object
+        if isinstance(other, Beam):
+            return np.array([beam == other for beam in self])
+        elif isinstance(other, Beams):
+            # These should have the same size.
+            if not self.size == other.size:
+                raise InvalidBeamOperationError("Beams objects must have the "
+                                                "same shape to test "
+                                                "equality.")
+
+            return np.all([beam == other_beam for beam, other_beam in
+                           zip(self, other)])
+        else:
+            raise InvalidBeamOperationError("Must test equality with a Beam"
+                                            " or Beams object.")
+
+    def __ne__(self, other):
+        eq_out = self.__eq__(other)
+
+        # If other is a Beam, will get array back
+        if isinstance(eq_out, np.ndarray):
+            return ~eq_out
+        # If other is a Beams, will get boolean back
+        else:
+            return not eq_out

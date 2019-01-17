@@ -8,6 +8,10 @@ class BeamError(Exception):
     pass
 
 
+class InvalidBeamOperationError(Exception):
+    pass
+
+
 def deconvolve(beam, other, failure_returns_pointlike=False):
     """
     Deconvolve a beam from another
