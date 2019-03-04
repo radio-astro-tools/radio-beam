@@ -1,9 +1,8 @@
+import six
 from astropy import units as u
 from astropy.io import fits
 from astropy import constants
-import astropy.units as u
 from astropy import wcs
-from astropy.extern import six
 import numpy as np
 import warnings
 
