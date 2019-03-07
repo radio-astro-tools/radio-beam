@@ -359,3 +359,15 @@ def test_small_beam_convolution():
     conv = beam1.convolve(beam2)
 
     np.testing.assert_almost_equal(conv.pa.to(u.deg).value, -60)
+
+def test_major_minor_swap():
+
+    with warnings.catch_warnings(record=True) as w:
+        beam1 = Beam(minor=10. * u.arcsec, major=5. * u.arcsec,
+                     pa=30. * u.deg)
+
+    assert beam1.major == 10*u.arcsec
+    assert beam1.minor == 5*u.arcsec
+
+    assert len(w) == 1
+    assert str(w[0].message) == ("Minor was greater than major.  They are being swapped.")
