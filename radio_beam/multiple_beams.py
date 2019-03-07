@@ -87,6 +87,11 @@ class Beams(u.Quantity):
         elif len(minor) != len(major):
             raise ValueError("Minor and major axes must have same number of values")
 
+        if np.any(minor > major):
+            warnings.warn("Found minor axis greater than major axis.  Swapping them appropriately.")
+            bad = minor > major
+            minor[bad], major[bad] = major[bad], minor[bad]
+
         self = super(Beams, cls).__new__(cls, value=_to_area(major, minor).value, unit=u.sr)
         self.major = major
         self.minor = minor
