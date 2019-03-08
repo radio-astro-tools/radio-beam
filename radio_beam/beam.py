@@ -96,8 +96,7 @@ class Beam(u.Quantity):
             minor = major
 
         if minor > major:
-            warnings.warn("Minor was greater than major.  They are being swapped.")
-            minor,major = major,minor
+            raise ValueError("Minor was greater than major.")
 
         self = super(Beam, cls).__new__(cls, _to_area(major,minor).value, u.sr)
         self._major = major
