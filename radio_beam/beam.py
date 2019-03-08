@@ -96,7 +96,7 @@ class Beam(u.Quantity):
             minor = major
 
         if minor > major:
-            raise ValueError("Minor was greater than major.")
+            raise ValueError("Minor axis greater than major axis.")
 
         self = super(Beam, cls).__new__(cls, _to_area(major,minor).value, u.sr)
         self._major = major

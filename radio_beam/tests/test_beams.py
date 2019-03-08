@@ -591,13 +591,9 @@ def test_catch_common_beam_opt():
 
 def test_major_minor_swap():
 
-    with warnings.catch_warnings(record=True) as w:
+    with pytest.raises(ValueError) as exc:
         beams = Beams(minor=[10.,5.] * u.arcsec,
                       major=[5., 5.] * u.arcsec,
                       pa=[30., 60.] * u.deg)
 
-    assert np.all(beams.major == [10,5]*u.arcsec)
-    assert np.all(beams.minor == [5,5]*u.arcsec)
-
-    assert len(w) == 1
-    assert str(w[0].message) == ("Found minor axis greater than major axis.  Swapping them appropriately.")
+    assert "Minor axis greater than major axis." in exc.value.args[0]

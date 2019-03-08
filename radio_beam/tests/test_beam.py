@@ -290,9 +290,10 @@ def test_isfinite():
 
     assert beam1.isfinite
 
-    beam2 = Beam(-10. * u.arcsec, 5. * u.arcsec, 30. * u.deg)
+    # raises an exception because major < minor
+    #beam2 = Beam(-10. * u.arcsec, 5. * u.arcsec, 30. * u.deg)
 
-    assert not beam2.isfinite
+    #assert not beam2.isfinite
 
     beam3 = Beam(10. * u.arcsec, -5. * u.arcsec, 30. * u.deg)
 
@@ -362,12 +363,8 @@ def test_small_beam_convolution():
 
 def test_major_minor_swap():
 
-    with warnings.catch_warnings(record=True) as w:
+    with pytest.raises(ValueError) as exc:
         beam1 = Beam(minor=10. * u.arcsec, major=5. * u.arcsec,
                      pa=30. * u.deg)
 
-    assert beam1.major == 10*u.arcsec
-    assert beam1.minor == 5*u.arcsec
-
-    assert len(w) == 1
-    assert str(w[0].message) == ("Minor was greater than major.  They are being swapped.")
+    assert "Minor axis greater than major axis." in exc.value.args[0]
