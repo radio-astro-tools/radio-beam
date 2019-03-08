@@ -1,3 +1,7 @@
+0.3.2 (unreleased)
+------------------
+ - none yet
+
 0.3.1 (2019-02-20)
 ------------------
  - Set mult/div for convolution/deconvolution in `Beam` and `Beams`.

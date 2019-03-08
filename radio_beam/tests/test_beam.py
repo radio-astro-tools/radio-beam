@@ -290,9 +290,10 @@ def test_isfinite():
 
     assert beam1.isfinite
 
-    beam2 = Beam(-10. * u.arcsec, 5. * u.arcsec, 30. * u.deg)
+    # raises an exception because major < minor
+    #beam2 = Beam(-10. * u.arcsec, 5. * u.arcsec, 30. * u.deg)
 
-    assert not beam2.isfinite
+    #assert not beam2.isfinite
 
     beam3 = Beam(10. * u.arcsec, -5. * u.arcsec, 30. * u.deg)
 
@@ -359,3 +360,11 @@ def test_small_beam_convolution():
     conv = beam1.convolve(beam2)
 
     np.testing.assert_almost_equal(conv.pa.to(u.deg).value, -60)
+
+def test_major_minor_swap():
+
+    with pytest.raises(ValueError) as exc:
+        beam1 = Beam(minor=10. * u.arcsec, major=5. * u.arcsec,
+                     pa=30. * u.deg)
+
+    assert "Minor axis greater than major axis." in exc.value.args[0]

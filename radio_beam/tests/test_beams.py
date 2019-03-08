@@ -4,6 +4,7 @@ import numpy.testing as npt
 from astropy import units as u
 from astropy.io import fits
 
+import warnings 
 import pytest
 
 from ..multiple_beams import Beams
@@ -587,3 +588,12 @@ def test_catch_common_beam_opt():
 
     with pytest.raises(NotImplementedError):
         beams.common_beam(method='opt')
+
+def test_major_minor_swap():
+
+    with pytest.raises(ValueError) as exc:
+        beams = Beams(minor=[10.,5.] * u.arcsec,
+                      major=[5., 5.] * u.arcsec,
+                      pa=[30., 60.] * u.deg)
+
+    assert "Minor axis greater than major axis." in exc.value.args[0]
