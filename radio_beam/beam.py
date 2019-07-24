@@ -1,9 +1,8 @@
+import six
 from astropy import units as u
 from astropy.io import fits
 from astropy import constants
-import astropy.units as u
 from astropy import wcs
-from astropy.extern import six
 import numpy as np
 import warnings
 
@@ -94,6 +93,9 @@ class Beam(u.Quantity):
         # some sensible defaults
         if minor is None:
             minor = major
+
+        if minor > major:
+            raise ValueError("Minor axis greater than major axis.")
 
         self = super(Beam, cls).__new__(cls, _to_area(major,minor).value, u.sr)
         self._major = major

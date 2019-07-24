@@ -1,8 +1,8 @@
+import  six
 from astropy import units as u
 from astropy.io import fits
 from astropy import constants
 from astropy import wcs
-from astropy.extern import six
 import numpy as np
 import warnings
 
@@ -86,6 +86,9 @@ class Beams(u.Quantity):
             minor = major
         elif len(minor) != len(major):
             raise ValueError("Minor and major axes must have same number of values")
+
+        if np.any(minor > major):
+            raise ValueError("Minor axis greater than major axis.")
 
         self = super(Beams, cls).__new__(cls, value=_to_area(major, minor).value, unit=u.sr)
         self.major = major

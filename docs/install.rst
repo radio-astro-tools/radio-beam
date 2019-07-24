@@ -9,6 +9,7 @@ This package has the following dependencies:
 * `Python <http://www.python.org>`_ 2.7 or later (Python 3.x is supported)
 * `Numpy <http://www.numpy.org>`_ 1.8 or later
 * `Astropy <http://www.astropy.org>`__ 1.0 or later
+* `six <http://pypi.python.org/pypi/six/>`__
 
 Installation
 ------------
@@ -57,4 +58,3 @@ Now, quit CASA and re-open it, then type the following to install ``radio-beam``
     CASA <1>: import pip
 
     CASA <2>: pip.main(['install', 'radio-beam', '--user'])
-
