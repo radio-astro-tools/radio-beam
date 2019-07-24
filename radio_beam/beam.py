@@ -470,7 +470,11 @@ class Beam(u.Quantity):
             raise TypeError("freq must be a Quantity object. "
                             "Try 'freq*u.Hz' or another equivalent unit.")
 
-        return u.brightness_temperature(beam_area=self.sr, frequency=freq)
+        try:
+            return u.brightness_temperature(beam_area=self.sr, frequency=freq)
+        except TypeError:
+            # old astropy used ordered arguments
+            return u.brightness_temperature(self.sr, freq)
 
     def jtok(self, freq, value=1.0*u.Jy):
         """
