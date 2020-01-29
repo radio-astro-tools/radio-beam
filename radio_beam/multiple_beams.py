@@ -1,4 +1,4 @@
-import  six
+
 from astropy import units as u
 from astropy.io import fits
 from astropy import constants
