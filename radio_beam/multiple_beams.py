@@ -47,7 +47,7 @@ class Beams(u.Quantity):
 
         if beams is not None:
             major = [beam.major.to(u.deg).value for beam in beams] * u.deg
-            minor = [beam.major.to(u.deg).value for beam in beams] * u.deg
+            minor = [beam.minor.to(u.deg).value for beam in beams] * u.deg
             pa = [beam.pa.to(u.deg).value for beam in beams] * u.deg
 
         # ... given an area make a round beam assuming it is Gaussian

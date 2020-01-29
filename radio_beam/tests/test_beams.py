@@ -72,6 +72,10 @@ def test_beams_from_list_of_beam():
 
     assert beams == new_beams
 
+    abeams = asymm_beams_for_tests()[0]
+    new_abeams = Beams(beams=[beam for beam in abeams])
+    assert abeams == new_abeams
+
 
 def test_beams_equality_beams():
 
