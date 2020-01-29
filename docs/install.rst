@@ -1,4 +1,4 @@
-Installing ``spectral-cube``
+Installing ``radio-beam``
 ============================
 
 Requirements
