@@ -214,9 +214,13 @@ class Beams(u.Quantity):
         '''
 
         try:
-            import casac
+            from casatools import image as iatool
+
+            ia = iatool()
+
         except ImportError:
-            raise ImportError("Could not import CASA (casac) and therefore"
+
+            raise ImportError("Could not import CASA and therefore"
                               " cannot read CASA .image files")
 
         ia.open(imagename)
