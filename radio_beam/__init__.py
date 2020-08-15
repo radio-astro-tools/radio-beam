@@ -1,17 +1,12 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
-"""
-This is an Astropy affiliated package.
-"""
+from ._astropy_init import __version__, test
 
-# Affiliated packages may add whatever they like to this file, but
-# should keep this content at the top.
-# ----------------------------------------------------------------------------
-from ._astropy_init import *
-# ----------------------------------------------------------------------------
+from pkg_resources import get_distribution, DistributionNotFound
 
-# For egg_info test builds to pass, put package imports here.
-if not _ASTROPY_SETUP_:
-    from .beam import Beam, EllipticalGaussian2DKernel, \
-        EllipticalTophat2DKernel
-    from .multiple_beams import Beams
+from .beam import (Beam, EllipticalGaussian2DKernel,
+                   EllipticalTophat2DKernel)
+from .multiple_beams import Beams
+
+__all__ = ['Beam', 'EllipticalTophat2DKernel',
+           'EllipticalGaussian2DKernel', 'Beams']
