@@ -43,7 +43,7 @@ def commonbeam(beams, method='pts', **method_kwargs):
             raise ValueError("method must be 'pts' or 'opt'.")
 
 
-def common_2beams(beams):
+def common_2beams(beams, check_deconvolution=True):
     '''
     Find a common beam from a `Beams` object with 2 beams. This
     function is based on the CASA implementation `ia.commonbeam`. Note that
@@ -84,8 +84,7 @@ def common_2beams(beams):
     if small_beam == large_beam:
         return large_beam
 
-    deconv_beam = \
-        large_beam.deconvolve(small_beam, failure_returns_pointlike=True)
+    deconv_beam = large_beam.deconvolve(small_beam, failure_returns_pointlike=True)
 
     # Larger beam can be deconvolved. It is already the smallest common beam
     if deconv_beam.isfinite:
@@ -146,16 +145,17 @@ def common_2beams(beams):
                           minor=trans_minor + epsilon,
                           pa=trans_pa)
 
-        # Ensure this beam can now be deconvolved
-        deconv_large_beam = \
-            trans_beam.deconvolve(large_beam,
-                                  failure_returns_pointlike=True)
-        deconv_prob_beam = \
-            trans_beam.deconvolve(small_beam,
-                                  failure_returns_pointlike=True)
-        if not deconv_large_beam.isfinite or not deconv_prob_beam.isfinite:
-            raise BeamError("Failed to find common beam that both beams can "
-                            "be deconvolved by.")
+        if check_deconvolution:
+            # Ensure this beam can now be deconvolved
+            deconv_large_beam = \
+                trans_beam.deconvolve(large_beam,
+                                    failure_returns_pointlike=True)
+            deconv_prob_beam = \
+                trans_beam.deconvolve(small_beam,
+                                    failure_returns_pointlike=True)
+            if not deconv_large_beam.isfinite or not deconv_prob_beam.isfinite:
+                raise BeamError("Failed to find common beam that both beams can "
+                                "be deconvolved by.")
 
         # Taken from CASA implementation, but by adding epsilon, this shouldn't
         # be needed
