@@ -1,6 +1,18 @@
 # this contains imports plugins that configure py.test for astropy tests.
 # by importing them here in conftest.py they are discoverable by py.test
 # no matter how it is invoked within the source tree.
+from __future__ import print_function, absolute_import, division
+
+import os
+from distutils.version import LooseVersion
+
+# Import casatools and casatasks here if available as they can otherwise
+# cause a segfault if imported later on during tests.
+try:
+    import casatools
+    import casatasks
+except ImportError:
+    pass
 
 from astropy.version import version as astropy_version
 if astropy_version < '3.0':
@@ -15,6 +27,7 @@ else:
     from astropy.tests.plugins.display import PYTEST_HEADER_MODULES, TESTED_VERSIONS
 
 from astropy.tests.helper import enable_deprecations_as_exceptions
+
 ## Uncomment the following line to treat all DeprecationWarnings as
 ## exceptions
 # enable_deprecations_as_exceptions()
