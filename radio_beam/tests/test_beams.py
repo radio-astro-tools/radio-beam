@@ -548,8 +548,8 @@ def test_commonbeam_multiple(beams, target_beam):
     npt.assert_almost_equal(common_beam.minor.to(u.arcsec).value,
                             target_beam.minor.value,
                             decimal=6)
-    npt.assert_almost_equal(common_beam.pa.to(u.deg).value,
-                            target_beam.pa.value, decimal=6)
+    npt.assert_allclose(common_beam.pa.to(u.deg).value,
+                        target_beam.pa.value, rtol=1e-3)
 
 
 @pytest.mark.parametrize(("beams", "target_beam"), casa_commonbeam_suite())
