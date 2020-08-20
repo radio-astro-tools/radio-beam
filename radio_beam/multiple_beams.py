@@ -329,6 +329,26 @@ class Beams(u.Quantity):
         where the convex hull of the set of ellipse edges is used to find the
         boundaries of the set.
 
+        Since the minimum ellipse method is approximate, some solutions for
+        the common beam will be slightly underestimated and the solution
+        cannot be deconvolved from the whole set of beams. To overcome
+        this issue, a small `epsilon` correction factor is added to the
+        ellipse edges to encourage a valid common beam solution.
+        Since `epsilon` is added to all sides, this correction will at most
+        increase the common beam size by :math:`2\times(1+\epsilon)`.
+        The default values of `epsilon` is :math:`5\times10^{-4}`, so this
+        will have a very small effect on the size of the common beam.
+
+        In some cases, `epsilon` must be increased to find a valid common
+        beam solution. The algorithm does this by default
+        (set by `auto_increase_epsilon=True`), and will incrementally
+        increase `epsilon` until the common beam can be deconvolved from
+        all beams, or until either(1) `max_iter` is reached (default is 10)
+        or (2) `max_epsilon` is reached (default is 1e-3). In practice, we
+        find these settings work well for different ALMA or VLA data, but
+        these `kwargs` may need to be changed for discrepant cases.
+
+
         Parameters
         ----------
         includemask : `~numpy.ndarray`, optional
