@@ -629,8 +629,18 @@ def test_common_beam_mve_auto_increase_epsilon():
     with pytest.raises(BeamError, match=err_str):
 
         com_beam = beams.common_beam(method='pts',
-                                     epsilon=1e-4,
+                                     epsilon=5e-4,
                                      auto_increase_epsilon=False)
+
+    # Force running into the max iteration of epsilon increases.
+    err_str = 'Could not increase epsilon to find common beam.'
+    with pytest.raises(BeamError, match=err_str):
+
+        com_beam = beams.common_beam(method='pts',
+                                     epsilon=5e-4,
+                                     max_iter=2,
+                                     max_epsilon=6e-4,
+                                     auto_increase_epsilon=True)
 
     # Should run when epsilon is allowed to increase a bit.
     com_beam = beams.common_beam(method='pts',
