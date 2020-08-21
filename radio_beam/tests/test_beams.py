@@ -4,13 +4,13 @@ import numpy.testing as npt
 from astropy import units as u
 from astropy.io import fits
 
-import warnings 
+import warnings
 import pytest
 
 from ..multiple_beams import Beams
 from ..beam import Beam
 from ..commonbeam import common_2beams, common_manybeams_mve
-from ..utils import InvalidBeamOperationError
+from ..utils import InvalidBeamOperationError, BeamError
 
 from .test_beam import data_path
 
@@ -548,8 +548,8 @@ def test_commonbeam_multiple(beams, target_beam):
     npt.assert_almost_equal(common_beam.minor.to(u.arcsec).value,
                             target_beam.minor.value,
                             decimal=6)
-    npt.assert_almost_equal(common_beam.pa.to(u.deg).value,
-                            target_beam.pa.value, decimal=6)
+    npt.assert_allclose(common_beam.pa.to(u.deg).value,
+                        target_beam.pa.value, rtol=1e-3)
 
 
 @pytest.mark.parametrize(("beams", "target_beam"), casa_commonbeam_suite())
@@ -593,6 +593,7 @@ def test_catch_common_beam_opt():
     with pytest.raises(NotImplementedError):
         beams.common_beam(method='opt')
 
+
 def test_major_minor_swap():
 
     with pytest.raises(ValueError) as exc:
@@ -601,3 +602,48 @@ def test_major_minor_swap():
                       pa=[30., 60.] * u.deg)
 
     assert "Minor axis greater than major axis." in exc.value.args[0]
+
+
+def test_common_beam_mve_auto_increase_epsilon():
+    '''
+    Here's a case where the default MVE parameters fail.
+    By slowly increasing the epsilon* value, we get a common
+    beam the can be deconvolved correctly over the set.
+
+    * epsilon is the small factor added to the ellipse perimeter
+    radius: radius * (1 + epsilon). The solution is then marginally
+    larger than the true optimal solution, but close enough for
+    effectively all use cases.
+    '''
+
+    major = [8.517199, 8.513563, 8.518497, 8.518434, 8.528561, 8.528236,
+             8.530046, 8.530528, 8.530696, 8.533117] * u.arcsec
+    minor = [5.7432523, 5.7446027, 5.7407207, 5.740814, 5.7331843,
+             5.7356524, 5.7338963, 5.733251, 5.732933, 5.73209] * u.arcsec
+    pa = [-32.942623, -32.931957, -33.07815, -33.07532, -33.187653,
+          -33.175243, -33.167213, -33.167244, -33.170418, -33.180233] * u.deg
+
+    beams = Beams(major=major, minor=minor, pa=pa)
+
+    err_str = 'Could not find common beam to deconvolve all beams.'
+    with pytest.raises(BeamError, match=err_str):
+
+        com_beam = beams.common_beam(method='pts',
+                                     epsilon=5e-4,
+                                     auto_increase_epsilon=False)
+
+    # Force running into the max iteration of epsilon increases.
+    err_str = 'Could not increase epsilon to find common beam.'
+    with pytest.raises(BeamError, match=err_str):
+
+        com_beam = beams.common_beam(method='pts',
+                                     epsilon=5e-4,
+                                     max_iter=2,
+                                     max_epsilon=6e-4,
+                                     auto_increase_epsilon=True)
+
+    # Should run when epsilon is allowed to increase a bit.
+    com_beam = beams.common_beam(method='pts',
+                                 epsilon=5e-4,
+                                 auto_increase_epsilon=True,
+                                 max_epsilon=1e-3)

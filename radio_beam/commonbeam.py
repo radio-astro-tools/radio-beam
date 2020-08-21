@@ -43,7 +43,7 @@ def commonbeam(beams, method='pts', **method_kwargs):
             raise ValueError("method must be 'pts' or 'opt'.")
 
 
-def common_2beams(beams):
+def common_2beams(beams, check_deconvolution=True):
     '''
     Find a common beam from a `Beams` object with 2 beams. This
     function is based on the CASA implementation `ia.commonbeam`. Note that
@@ -84,8 +84,7 @@ def common_2beams(beams):
     if small_beam == large_beam:
         return large_beam
 
-    deconv_beam = \
-        large_beam.deconvolve(small_beam, failure_returns_pointlike=True)
+    deconv_beam = large_beam.deconvolve(small_beam, failure_returns_pointlike=True)
 
     # Larger beam can be deconvolved. It is already the smallest common beam
     if deconv_beam.isfinite:
@@ -146,16 +145,17 @@ def common_2beams(beams):
                           minor=trans_minor + epsilon,
                           pa=trans_pa)
 
-        # Ensure this beam can now be deconvolved
-        deconv_large_beam = \
-            trans_beam.deconvolve(large_beam,
-                                  failure_returns_pointlike=True)
-        deconv_prob_beam = \
-            trans_beam.deconvolve(small_beam,
-                                  failure_returns_pointlike=True)
-        if not deconv_large_beam.isfinite or not deconv_prob_beam.isfinite:
-            raise BeamError("Failed to find common beam that both beams can "
-                            "be deconvolved by.")
+        if check_deconvolution:
+            # Ensure this beam can now be deconvolved
+            deconv_large_beam = \
+                trans_beam.deconvolve(large_beam,
+                                    failure_returns_pointlike=True)
+            deconv_prob_beam = \
+                trans_beam.deconvolve(small_beam,
+                                    failure_returns_pointlike=True)
+            if not deconv_large_beam.isfinite or not deconv_prob_beam.isfinite:
+                raise BeamError("Failed to find common beam that both beams can "
+                                "be deconvolved by.")
 
         # Taken from CASA implementation, but by adding epsilon, this shouldn't
         # be needed
@@ -477,7 +477,11 @@ def ellipse_edges(beam, npts=300, epsilon=1e-3):
     return pts
 
 
-def common_manybeams_mve(beams, tolerance=1e-4, nsamps=200, epsilon=5e-4):
+def common_manybeams_mve(beams, tolerance=1e-4, nsamps=200,
+                         epsilon=5e-4,
+                         auto_increase_epsilon=True,
+                         max_epsilon=1e-3,
+                         max_iter=10):
     '''
     Calculate a common beam size using the Khachiyan Algorithm to find the
     minimum enclosing ellipse from all beam edges.
@@ -497,6 +501,17 @@ def common_manybeams_mve(beams, tolerance=1e-4, nsamps=200, epsilon=5e-4):
         the common beam can marginally be deconvolved for all beams. Small
         deviations result from the finite sampling of points and the choice
         of the tolerance.
+    auto_increase_epsilon : bool, optional
+        Re-run the algorithm when the solution cannot quite be deconvolved from
+        from all the beams. When `True`, epsilon is slightly increased with
+        each iteration until the common beam can be deconvolved from all beams.
+        Default is `True`.
+    max_epsilon : float, optional
+        Maximum epsilon value that is acceptable. Reached with `max_iter`.
+        Default is `1e-3`.
+    max_iter : int, optional
+        Maximum number of times to increase epsilon to try finding a valid
+        common beam solution.
 
     Returns
     -------
@@ -507,30 +522,52 @@ def common_manybeams_mve(beams, tolerance=1e-4, nsamps=200, epsilon=5e-4):
     if not HAS_SCIPY:
         raise ImportError("common_manybeams_mve requires scipy.optimize.")
 
-    pts = []
+    step = 1
 
-    for beam in beams:
-        pts.append(ellipse_edges(beam, nsamps, epsilon=epsilon))
+    while True:
+        pts = []
 
-    all_pts = np.hstack(pts).T
+        for beam in beams:
+            pts.append(ellipse_edges(beam, nsamps, epsilon=epsilon))
 
-    # Now find the outer edges of the convex hull.
-    hull = ConvexHull(all_pts)
-    edge_pts = all_pts[hull.vertices]
+        all_pts = np.hstack(pts).T
 
-    center, radii, rotation = \
-        getMinVolEllipse(edge_pts, tolerance=tolerance)
+        # Now find the outer edges of the convex hull.
+        hull = ConvexHull(all_pts)
+        edge_pts = all_pts[hull.vertices]
 
-    # The rotation matrix is coming out as:
-    # ((sin theta, cos theta)
-    #  (cos theta, - sin theta))
-    pa = np.arctan2(- rotation[0, 0], rotation[1, 0]) * u.rad
+        center, radii, rotation = \
+            getMinVolEllipse(edge_pts, tolerance=tolerance)
 
-    if pa.value == -np.pi or pa.value == np.pi:
-        pa = 0.0 * u.rad
+        # The rotation matrix is coming out as:
+        # ((sin theta, cos theta)
+        #  (cos theta, - sin theta))
+        pa = np.arctan2(- rotation[0, 0], rotation[1, 0]) * u.rad
 
-    com_beam = Beam(major=radii.max() * u.deg, minor=radii.min() * u.deg,
-                    pa=pa)
+        if pa.value == -np.pi or pa.value == np.pi:
+            pa = 0.0 * u.rad
+
+        com_beam = Beam(major=radii.max() * u.deg, minor=radii.min() * u.deg,
+                        pa=pa)
+
+        # If common beam is just slightly smaller than one of the beams,
+        # we increase epsilon to encourage a solution marginally larger
+        # so all beams can be convolved.
+        if auto_increase_epsilon:
+            if not fits_in_largest(beams, com_beam):
+                # Increase epsilon and run again
+                epsilon += (step + 1) * (max_epsilon - epsilon) / max_iter
+                step += 1
+
+                if step == max_iter + 1:
+                    raise BeamError("Could not increase epsilon to find"
+                                    " common beam.")
+
+                continue
+            else:
+                break
+        else:
+            break
 
     if not fits_in_largest(beams, com_beam):
         raise BeamError("Could not find common beam to deconvolve all beams.")

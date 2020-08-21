@@ -232,7 +232,7 @@ def transform_ellipse(major, minor, pa, x_scale, y_scale):
         # Transformed to a circle
         trans_major = 1 / c1
         trans_minor = trans_major
-        trans_pa = 0
+        trans_pa = 0. * u.rad
 
     elif c1 > c2:
         # c1 and c2 are the major and minor axes; use j1 to get PA

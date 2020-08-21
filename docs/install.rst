@@ -1,4 +1,4 @@
-Installing ``spectral-cube``
+Installing ``radio-beam``
 ============================
 
 Requirements
@@ -26,7 +26,7 @@ or you can download the latest tar file from
 Developer version
 -----------------
 
-If you want to install the latest developer version of the spectral cube code, you
+If you want to install the latest developer version of the radio-beam code, you
 can do so from the git repository::
 
     git clone https://github.com/radio-astro-tools/radio-beam.git
