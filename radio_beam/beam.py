@@ -11,7 +11,7 @@ from astropy.modeling.models import Ellipse2D, Gaussian2D
 from astropy.convolution import Kernel2D
 from astropy.convolution.kernels import _round_up_to_odd_integer
 
-from .utils import deconvolve, convolve, RadioBeamDeprecationWarning
+from .utils import deconvolve_opt, convolve, RadioBeamDeprecationWarning
 
 # Conversion between a twod Gaussian FWHM**2 and effective area
 FWHM_TO_AREA = 2*np.pi/(8*np.log(2))
@@ -383,9 +383,9 @@ class Beam(u.Quantity):
         """
 
         new_major, new_minor, new_pa = \
-            deconvolve(self, other,
-                       failure_returns_pointlike=failure_returns_pointlike)
-        return Beam(major=new_major, minor=new_minor, pa=new_pa)
+            deconvolve_opt(self.to_header_keywords(), other.to_header_keywords(),
+                           failure_returns_pointlike=failure_returns_pointlike)
+        return Beam(major=new_major * u.deg, minor=new_minor * u.deg, pa=new_pa * u.rad)
 
     def __eq__(self, other):
 
