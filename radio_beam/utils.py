@@ -71,15 +71,14 @@ def deconvolve_opt(beamprops1, beamprops2, failure_returns_pointlike=False):
                  (min2**2 - maj2**2) * math.sin(pa2) * math.cos(pa2))
 
     s = alpha + beta
-    t = np.sqrt((alpha - beta)**2 + gamma**2)
+    t = math.sqrt((alpha - beta)**2 + gamma**2)
 
     # identify the smallest resolution
-    axes = np.array([maj1, min1, maj2, min2])
-    limit = np.min(axes)
+    limit = min([maj1, min1, maj2, min2])
     limit = 0.1 * limit * limit
 
     # Deal with floating point issues
-    atol_t = np.finfo(t.dtype).eps
+    atol_t = np.finfo(np.float64).eps
 
     # To deconvolve, the beam must satisfy:
     # alpha < 0
@@ -100,10 +99,11 @@ def deconvolve_opt(beamprops1, beamprops2, failure_returns_pointlike=False):
         new_minor = math.sqrt(0.5 * (s - t))
 
         # absolute tolerance needs to be <<1 microarcsec
-        if np.isclose(((abs(gamma) + abs(alpha - beta))**0.5), 1e-7):
+        atol = 1e-7 / 3600.
+        if (math.sqrt(abs(gamma) + abs(alpha - beta))) < atol:
             new_pa = 0.0
         else:
-            new_pa = 0.5 * np.arctan2(-1. * gamma, alpha - beta)
+            new_pa = 0.5 * math.atan2(-1. * gamma, alpha - beta)
 
     # In the limiting case, the axes can be zero to within precision
     # Add the precision level onto each axis so a deconvolvable beam
