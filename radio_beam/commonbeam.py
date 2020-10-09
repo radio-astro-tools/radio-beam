@@ -336,26 +336,23 @@ def fits_in_largest(beams, large_beam=None):
     if large_beam is None:
         large_beam = beams.largest_beam()
 
-    large_hdr_keywords = \
-            {'BMAJ': large_beam.major.to(u.deg).value,
-             'BMIN': large_beam.minor.to(u.deg).value,
-             'BPA': large_beam.pa.to(u.deg).value}
+    large_hdr_keywords = large_beam.to_header_keywords()
 
     majors = beams.major.to(u.deg).value
     minors = beams.minor.to(u.deg).value
     pas = beams.pa.to(u.deg).value
 
-    for i, (major, minor, pa) in enumerate(zip(majors, minors, pas)):
+    for major, minor, pa in zip(majors, minors, pas):
 
         equal = abs(large_hdr_keywords['BMAJ'] - major) < 1e-12
-        equal = equal & (abs(large_hdr_keywords['BMIN'] - minor) < 1e-12)
+        equal = equal and (abs(large_hdr_keywords['BMIN'] - minor) < 1e-12)
 
         # Check if the beam is circular
         iscircular = (major - minor) / minor < 1e-6
 
         # position angle only matters if the beam is asymmetric
         if not iscircular:
-            equal = equal & (((large_hdr_keywords['BPA'] % np.pi) - (pa % np.pi)) < 1e-12)
+            equal = equal and (abs(((large_hdr_keywords['BPA'] % np.pi) - (pa % np.pi))) < 1e-12)
 
         if equal:
             continue
@@ -366,7 +363,7 @@ def fits_in_largest(beams, large_beam=None):
                               'BPA': pa},
                              failure_returns_pointlike=True)
 
-        if np.any(out[:2] == 0.):
+        if np.any([ax == 0. for ax in out[:2]]):
             return False
 
     return True
