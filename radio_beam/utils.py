@@ -73,12 +73,10 @@ def deconvolve_opt(beamprops1, beamprops2, failure_returns_pointlike=False):
     s = alpha + beta
     t = math.sqrt((alpha - beta)**2 + gamma**2)
 
-    # identify the smallest resolution
-    limit = min([maj1, min1, maj2, min2])
-    limit = 0.1 * limit * limit
-
     # Deal with floating point issues
-    atol_t = np.finfo(np.float64).eps
+    # This matches the arcsec**2 check for deconvolve below
+    # Difference is we keep things in deg^2 here
+    atol_t = np.finfo(np.float64).eps / 3600.**2
 
     # To deconvolve, the beam must satisfy:
     # alpha < 0
@@ -176,6 +174,7 @@ def deconvolve(beam, other, failure_returns_pointlike=False):
 
     # Deal with floating point issues
     atol_t = np.finfo(t.dtype).eps * t.unit
+    print(f"deconvolve atol_t {atol_t}")
 
     # To deconvolve, the beam must satisfy:
     # alpha < 0
@@ -184,6 +183,9 @@ def deconvolve(beam, other, failure_returns_pointlike=False):
     beta_cond = beta.to(u.arcsec**2).value + np.finfo(beta.dtype).eps < 0
     # s < t
     st_cond = s < t + atol_t
+
+    print(f"deconvolve alpha {alpha} beta {beta} s {s} t {t}")
+    print(f"deconvolve alpha {alpha_cond} beta {beta_cond} st {st_cond}")
 
     if alpha_cond or beta_cond or st_cond:
         if failure_returns_pointlike:
