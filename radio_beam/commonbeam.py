@@ -342,17 +342,23 @@ def fits_in_largest(beams, large_beam=None):
     minors = beams.minor.to(u.deg).value
     pas = beams.pa.to(u.deg).value
 
+    # Catch differences below  << 1 microarsec = 2.8e10
+    # This is the same limit used for checking equal beams in Beam.__eq__
+    atol_limit = 1e-12
+
     for major, minor, pa in zip(majors, minors, pas):
 
-        equal = abs(large_hdr_keywords['BMAJ'] - major) < 1e-12
-        equal = equal and (abs(large_hdr_keywords['BMIN'] - minor) < 1e-12)
+        equal = abs(large_hdr_keywords['BMAJ'] - major) < atol_limit
+        equal = equal and (abs(large_hdr_keywords['BMIN'] - minor) < atol_limit)
 
         # Check if the beam is circular
+        # This checks for fractional changes below 1e-6 between the major and minor.
+        # Same limit used in Beam.__eq__
         iscircular = (major - minor) / minor < 1e-6
 
         # position angle only matters if the beam is asymmetric
         if not iscircular:
-            equal = equal and (abs(((large_hdr_keywords['BPA'] % np.pi) - (pa % np.pi))) < 1e-12)
+            equal = equal and (abs(((large_hdr_keywords['BPA'] % np.pi) - (pa % np.pi))) < atol_limit)
 
         if equal:
             continue
