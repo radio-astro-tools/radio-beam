@@ -10,7 +10,7 @@ except ImportError:
     HAS_SCIPY = False
 
 from .beam import Beam
-from .utils import BeamError, transform_ellipse, deconvolve_opt
+from .utils import BeamError, transform_ellipse, deconvolve_optimized
 
 __all__ = ['commonbeam', 'common_2beams', 'getMinVolEllipse',
            'common_manybeams_mve']
@@ -357,11 +357,11 @@ def fits_in_largest(beams, large_beam=None):
         if equal:
             continue
 
-        out = deconvolve_opt(large_hdr_keywords,
-                             {'BMAJ': major,
-                              'BMIN': minor,
-                              'BPA': pa},
-                             failure_returns_pointlike=True)
+        out = deconvolve_optimized(large_hdr_keywords,
+                                   {'BMAJ': major,
+                                    'BMIN': minor,
+                                    'BPA': pa},
+                                   failure_returns_pointlike=True)
 
         if np.any([ax == 0. for ax in out[:2]]):
             return False
