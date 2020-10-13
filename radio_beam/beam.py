@@ -384,7 +384,7 @@ class Beam(u.Quantity):
 
         new_major, new_minor, new_pa = deconvolve_optimized(self.to_header_keywords(),
                                                             other.to_header_keywords(),
-                                                            failure_returns_pointlike=True)
+                                                            failure_returns_pointlike=failure_returns_pointlike)
 
         # Keep the units from before
         new_major = (new_major * u.deg).to(self.major.unit)
