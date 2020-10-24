@@ -1,4 +1,4 @@
-language: python
+language: c
 
 # The apt packages below are needed for sphinx builds, which can no longer
 # be installed with sudo apt-get.
