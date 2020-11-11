@@ -22,10 +22,10 @@ jobs:
             python-version: 3.6
             name: Python 3.6 with minimal dependencies and CASA
             toxenv: py36-test-casa
-          - os: ubuntu-18.04
-            python-version: 3.6
-            name: Python 3.6, CASA, and dev versions of key dependencies
-            toxenv: py36-test-casa-dev
+          # - os: ubuntu-18.04
+          #   python-version: 3.6
+          #   name: Python 3.6, CASA, and dev versions of key dependencies
+          #   toxenv: py36-test-casa-dev
           - os: ubuntu-latest
             python-version: 3.8
             name: Python 3.8, all dependencies, and dev versions of key dependencies
