@@ -1,7 +1,10 @@
 
+import math
 import numpy as np
 import astropy.units as u
 
+
+DEG2RAD = math.pi / 180.
 
 class BeamError(Exception):
     """docstring for BeamError"""
@@ -14,6 +17,102 @@ class InvalidBeamOperationError(Exception):
 
 class RadioBeamDeprecationWarning(Warning):
     pass
+
+
+def deconvolve_optimized(beamprops1, beamprops2, failure_returns_pointlike=False):
+    """
+    An optimized, non-Quantity version of beam deconvolution.
+
+    Because no unit conversions are handled, the inputs MUST be in degrees for the major, minor,
+    and position angle.
+
+    Parameters
+    ----------
+    beamprops1: dict
+        Dictionary with keys 'BMAJ', 'BMIN', and 'BPA' for the beam to deconvolve from. Can be
+        produced with `~radio_beam.Beam.to_fits_keywords`.
+    beamprops2: dict
+        Same as `beamprops1` for the second beam.
+    failure_returns_pointlike : bool, optional
+        Return a point beam (zero area) when deconvolution fails. If `False`,
+        this will instead raise a `~radio_beam.utils.BeamError` when deconvolution fails.
+
+
+    Returns
+    -------
+    new_major : float
+        Deconvolved major FWHM.
+    new_minor : float
+        Deconvolved minor FWHM.
+    new_pa : float
+        Deconvolved position angle.
+
+    """
+
+    # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
+    # (githup checkin of MIRIAD, code by Sault)
+
+    maj1 = beamprops1['BMAJ']
+    min1 = beamprops1['BMIN']
+    pa1 = beamprops1['BPA'] * DEG2RAD
+
+    maj2 = beamprops2['BMAJ']
+    min2 = beamprops2['BMIN']
+    pa2 = beamprops2['BPA'] * DEG2RAD
+
+    alpha = ((maj1 * math.cos(pa1))**2 +
+             (min1 * math.sin(pa1))**2 -
+             (maj2 * math.cos(pa2))**2 -
+             (min2 * math.sin(pa2))**2)
+
+    beta = ((maj1 * math.sin(pa1))**2 +
+            (min1 * math.cos(pa1))**2 -
+            (maj2 * math.sin(pa2))**2 -
+            (min2 * math.cos(pa2))**2)
+
+    gamma = 2 * ((min1**2 - maj1**2) * math.sin(pa1) * math.cos(pa1) -
+                 (min2**2 - maj2**2) * math.sin(pa2) * math.cos(pa2))
+
+    s = alpha + beta
+    t = math.sqrt((alpha - beta)**2 + gamma**2)
+
+    # Deal with floating point issues
+    # This matches the arcsec**2 check for deconvolve below
+    # Difference is we keep things in deg^2 here
+    atol_t = np.finfo(np.float64).eps / 3600.**2
+
+    # To deconvolve, the beam must satisfy:
+    # alpha < 0
+    alpha_cond = alpha + np.finfo(np.float64).eps < 0
+
+    # beta < 0
+    beta_cond = beta + np.finfo(np.float64).eps < 0
+    # s < t
+    st_cond = s < t + atol_t
+
+    if alpha_cond or beta_cond or st_cond:
+        if failure_returns_pointlike:
+            return 0., 0., 0.
+        else:
+            raise BeamError("Beam could not be deconvolved")
+    else:
+        new_major = math.sqrt(0.5 * (s + t))
+        new_minor = math.sqrt(0.5 * (s - t))
+
+        # absolute tolerance needs to be <<1 microarcsec
+        atol = 1e-7 / 3600.
+        if (math.sqrt(abs(gamma) + abs(alpha - beta))) < atol:
+            new_pa = 0.0
+        else:
+            new_pa = 0.5 * math.atan2(-1. * gamma, alpha - beta)
+
+    # In the limiting case, the axes can be zero to within precision
+    # Add the precision level onto each axis so a deconvolvable beam
+    # is always has beam.isfinite == True
+    new_major += np.finfo(np.float64).eps
+    new_minor += np.finfo(np.float64).eps
+
+    return new_major, new_minor, new_pa
 
 
 def deconvolve(beam, other, failure_returns_pointlike=False):
@@ -44,71 +143,13 @@ def deconvolve(beam, other, failure_returns_pointlike=False):
         failure_returns_pointlike
     """
 
-    # blame: https://github.com/pkgw/carma-miriad/blob/CVSHEAD/src/subs/gaupar.for
-    # (githup checkin of MIRIAD, code by Sault)
 
-    # rename to shorter variables for readability
-    maj1, min1, pa1 = beam.major, beam.minor, beam.pa
-    maj2, min2, pa2 = other.major, other.minor, other.pa
-    cos, sin = np.cos, np.sin
+    # The header keywords handle the conversions to degree for BMAJ, BMIN, BPA.
+    beamprops1 = beam.to_header_keywords()
+    beamprops2 = other.to_header_keywords()
 
-    alpha = ((maj1 * cos(pa1))**2 +
-             (min1 * sin(pa1))**2 -
-             (maj2 * cos(pa2))**2 -
-             (min2 * sin(pa2))**2)
-
-    beta = ((maj1 * sin(pa1))**2 +
-            (min1 * cos(pa1))**2 -
-            (maj2 * sin(pa2))**2 -
-            (min2 * cos(pa2))**2)
-
-    gamma = 2 * ((min1**2 - maj1**2) * sin(pa1) * cos(pa1) -
-                 (min2**2 - maj2**2) * sin(pa2) * cos(pa2))
-
-    s = alpha + beta
-    t = np.sqrt((alpha - beta)**2 + gamma**2)
-
-    # identify the smallest resolution
-    axes = np.array([maj1.to(u.deg).value,
-                     min1.to(u.deg).value,
-                     maj2.to(u.deg).value,
-                     min2.to(u.deg).value]) * u.deg
-    limit = np.min(axes)
-    limit = 0.1 * limit * limit
-
-    # Deal with floating point issues
-    atol_t = np.finfo(t.dtype).eps * t.unit
-
-    # To deconvolve, the beam must satisfy:
-    # alpha < 0
-    alpha_cond = alpha.to(u.arcsec**2).value + np.finfo(alpha.dtype).eps < 0
-    # beta < 0
-    beta_cond = beta.to(u.arcsec**2).value + np.finfo(beta.dtype).eps < 0
-    # s < t
-    st_cond = s < t + atol_t
-
-    if alpha_cond or beta_cond or st_cond:
-        if failure_returns_pointlike:
-            return 0 * maj1.unit, 0 * min1.unit, 0 * pa1.unit
-        else:
-            raise ValueError("Beam could not be deconvolved")
-    else:
-        new_major = np.sqrt(0.5 * (s + t))
-        new_minor = np.sqrt(0.5 * (s - t))
-
-        # absolute tolerance needs to be <<1 microarcsec
-        if np.isclose(((abs(gamma) + abs(alpha - beta))**0.5).to(u.arcsec).value, 1e-7):
-            new_pa = 0.0
-        else:
-            new_pa = 0.5 * np.arctan2(-1. * gamma, alpha - beta)
-
-    # In the limiting case, the axes can be zero to within precision
-    # Add the precision level onto each axis so a deconvolvable beam
-    # is always has beam.isfinite == True
-    new_major += np.finfo(new_major.dtype).eps * new_major.unit
-    new_minor += np.finfo(new_minor.dtype).eps * new_minor.unit
-
-    return new_major, new_minor, new_pa
+    return deconvolve_optimized(beamprops1, beamprops2,
+                                failure_returns_pointlike=failure_returns_pointlike)
 
 
 def convolve(beam, other):

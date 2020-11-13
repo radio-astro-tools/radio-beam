@@ -18,7 +18,7 @@ try:
 except ImportError:
     HAS_CASA = False
 
-from ..utils import RadioBeamDeprecationWarning
+from ..utils import RadioBeamDeprecationWarning, BeamError
 
 
 data_dir = os.path.join(os.path.dirname(__file__), 'data')
@@ -280,7 +280,7 @@ def test_deconv_pointlike(major, minor, pa, return_pointlike):
     else:
         try:
             beam1.deconvolve(beam1, failure_returns_pointlike=False)
-        except ValueError:
+        except BeamError:
             pass
 
 

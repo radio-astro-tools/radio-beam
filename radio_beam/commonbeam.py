@@ -10,7 +10,7 @@ except ImportError:
     HAS_SCIPY = False
 
 from .beam import Beam
-from .utils import BeamError, transform_ellipse
+from .utils import BeamError, transform_ellipse, deconvolve_optimized
 
 __all__ = ['commonbeam', 'common_2beams', 'getMinVolEllipse',
            'common_manybeams_mve']
@@ -336,13 +336,40 @@ def fits_in_largest(beams, large_beam=None):
     if large_beam is None:
         large_beam = beams.largest_beam()
 
-    for beam in beams:
-        if large_beam == beam:
-            continue
-        deconv_beam = large_beam.deconvolve(beam,
-                                            failure_returns_pointlike=True)
+    large_hdr_keywords = large_beam.to_header_keywords()
 
-        if not deconv_beam.isfinite:
+    majors = beams.major.to(u.deg).value
+    minors = beams.minor.to(u.deg).value
+    pas = beams.pa.to(u.deg).value
+
+    # Catch differences below  << 1 microarsec = 2.8e10
+    # This is the same limit used for checking equal beams in Beam.__eq__
+    atol_limit = 1e-12
+
+    for major, minor, pa in zip(majors, minors, pas):
+
+        equal = abs(large_hdr_keywords['BMAJ'] - major) < atol_limit
+        equal = equal and (abs(large_hdr_keywords['BMIN'] - minor) < atol_limit)
+
+        # Check if the beam is circular
+        # This checks for fractional changes below 1e-6 between the major and minor.
+        # Same limit used in Beam.__eq__
+        iscircular = (major - minor) / minor < 1e-6
+
+        # position angle only matters if the beam is asymmetric
+        if not iscircular:
+            equal = equal and (abs(((large_hdr_keywords['BPA'] % np.pi) - (pa % np.pi))) < atol_limit)
+
+        if equal:
+            continue
+
+        out = deconvolve_optimized(large_hdr_keywords,
+                                   {'BMAJ': major,
+                                    'BMIN': minor,
+                                    'BPA': pa},
+                                   failure_returns_pointlike=True)
+
+        if np.any([ax == 0. for ax in out[:2]]):
             return False
 
     return True
