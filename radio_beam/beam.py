@@ -506,6 +506,9 @@ class Beam(u.Quantity):
 
         return value.to(u.K, self.jtok_equiv(freq))
 
+    def beamarea_equiv(self):
+        return u.beam_angular_area(self.sr)
+
     def ellipse_to_plot(self, xcen, ycen, pixscale):
         """
         Return a matplotlib ellipse for plotting
