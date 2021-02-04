@@ -165,8 +165,6 @@ def test_beamarea_equiv():
     major = 0.1 * u.rad
     beam = Beam(major, major, 30 * u.deg)
 
-    freq = 1.42 * u.GHz
-
     conv_factor = u.beam_angular_area(beam.sr)
 
     conv_beam_factor = beam.beamarea_equiv()
@@ -181,6 +179,10 @@ def test_beamarea_equiv():
                              (1 * u.Jy / u.sr).to(u.Jy / u.beam,
                                                   equivalencies=conv_beam_factor))
 
+    # Add a by-hand check
+    value = (1 * u.Jy / u.sr).to(u.Jy / u.beam, equivalencies=conv_factor).value
+    byhand_value = 1 * beam.sr.value
+    npt.assert_allclose(value, byhand_value)
 
 def test_convolution():
 
