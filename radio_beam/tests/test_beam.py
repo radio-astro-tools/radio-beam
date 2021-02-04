@@ -160,6 +160,27 @@ def test_jtok_equiv():
     assert_quantity_allclose((1 * u.K).to(u.Jy, equivalencies=conv_factor),
                              (1 * u.K).to(u.Jy, equivalencies=conv_beam_factor))
 
+def test_beamarea_equiv():
+
+    major = 0.1 * u.rad
+    beam = Beam(major, major, 30 * u.deg)
+
+    freq = 1.42 * u.GHz
+
+    conv_factor = u.beam_angular_area(beam.sr)
+
+    conv_beam_factor = beam.beamarea_equiv()
+
+    assert_quantity_allclose((1 * u.Jy / u.beam).to(u.Jy / u.sr,
+                                                    equivalencies=conv_factor),
+                             (1 * u.Jy / u.beam).to(u.Jy / u.sr,
+                                                    equivalencies=conv_beam_factor))
+
+    assert_quantity_allclose((1 * u.Jy / u.sr).to(u.Jy / u.beam,
+                                                  equivalencies=conv_factor),
+                             (1 * u.Jy / u.sr).to(u.Jy / u.beam,
+                                                  equivalencies=conv_beam_factor))
+
 
 def test_convolution():
 
