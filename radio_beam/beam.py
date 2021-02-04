@@ -506,6 +506,7 @@ class Beam(u.Quantity):
 
         return value.to(u.K, self.jtok_equiv(freq))
 
+    @property
     def beamarea_equiv(self):
         return u.beam_angular_area(self.sr)
 

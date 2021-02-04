@@ -167,17 +167,15 @@ def test_beamarea_equiv():
 
     conv_factor = u.beam_angular_area(beam.sr)
 
-    conv_beam_factor = beam.beamarea_equiv()
-
     assert_quantity_allclose((1 * u.Jy / u.beam).to(u.Jy / u.sr,
                                                     equivalencies=conv_factor),
                              (1 * u.Jy / u.beam).to(u.Jy / u.sr,
-                                                    equivalencies=conv_beam_factor))
+                                                    equivalencies=beam.beamarea_equiv))
 
     assert_quantity_allclose((1 * u.Jy / u.sr).to(u.Jy / u.beam,
                                                   equivalencies=conv_factor),
                              (1 * u.Jy / u.sr).to(u.Jy / u.beam,
-                                                  equivalencies=conv_beam_factor))
+                                                  equivalencies=beam.beamarea_equiv))
 
     # Add a by-hand check
     value = (1 * u.Jy / u.sr).to(u.Jy / u.beam, equivalencies=conv_factor).value
