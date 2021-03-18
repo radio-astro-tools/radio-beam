@@ -19,7 +19,7 @@ jobs:
       # - name: Install cibuildwheel
       #  run: python -m pip install cibuildwheel
       - name: Build wheels
-        run: python -m pip wheel --wheel-dir=wheelhouse radio_beam
+        run: python -m pip wheel --wheel-dir=wheelhouse .
         # run: python -m cibuildwheel --output-dir wheelhouse
         env:
           CIBW_BUILD: cp36-* cp37-* cp38-*
