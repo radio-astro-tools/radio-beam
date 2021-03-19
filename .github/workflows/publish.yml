@@ -41,7 +41,7 @@ jobs:
       - name: Install build
         run: python -m pip install build
       - name: Build sdist
-        run: python -m build --sdist --outdir dist/ .
+        run: python -m build --sdist --wheel --outdir dist/ .
       - uses: actions/upload-artifact@v2
         with:
           path: dist/*.tar.gz
