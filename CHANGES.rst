@@ -1,4 +1,4 @@
-0.3.2 (unreleased)
+0.3.2 (2021-03-19)
 ------------------
  - Optimized the deconvolution operation to avoid extra unit conversions and creation of new `Beam` objects. (https://github.com/radio-astro-tools/radio-beam/pull/87)
 
