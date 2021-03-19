@@ -44,7 +44,7 @@ jobs:
         run: python -m build --sdist --wheel --outdir dist/ .
       - uses: actions/upload-artifact@v2
         with:
-          path: dist/*.tar.gz
+          path: dist/*
 
   upload_pypi:
     name: Upload to PyPI
