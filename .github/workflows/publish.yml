@@ -22,7 +22,7 @@ jobs:
 
   upload_pypi:
     name: Upload to PyPI
-    needs: [build_wheels, build_sdist]
+    needs: [build_sdist_and_wheel]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     steps:
