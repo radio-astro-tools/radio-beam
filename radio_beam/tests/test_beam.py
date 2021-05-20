@@ -74,6 +74,10 @@ def test_manual_area():
     man_beam_val = Beam(area=man_beam_area)
     npt.assert_equal(man_beam_area.to(u.sr).value, man_beam_val.sr.value)
 
+    with pytest.raises(ValueError) as exc:
+        Beam(area=2.73*u.K)
+    assert "Area unit should be equivalent to steradian." in exc.value.args[0]
+
 def test_bintable():
 
     beams = np.recarray(4, dtype=[('BMAJ', '>f4'), ('BMIN', '>f4'),
