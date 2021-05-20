@@ -69,6 +69,11 @@ def test_manual():
     man_beam_deg = Beam(0.1*u.deg, 0.1*u.deg, 1.0*u.rad)
     npt.assert_almost_equal(man_beam_deg.value, 3.451589629868801e-06)
 
+def test_manual_area():
+    man_beam_area = (0.5 * u.arcsec) ** 2
+    man_beam_val = Beam(area=man_beam_area)
+    npt.assert_equal(man_beam_area.to(u.sr).value, man_beam_val.sr.value)
+
 def test_bintable():
 
     beams = np.recarray(4, dtype=[('BMAJ', '>f4'), ('BMIN', '>f4'),
