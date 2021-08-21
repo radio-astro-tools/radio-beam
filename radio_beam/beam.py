@@ -115,7 +115,7 @@ class Beam(u.Quantity):
         return self
 
     @classmethod
-    def from_fits_bintable(cls, bintable, tolerance=0.01):
+    def from_fits_bintable(cls, bintable, tolerance=0.01, unit=u.arcsec):
         """
         Instantiate a single beam from a bintable from a CASA-produced image
         HDU.  The beams in the BinTableHDU will be averaged to form a single
@@ -152,11 +152,11 @@ class Beam(u.Quantity):
             warnings.warn("Metadata was averaged for keywords "
                           "{0}".format(",".join([key for key in meta])))
 
-        return cls(major=bmaj.mean()*u.arcsec, minor=bmin.mean()*u.arcsec,
+        return cls(major=bmaj.mean()*unit, minor=bmin.mean()*unit,
                    pa=circmean(bpa*u.deg, weights=bmaj/bmin))
 
     @classmethod
-    def from_fits_header(cls, hdr):
+    def from_fits_header(cls, hdr, unit=u.deg):
         """
         Instantiate the beam from a header. Attempts to extract the
         beam from standard keywords. Failing that, it looks for an
@@ -178,7 +178,7 @@ class Beam(u.Quantity):
         # If we find a major axis keyword then we are in keyword
         # mode. Else look to see if there is an AIPS header.
         if "BMAJ" in hdr:
-            major = hdr["BMAJ"] * u.deg
+            major = hdr["BMAJ"] * unit
         else:
             hist_beam = cls.from_fits_history(hdr)
             if hist_beam is not None:
@@ -189,11 +189,11 @@ class Beam(u.Quantity):
         # Fill out the minor axis and position angle if they are
         # present. Else they will default .
         if "BMIN" in hdr:
-            minor = hdr["BMIN"] * u.deg
+            minor = hdr["BMIN"] * unit
         else:
             minor = None
         if "BPA" in hdr:
-            pa = hdr["BPA"] * u.deg
+            pa = hdr["BPA"] * unit
         else:
             pa = None
 

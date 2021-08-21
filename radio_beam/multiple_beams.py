@@ -177,7 +177,7 @@ class Beams(u.Quantity):
     @classmethod
     def from_fits_bintable(cls, bintable):
         """
-        Instantiate a Beams list from a bintable from a CASA-produced image
+        Instantiate a Beams list from a bintable HDU from a CASA-produced image
         HDU.
 
         Parameters
@@ -190,8 +190,29 @@ class Beams(u.Quantity):
         beams : Beams
             A new Beams object
         """
-        major = u.Quantity(bintable.data['BMAJ'], u.arcsec)
-        minor = u.Quantity(bintable.data['BMIN'], u.arcsec)
+
+        header = bintable.header
+
+        # Read the bmaj/bmin units from the header
+        # (we still assume BPA is degrees because we've never seen an exceptional case)
+        # this will crash if there is no appropriate header info
+        maj_kw = [kw for kw, val in header.items() if val == 'BMAJ'][0]
+        min_kw = [kw for kw, val in header.items() if val == 'BMIN'][0]
+        maj_unit = header[maj_kw.replace('TTYPE', 'TUNIT')]
+        min_unit = header[min_kw.replace('TTYPE', 'TUNIT')]
+
+        # AIPS uses non-FITS-standard unit names; this catches the
+        # only case we've seen so far
+        if maj_unit == 'DEGREES':
+            maj_unit = 'degree'
+        if min_unit == 'DEGREES':
+            min_unit = 'degree'
+
+        maj_unit = u.Unit(maj_unit)
+        min_unit = u.Unit(min_unit)
+
+        major = u.Quantity(bintable.data['BMAJ'], maj_unit)
+        minor = u.Quantity(bintable.data['BMIN'], min_unit)
         pa = u.Quantity(bintable.data['BPA'], u.deg)
         meta = [{key: row[key] for key in bintable.columns.names
                  if key not in ('BMAJ', 'BPA', 'BMIN')}
