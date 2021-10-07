@@ -59,9 +59,30 @@ def test_beams_from_fits_bintable():
 
     beams = Beams.from_fits_bintable(bintable)
 
-    assert (beams.major.value == bintable.data['BMAJ']).all()
-    assert (beams.minor.value == bintable.data['BMIN']).all()
+    # Check that the units are arcsec (defined by our test data)
+
+    assert (beams.major.to(u.arcsec).value == bintable.data['BMAJ']).all()
+    assert (beams.minor.to(u.arcsec).value == bintable.data['BMIN']).all()
     assert (beams.pa.value == bintable.data['BPA']).all()
+
+
+def test_beams_from_fits_bintable_nonarcsec():
+
+    fname = data_path("m33_beams_bintable.fits.gz")
+
+    bintable = fits.open(fname)[1]
+
+    # Set to deg for BMAJ and BMIN
+    bintable.header['TUNIT1'] = 'deg'
+    bintable.header['TUNIT2'] = 'deg'
+    bintable.data['BMAJ'] /= 3600.
+    bintable.data['BMIN'] /= 3600.
+
+    beams = Beams.from_fits_bintable(bintable)
+
+    assert (beams.major.to(u.deg).value == bintable.data['BMAJ']).all()
+    assert (beams.minor.to(u.deg).value == bintable.data['BMIN']).all()
+    assert (beams.pa.to(u.deg).value == bintable.data['BPA']).all()
 
 
 def test_beams_from_list_of_beam():
