@@ -43,7 +43,7 @@ def commonbeam(beams, method='pts', **method_kwargs):
             raise ValueError("method must be 'pts' or 'opt'.")
 
 
-def common_2beams(beams, check_deconvolution=True):
+def common_2beams(beams, beam2=None, check_deconvolution=True):
     '''
     Find a common beam from a `Beams` object with 2 beams. This
     function is based on the CASA implementation `ia.commonbeam`. Note that
@@ -51,35 +51,74 @@ def common_2beams(beams, check_deconvolution=True):
 
     Parameters
     ----------
-    beams : `~radio_beam.Beams`
-        Beams object with 2 beams.
+    beams : `~radio_beam.Beams` or `~radio_beam.Beam`
+        Beams object with 2 beams or a single radio beam.
+    beam2 : `~radio_beam.Beam`, optional
+        Specify the second beam when `beams` is a `~radio_beam.Beam`.
 
     Returns
     -------
     common_beam : `~radio_beam.Beam`
         The smallest common beam in the set of beams.
+
+    Examples
+    --------
+
+    When passing  a `~radio_beam.Beams` object:
+    ```
+    common_beam = common_2beams(beams)
+    ```
+
+    When comparing to separate `~radio_beam.Beam` objects, the second can be passed
+    using the `beam2` keyword:
+    ```
+    common_beam = common_2beams(beam1, beam2=beam2)
+    ```
+
     '''
 
     # This code is based on the implementation in CASA:
     # https://open-bitbucket.nrao.edu/projects/CASA/repos/casa/browse/code/imageanalysis/ImageAnalysis/CasaImageBeamSet.cc
 
-    if beams.size != 2:
-        raise BeamError("This method is only valid for two beams.")
+    if isinstance(beams, Beam):
+        if beam2 is None:
+            raise TypeError("beam2 must be given when passing a radio_beam.Beam object.")
 
-    if (~beams.isfinite).all():
-        raise BeamError("All beams in the object are invalid.")
+        if not isinstance(beam2, Beam):
+            raise TypeError("beam2 must be a radio_beam.Beam object.")
 
-    large_beam = beams.largest_beam()
-    large_major = large_beam.major.to(u.arcsec)
-    large_minor = large_beam.minor.to(u.arcsec)
+        beam1 = beams
 
-    if beams.argmax() == 0:
-        small_beam = beams[1]
+        if beam1 >= beam2:
+            large_beam = beam1
+            small_beam = beam2
+        else:
+            large_beam = beam2
+            small_beam = beam1
+
+        large_major = large_beam.major.to(u.arcsec)
+        large_minor = large_beam.minor.to(u.arcsec)
+
+        small_major = small_beam.major.to(u.arcsec)
+        small_minor = small_beam.minor.to(u.arcsec)
+
     else:
-        small_beam = beams[0]
-    small_major = small_beam.major.to(u.arcsec)
-    small_minor = small_beam.minor.to(u.arcsec)
+        if beams.size != 2:
+            raise BeamError("This method is only valid for two beams.")
 
+        if (~beams.isfinite).all():
+            raise BeamError("All beams in the object are invalid.")
+
+        large_beam = beams.largest_beam()
+        large_major = large_beam.major.to(u.arcsec)
+        large_minor = large_beam.minor.to(u.arcsec)
+
+        if beams.argmax() == 0:
+            small_beam = beams[1]
+        else:
+            small_beam = beams[0]
+        small_major = small_beam.major.to(u.arcsec)
+        small_minor = small_beam.minor.to(u.arcsec)
     # Case where they're already equal
     if small_beam == large_beam:
         return large_beam
