@@ -45,7 +45,7 @@ jobs:
           - os: windows-latest
             python-version: 3.9
             name: Python 3.9, all dependencies, and dev versions of key dependencies (no CASA) on Windows
-            toxenv: py37-test-all-dev
+            toxenv: py39-test-all-dev
           - os: ubuntu-latest
             python-version: 3.9
             name: Documentation
