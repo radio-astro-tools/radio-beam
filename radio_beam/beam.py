@@ -237,9 +237,27 @@ class Beam(u.Quantity):
             return cls(major=bmaj, minor=bmin, pa=bpa)
 
         elif aipsline is not None:
-            bmaj = float(aipsline.split()[3]) * u.deg
-            bmin = float(aipsline.split()[5]) * u.deg
-            bpa = float(aipsline.split()[7]) * u.deg
+            aipsline_split = aipsline.split()
+
+            # Identify beam values by checking for the position in the split corresponding to
+            # the given keyword.
+            def find_key_in_aips_history(key):
+                line_check = [i for i, str_part in enumerate(aipsline_split) if key in str_part]
+
+                if not len(line_check) == 1:
+                    raise ValueError(f"Unable to find {key} in AIPS history {aipsline}")
+
+                return line_check[0]
+
+            idx_maj = find_key_in_aips_history("BMAJ") + 1
+            bmaj = float(aipsline_split[idx_maj]) * u.deg
+
+            idx_min = find_key_in_aips_history("BMIN") + 1
+            bmin = float(aipsline_split[idx_min]) * u.deg
+
+            idx_pa = find_key_in_aips_history("BPA") + 1
+            bpa = float(aipsline_split[idx_pa]) * u.deg
+
             return cls(major=bmaj, minor=bmin, pa=bpa)
 
         else:
