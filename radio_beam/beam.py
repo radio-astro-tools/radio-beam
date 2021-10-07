@@ -63,9 +63,7 @@ class Beam(u.Quantity):
             if major is not None:
                 raise ValueError("Can only specify one of {major,minor,pa} "
                                  "and {area}")
-            if not area.unit.is_equivalent(u.sr):
-                raise ValueError("Area unit should be equivalent to steradian.")
-            rad = np.sqrt(area/(2*np.pi))
+            rad = np.sqrt(area/(2*np.pi)) * u.deg
             major = rad * SIGMA_TO_FWHM
             minor = rad * SIGMA_TO_FWHM
             pa = 0.0 * u.deg
