@@ -552,6 +552,37 @@ def test_commonbeam_multiple(beams, target_beam):
                         target_beam.pa.value, rtol=1e-3)
 
 
+def test_common2beam_inputs():
+
+    majors = [1.7, 2] * u.arcsec
+    minors = [1.3, 1.5] * u.arcsec
+    pas = [0, 30] * u.deg
+
+    # Given a Beams object
+    beams = Beams(major=majors, minor=minors, pa=pas)
+
+    commonbeam_frombeams = common_2beams(beams)
+
+    # Given as separate Beam objects
+    beam1 = Beam(major=majors[0], minor=minors[0], pa=pas[0])
+    beam2 = Beam(major=majors[1], minor=minors[1], pa=pas[1])
+
+    commonbeam_frombeam = common_2beams(beam1, beam2=beam2)
+    commonbeam_frombeam_rev = common_2beams(beam2, beam2=beam1)
+
+    # These should all be the same
+    assert commonbeam_frombeams == commonbeam_frombeam
+    assert commonbeam_frombeams == commonbeam_frombeam_rev
+
+
+def test_common2beam_failwithnosecondbeam():
+
+    beam1 = Beam(major=1 * u.arcsec, minor=1 * u.arcsec, pa=0 * u.deg)
+
+    with pytest.raises(TypeError):
+        commonbeam_frombeam = common_2beams(beam1, beam2=None)
+
+
 @pytest.mark.parametrize(("beams", "target_beam"), casa_commonbeam_suite())
 def test_commonbeam_methods(beams, target_beam):
 
