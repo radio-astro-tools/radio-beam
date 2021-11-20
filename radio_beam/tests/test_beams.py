@@ -9,7 +9,7 @@ import pytest
 
 from ..multiple_beams import Beams
 from ..beam import Beam
-from ..commonbeam import common_2beams, common_manybeams_mve
+from ..commonbeam import common_2beams, common_manybeams_mve, find_commonbeam_between
 from ..utils import InvalidBeamOperationError, BeamError
 
 from .test_beam import data_path
@@ -527,6 +527,28 @@ def test_commonbeam_angleoffset(beams, target_beam):
         npt.assert_allclose(common_beam.pa.to(u.deg).value,
                             target_beam.pa.value, rtol=1e-3)
 
+
+@pytest.mark.parametrize(("beams", "target_beam"), casa_commonbeam_suite())
+def test_find_commonbeam_between(beams, target_beam):
+
+    # https://open-bitbucket.nrao.edu/projects/CASA/repos/casa/browse/code/imageanalysis/ImageAnalysis/test/tCasaImageBeamSet.cc#447
+
+    common_beam = find_commonbeam_between(beams[0], beams[1])
+
+    # Order shouldn't matter
+    common_beam_rev = find_commonbeam_between(beams[1], beams[0])
+
+    assert common_beam == common_beam_rev
+
+    npt.assert_allclose(common_beam.major.value, target_beam.major.value,
+                        rtol=1e-3)
+    npt.assert_allclose(common_beam.minor.value, target_beam.minor.value,
+                        rtol=1e-3)
+
+    # Only check when beam is elliptical. Otherwise PA does not matter.
+    if not common_beam.iscircular:
+        npt.assert_allclose(common_beam.pa.to(u.deg).value,
+                            target_beam.pa.value, rtol=1e-3)
 
 def casa_commonbeam_suite_multiple():
 
