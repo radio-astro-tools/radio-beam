@@ -546,7 +546,7 @@ def test_find_commonbeam_between(beams, target_beam):
                         rtol=1e-3)
 
     # Only check when beam is elliptical. Otherwise PA does not matter.
-    if not common_beam.iscircular:
+    if not common_beam.iscircular():
         npt.assert_allclose(common_beam.pa.to(u.deg).value,
                             target_beam.pa.value, rtol=1e-3)
 
