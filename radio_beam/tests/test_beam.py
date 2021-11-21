@@ -398,3 +398,27 @@ def test_major_minor_swap():
                      pa=30. * u.deg)
 
     assert "Minor axis greater than major axis." in exc.value.args[0]
+
+
+def test_commonbeam_builtin():
+    '''
+    Test the built in common beam for Beam with a 2nd beam.
+
+    This test case should come out to a round common beam of 10 arcsec.
+    '''
+
+    beam1 = Beam(10 * u.arcsec, 8 * u.arcsec, 60 * u.deg)
+
+    beam2 = Beam(10 * u.arcsec, 8 * u.arcsec, 150 * u.deg)
+
+    exp_combeam = Beam(10 * u.arcsec)
+
+    com_beam = beam1.commonbeam_with(beam2)
+
+    assert com_beam == exp_combeam
+
+    # Order should not matter
+    com_beam_rev = beam2.commonbeam_with(beam1)
+
+    assert com_beam_rev == exp_combeam
+    assert com_beam_rev == com_beam
