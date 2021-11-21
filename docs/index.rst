@@ -64,6 +64,14 @@ Find the smallest common beam for the set (see :ref:`here <com_beam>` for more o
     >>> my_beams.common_beam()  # doctest: +SKIP
     Beam: BMAJ=1.50671729431 arcsec BMIN=1.25695643792 arcsec BPA=6.69089813778 deg
 
+Find the common beam between 2 arbitrary beams::
+
+    >>> mybeam1 = Beam(1.0*u.arcsec, 0.5*u.arcsec, 0*u.deg)
+    >>> mybeam2 = Beam(1.0*u.arcsec, 0.5*u.arcsec, 90*u.deg)
+    >>> mycombeam = mybeam1.commonbeam_with(mybeam2)
+    >>> mycombeam  # doctest: +SKIP
+    Beam: BMAJ=1.0 arcsec BMIN=1.0 arcsec BPA=90.0 deg
+
 Getting started
 ^^^^^^^^^^^^^^^
 

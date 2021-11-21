@@ -13,7 +13,7 @@ from .beam import Beam
 from .utils import BeamError, transform_ellipse, deconvolve_optimized
 
 __all__ = ['commonbeam', 'common_2beams', 'getMinVolEllipse',
-           'common_manybeams_mve']
+           'common_manybeams_mve', 'find_commonbeam_between']
 
 
 def commonbeam(beams, method='pts', **method_kwargs):
@@ -42,7 +42,6 @@ def commonbeam(beams, method='pts', **method_kwargs):
         else:
             raise ValueError("method must be 'pts' or 'opt'.")
 
-
 def common_2beams(beams, check_deconvolution=True):
     '''
     Find a common beam from a `Beams` object with 2 beams. This
@@ -60,29 +59,60 @@ def common_2beams(beams, check_deconvolution=True):
         The smallest common beam in the set of beams.
     '''
 
-    # This code is based on the implementation in CASA:
-    # https://open-bitbucket.nrao.edu/projects/CASA/repos/casa/browse/code/imageanalysis/ImageAnalysis/CasaImageBeamSet.cc
-
     if beams.size != 2:
         raise BeamError("This method is only valid for two beams.")
 
     if (~beams.isfinite).all():
         raise BeamError("All beams in the object are invalid.")
 
-    large_beam = beams.largest_beam()
+    return find_commonbeam_between(beams[0], beams[1], check_deconvolution=check_deconvolution)
+
+
+def find_commonbeam_between(beam1, beam2, check_deconvolution=True):
+    '''
+    Find the common beam between 2 `~radio_beam.Beam` objects.
+
+    This function is based on the CASA implementation `ia.commonbeam` that
+    the solution is valid when comparing 2 beams.
+
+    Parameters
+    ----------
+    beam1 : `~radio_beam.Beam`
+        Beam object.
+    beam2 : `~radio_beam.Beam`
+        Beam object.
+    check_deconvolution : bool, optional
+        Check that the common beam solution can be deconvolved from
+        both input beams.
+
+    Returns
+    -------
+    common_beam : `~radio_beam.Beam`
+        The smallest common beam in the set of beams.
+    '''
+
+    # This code is based on the implementation in CASA:
+    # https://open-bitbucket.nrao.edu/projects/CASA/repos/casa/browse/code/imageanalysis/ImageAnalysis/CasaImageBeamSet.cc
+
+    if not beam1.isfinite or not beam2.isfinite:
+        raise BeamError("At least one beam is invalid.")
+
+    # If equal, the common beam is itself.
+    if beam1 == beam2:
+        return beam1
+
+    if beam1 > beam2:
+        large_beam = beam1
+        small_beam = beam2
+    else:
+        large_beam = beam2
+        small_beam = beam1
+
     large_major = large_beam.major.to(u.arcsec)
     large_minor = large_beam.minor.to(u.arcsec)
 
-    if beams.argmax() == 0:
-        small_beam = beams[1]
-    else:
-        small_beam = beams[0]
     small_major = small_beam.major.to(u.arcsec)
     small_minor = small_beam.minor.to(u.arcsec)
-
-    # Case where they're already equal
-    if small_beam == large_beam:
-        return large_beam
 
     deconv_beam = large_beam.deconvolve(small_beam, failure_returns_pointlike=True)
 

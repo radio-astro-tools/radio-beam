@@ -512,6 +512,23 @@ class Beam(u.Quantity):
     def beamarea_equiv(self):
         return u.beam_angular_area(self.sr)
 
+    def commonbeam_with(self, other_beam):
+        '''
+        Solve for the common beam with a given `~radio_beam.Beam`.
+
+        This common beam operation is only valid for a set of 2 beams.
+        For the general case, define a set of beams using `~radio_beam.Beams`.
+
+        Parameters
+        ----------
+        other_beam : radio_beam.Beam
+            The beam to find the common beam with.
+
+        '''
+        from .commonbeam import find_commonbeam_between
+
+        return find_commonbeam_between(self, other_beam)
+
     def ellipse_to_plot(self, xcen, ycen, pixscale):
         """
         Return a matplotlib ellipse for plotting
