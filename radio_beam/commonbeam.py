@@ -13,7 +13,7 @@ from .beam import Beam
 from .utils import BeamError, transform_ellipse, deconvolve_optimized
 
 __all__ = ['commonbeam', 'common_2beams', 'getMinVolEllipse',
-           'common_manybeams_mve', 'find_common_']
+           'common_manybeams_mve', 'find_commonbeam_between']
 
 
 def commonbeam(beams, method='pts', **method_kwargs):
