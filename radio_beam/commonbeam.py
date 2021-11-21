@@ -13,7 +13,7 @@ from .beam import Beam
 from .utils import BeamError, transform_ellipse, deconvolve_optimized
 
 __all__ = ['commonbeam', 'common_2beams', 'getMinVolEllipse',
-           'common_manybeams_mve', 'find_commonbeam_between']
+           'common_manybeams_mve', 'find_common_']
 
 
 def commonbeam(beams, method='pts', **method_kwargs):
@@ -65,7 +65,7 @@ def common_2beams(beams, check_deconvolution=True):
     if (~beams.isfinite).all():
         raise BeamError("All beams in the object are invalid.")
 
-    return find_commonbeam_between(beams[0], beams[1])
+    return find_commonbeam_between(beams[0], beams[1], check_deconvolution=check_deconvolution)
 
 
 def find_commonbeam_between(beam1, beam2, check_deconvolution=True):
