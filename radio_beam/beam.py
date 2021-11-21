@@ -11,7 +11,6 @@ from astropy.modeling.models import Ellipse2D, Gaussian2D
 from astropy.convolution import Kernel2D
 from astropy.convolution.kernels import _round_up_to_odd_integer
 
-from .commonbeam import find_commonbeam_between
 from .utils import deconvolve_optimized, convolve, RadioBeamDeprecationWarning
 
 # Conversion between a twod Gaussian FWHM**2 and effective area
@@ -526,6 +525,8 @@ class Beam(u.Quantity):
             The beam to find the common beam with.
 
         '''
+        from .commonbeam import find_commonbeam_between
+
         return find_commonbeam_between(self, other_beam)
 
     def ellipse_to_plot(self, xcen, ycen, pixscale):
