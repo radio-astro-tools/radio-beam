@@ -1,7 +1,5 @@
 version: 2
 
-name: radio-beam
-
 build:
   image: latest
 
