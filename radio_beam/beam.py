@@ -399,7 +399,7 @@ class Beam(u.Quantity):
     def __eq__(self, other):
 
         # Catch floating point issues
-        atol_deg = 1e-12 * u.deg
+        atol_deg = 1e-10 * u.deg
 
         this_pa = self.pa.to(u.deg) % (180.0 * u.deg)
         other_pa = other.pa.to(u.deg) % (180.0 * u.deg)
