@@ -7,6 +7,6 @@ and manipulating beams.  Some example applications include:
  * Convolution and deconvolution
  * Unit conversion (Jy to/from K)
 
-[Basic Documentation](https://github.com/radio-astro-tools/radio_beam/blob/master/docs/index.rst) is available.
+[Basic Documentation](https://radio-beam.readthedocs.io/en/latest/) is available.
 
 [![Build Status](https://travis-ci.org/radio-astro-tools/radio_beam.svg?branch=master)](https://travis-ci.org/radio-astro-tools/radio_beam)
