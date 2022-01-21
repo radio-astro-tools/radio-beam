@@ -81,7 +81,7 @@ Or alternatively with::
     >>> (1*u.Jy).to(u.K, my_beam.jtok_equiv(25*u.GHz)) # doctest: +FLOAT_CMP
     <Quantity 7821.572919292681 K>
 
-To get the value off 1 Jy in K for a given beam::
+To get the value of 1 Jy in K for a given beam::
 
     >>> my_beam.jtok(25*u.GHz) # doctest: +FLOAT_CMP
     <Quantity 7821.572919292681 K>
