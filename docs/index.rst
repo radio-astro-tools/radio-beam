@@ -1,7 +1,7 @@
 Radio Beam
 ==========
 
-radio-beam provides a tools for manipulating and utilizing two dimensional Gaussian beams
+radio-beam provides a tools for manipulating and utilizing two-dimensional Gaussian beams
 within the `astropy <http://www.astropy.org>`__ framework. It is primarily built for handling
 radio astronomy data and is integrated into the `spectral-cube <https://spectral-cube.readthedocs.io>_`
 package, amongst others.
