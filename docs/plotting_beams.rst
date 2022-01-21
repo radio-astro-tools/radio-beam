@@ -7,7 +7,7 @@ To show the beam on an image in matplotlib, use `~radio_beam.Beam.ellipse_to_plo
 
     >>> from radio_beam import Beam
     >>> import astropy.units as u
-    >>> import matplotlib.pyplot as plt
+    >>> import matplotlib.pyplot as plt  # doctest: +SKIP
     >>> my_beam = Beam(5*u.arcsec, 3*u.arcsec, 30*u.deg)
     >>> ycen_pix, xcen_pix = 15, 15
     >>> pixscale = 1 * u.arcsec
