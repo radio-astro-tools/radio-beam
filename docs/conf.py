@@ -100,7 +100,7 @@ version = release = get_distribution(setup_cfg['name']).version
 
 
 html_theme_options = {
-    'logotext1': 'packagename',  # white,  semi-bold
+    'logotext1': 'radio-beam',  # white,  semi-bold
     'logotext2': '',  # orange, light
     'logotext3': ':docs'   # white,  light
     }
@@ -112,6 +112,10 @@ html_theme_options = {
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
 #html_logo = ''
+
+# Static files to copy after template files
+html_static_path = ['_static']
+html_style = 'spectralcube.css'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
