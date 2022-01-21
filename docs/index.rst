@@ -7,7 +7,7 @@ radio astronomy data and is integrated into the `spectral-cube <https://spectral
 package, amongst others.
 
 radio-beam also handles operations on sets of beams, for example from a spectral cube with
-varying resolution in spectral channels. Of note is the algorithms for identifying the
+varying resolution in spectral channels. Of note are the algorithms for identifying the
 smallest common beam in a set (i.e., the minimum enclosing ellipse area).
 
 Getting started
