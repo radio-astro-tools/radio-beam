@@ -51,7 +51,12 @@ def test_simple_source_deconvolution_ellipse(x_stddev, y_stddev, theta):
     # Deconvolution between 2 circular Gaussians is:
     # np.sqrt(fwhm**2 - beam_major**2)
 
-    npt.assert_allclose(deconv_source.x_stddev.value, np.sqrt(x_stddev**2 - mybeam.major.value))
-    npt.assert_allclose(deconv_source.y_stddev.value, np.sqrt(y_stddev**2 - mybeam.major.value))
+    # Test our switching of x_stddev, y_stddev -> major, minor depending on the larger one.
+    if x_stddev > y_stddev:
+        npt.assert_allclose(deconv_source.x_stddev.value, np.sqrt(x_stddev**2 - mybeam.major.value))
+        npt.assert_allclose(deconv_source.y_stddev.value, np.sqrt(y_stddev**2 - mybeam.minor.value))
+    else:
+        npt.assert_allclose(deconv_source.x_stddev.value, np.sqrt(y_stddev**2 - mybeam.major.value))
+        npt.assert_allclose(deconv_source.y_stddev.value, np.sqrt(x_stddev**2 - mybeam.minor.value))
 
     npt.assert_allclose(deconv_source.theta.value, theta % 180.)
