@@ -58,7 +58,8 @@ def deconvolve_source(source, mybeam, failure_returns_pointlike=False):
 
     deconv_major *= u.deg
     deconv_minor *= u.deg
-    deconv_pa *= u.deg
+    deconv_pa *= u.rad
+    deconv_pa = deconv_pa.to(u.deg)
 
     # Re-assemble until a Gaussian2D model
     deconv_source = Gaussian2D(amplitude=source.amplitude,
