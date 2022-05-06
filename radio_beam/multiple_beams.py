@@ -335,8 +335,8 @@ class Beams(u.Quantity):
         this issue, a small `epsilon` correction factor is added to the
         ellipse edges to encourage a valid common beam solution.
         Since `epsilon` is added to all sides, this correction will at most
-        increase the common beam size by :math:`2\times(1+\epsilon)`.
-        The default values of `epsilon` is :math:`5\times10^{-4}`, so this
+        increase the common beam size by :math:`2\\times(1+\\epsilon)`.
+        The default values of `epsilon` is :math:`5\\times10^{-4}`, so this
         will have a very small effect on the size of the common beam.
 
         In some cases, `epsilon` must be increased to find a valid common
