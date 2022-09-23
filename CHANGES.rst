@@ -1,5 +1,8 @@
-0.3.4 (unreleased)
+0.3.4 (2022-09-23)
 ------------------
+ - Simplified two-beam common beam determination (https://github.com/radio-astro-tools/radio-beam/pull/102)
+ - Allow non-arcsecond units in beam tables (https://github.com/radio-astro-tools/radio-beam/pull/98)
+ - Support for beam initialization from area (https://github.com/radio-astro-tools/radio-beam/pull/94)
 
 0.3.3 (2021-03-19)
 ------------------
