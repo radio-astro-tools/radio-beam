@@ -3,6 +3,7 @@
  - Simplified two-beam common beam determination (https://github.com/radio-astro-tools/radio-beam/pull/102)
  - Allow non-arcsecond units in beam tables (https://github.com/radio-astro-tools/radio-beam/pull/98)
  - Support for beam initialization from area (https://github.com/radio-astro-tools/radio-beam/pull/94)
+ - Drop support for python3.6
 
 0.3.3 (2021-03-19)
 ------------------
