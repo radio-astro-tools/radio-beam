@@ -64,6 +64,8 @@ exclude_patterns.append('_templates')
 rst_epilog += """
 """
 
+intersphinx_mapping['spectral-cube'] = ('https://spectral-cube.readthedocs.io/en/latest/', None)  # noqa: F405
+
 # -- Project information ------------------------------------------------------
 
 # This does not *have* to match the package name, but typically does
