@@ -21,6 +21,49 @@ will have a very small effect on the size of the common beam.
 The implementation in radio-beam is adapted from `a generalized python implementation <https://github.com/minillinim/ellipsoid/blob/master/ellipsoid.py>`_ and `the original matlab version <http://www.mathworks.com/matlabcentral/fileexchange/9542>`_ written by Nima Moshtagh (see accompanying paper `here <http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.116.7691&rep=rep1&type=pdf>`__).
 
 
+Convolution to a common resolution
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The typical use case for calculating a common beam is to convolve one or more
+data sets to a common resolution.  Using radio-beam with spectral-cube, you
+would first compute the common beam, then convolve all data sets to that beam.
+
+For a varying-resolution spectral cube, one in which there are different beams
+for each channel, the process looks like:
+
+.. python::
+
+   >>> cube = SpectralCube.read('VaryingResolutionCube.image')
+   >>> common_beam = cube.beams.common_beam()
+   >>> cb_cube = cube.convolve_to(common_beam)
+
+If you have two different data sets, you would follow a similar process:
+
+.. python::
+
+   >>> cube1 = SpectralCube.read('cube1.image')
+   >>> cube2 = SpectralCube.read('cube2.image')
+   >>> common_beam = Beams([cube1.beam, cube2.beam]).common_beam()
+   >>> cb_cube1 = cube1.convolve_to(common_beam)
+   >>> cb_cube2 = cube2.convolve_to(common_beam)
+
+
+Note that this process is equivalent to calculating the common beam,
+deconvolving the original data's beam, and convolving with the resulting kernel.
+
+.. python::
+
+   >>> cube1 = SpectralCube.read('cube1.image')
+   >>> cube2 = SpectralCube.read('cube2.image')
+   >>> common_beam = Beams([cube1.beam, cube2.beam]).common_beam()
+   >>> kernel1 = common_beam.deconvolve(cube1.beam)
+   >>> kernel2 = common_beam.deconvolve(cube2.beam)
+   >>> cb_cube1 = cube1.spatial_smooth(kernel1)
+   >>> cb_cube2 = cube2.spatial_smooth(kernel2)
+
+
+See also :doc:`spectral-cube:smoothing`.
+
+
 Could not find common beam to deconvolve all beams
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
