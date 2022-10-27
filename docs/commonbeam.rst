@@ -57,7 +57,7 @@ deconvolving the original data's beam, and convolving with the resulting kernel.
 
    >>> cube1 = SpectralCube.read('cube1.image')
    >>> cube2 = SpectralCube.read('cube2.image')
-   >>> common_beam = Beams([cube1.beam, cube2.beam]).common_beam()
+   >>> common_beam = cube1.beam.commonbeam_with(cube2.beam)
    >>> kernel1 = common_beam.deconvolve(cube1.beam)
    >>> kernel2 = common_beam.deconvolve(cube2.beam)
    >>> cb_cube1 = cube1.spatial_smooth(kernel1)
