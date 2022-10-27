@@ -31,6 +31,7 @@ For a varying-resolution spectral cube, one in which there are different beams
 for each channel, the process looks like:
 
 .. python::
+   :skip:
 
    >>> cube = SpectralCube.read('VaryingResolutionCube.image')
    >>> common_beam = cube.beams.common_beam()
@@ -39,6 +40,7 @@ for each channel, the process looks like:
 If you have two different data sets, you would follow a similar process:
 
 .. python::
+   :skip:
 
    >>> cube1 = SpectralCube.read('cube1.image')
    >>> cube2 = SpectralCube.read('cube2.image')
@@ -51,6 +53,7 @@ Note that this process is equivalent to calculating the common beam,
 deconvolving the original data's beam, and convolving with the resulting kernel.
 
 .. python::
+   :skip:
 
    >>> cube1 = SpectralCube.read('cube1.image')
    >>> cube2 = SpectralCube.read('cube2.image')
