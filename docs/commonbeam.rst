@@ -44,7 +44,7 @@ If you have two different data sets, you would follow a similar process:
 
    >>> cube1 = SpectralCube.read('cube1.image')
    >>> cube2 = SpectralCube.read('cube2.image')
-   >>> common_beam = Beams([cube1.beam, cube2.beam]).common_beam()
+   >>> common_beam = cube1.beam.commonbeam_with(cube2.beam)
    >>> cb_cube1 = cube1.convolve_to(common_beam)
    >>> cb_cube2 = cube2.convolve_to(common_beam)
 
