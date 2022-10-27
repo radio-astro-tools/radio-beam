@@ -28,40 +28,31 @@ data sets to a common resolution.  Using radio-beam with spectral-cube, you
 would first compute the common beam, then convolve all data sets to that beam.
 
 For a varying-resolution spectral cube, one in which there are different beams
-for each channel, the process looks like:
+for each channel, the process looks like::
 
-.. python::
-   :skip:
+   >>> cube = SpectralCube.read('VaryingResolutionCube.image') # doctest: +SKIP
+   >>> common_beam = cube.beams.common_beam() # doctest: +SKIP
+   >>> cb_cube = cube.convolve_to(common_beam) # doctest: +SKIP
 
-   >>> cube = SpectralCube.read('VaryingResolutionCube.image')
-   >>> common_beam = cube.beams.common_beam()
-   >>> cb_cube = cube.convolve_to(common_beam)
+If you have two different data sets, you would follow a similar process::
 
-If you have two different data sets, you would follow a similar process:
-
-.. python::
-   :skip:
-
-   >>> cube1 = SpectralCube.read('cube1.image')
-   >>> cube2 = SpectralCube.read('cube2.image')
-   >>> common_beam = cube1.beam.commonbeam_with(cube2.beam)
-   >>> cb_cube1 = cube1.convolve_to(common_beam)
-   >>> cb_cube2 = cube2.convolve_to(common_beam)
+   >>> cube1 = SpectralCube.read('cube1.image') # doctest: +SKIP
+   >>> cube2 = SpectralCube.read('cube2.image') # doctest: +SKIP
+   >>> common_beam = cube1.beam.commonbeam_with(cube2.beam) # doctest: +SKIP
+   >>> cb_cube1 = cube1.convolve_to(common_beam) # doctest: +SKIP
+   >>> cb_cube2 = cube2.convolve_to(common_beam) # doctest: +SKIP
 
 
 Note that this process is equivalent to calculating the common beam,
-deconvolving the original data's beam, and convolving with the resulting kernel.
+deconvolving the original data's beam, and convolving with the resulting kernel.::
 
-.. python::
-   :skip:
-
-   >>> cube1 = SpectralCube.read('cube1.image')
-   >>> cube2 = SpectralCube.read('cube2.image')
-   >>> common_beam = cube1.beam.commonbeam_with(cube2.beam)
-   >>> kernel1 = common_beam.deconvolve(cube1.beam)
-   >>> kernel2 = common_beam.deconvolve(cube2.beam)
-   >>> cb_cube1 = cube1.spatial_smooth(kernel1)
-   >>> cb_cube2 = cube2.spatial_smooth(kernel2)
+   >>> cube1 = SpectralCube.read('cube1.image') # doctest: +SKIP
+   >>> cube2 = SpectralCube.read('cube2.image') # doctest: +SKIP
+   >>> common_beam = cube1.beam.commonbeam_with(cube2.beam) # doctest: +SKIP
+   >>> kernel1 = common_beam.deconvolve(cube1.beam) # doctest: +SKIP
+   >>> kernel2 = common_beam.deconvolve(cube2.beam) # doctest: +SKIP
+   >>> cb_cube1 = cube1.spatial_smooth(kernel1) # doctest: +SKIP
+   >>> cb_cube2 = cube2.spatial_smooth(kernel2) # doctest: +SKIP
 
 
 See also :doc:`spectral-cube:smoothing`.
