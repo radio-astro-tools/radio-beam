@@ -4,7 +4,7 @@ from astropy import units as u
 import numpy.testing as npt
 import numpy as np
 import pytest
-from pkg_resources import parse_version
+from packaging.version import Version as parse_version
 from astropy.version import version
 
 SIGMA_TO_FWHM = radio_beam.SIGMA_TO_FWHM
