@@ -2,8 +2,6 @@
 
 from ._astropy_init import __version__, test
 
-from pkg_resources import get_distribution, DistributionNotFound
-
 from .beam import (Beam, EllipticalGaussian2DKernel,
                    EllipticalTophat2DKernel)
 from .multiple_beams import Beams

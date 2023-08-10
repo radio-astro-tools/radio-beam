@@ -78,7 +78,7 @@ copyright = '{0}, {1}'.format(
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
-from pkg_resources import get_distribution
+from importlib.metadata import distribution as get_distribution
 version = release = get_distribution(setup_cfg['name']).version
 
 # -- Options for HTML output --------------------------------------------------
