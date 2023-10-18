@@ -43,19 +43,19 @@ jobs:
           #   name: Python 3.6, CASA, and dev versions of key dependencies
           #   toxenv: py36-test-casa-dev
           - os: ubuntu-latest
-            python-version: 3.10
-            name: Python 3.10, all dependencies, and dev versions of key dependencies
-            toxenv: py310-test-dev
+            python-version: 3.11
+            name: Python 3.11, all dependencies, and dev versions of key dependencies
+            toxenv: py311-test-dev
           - os: macos-latest
-            python-version: 3.10
-            name: Python 3.10 with all dependencies, and dev versions of key dependencies (no CASA) on MacOS X
-            toxenv: py310-test-all-dev
+            python-version: 3.11
+            name: Python 3.11 with all dependencies, and dev versions of key dependencies (no CASA) on MacOS X
+            toxenv: py311-test-all-dev
           - os: windows-latest
-            python-version: 3.10
-            name: Python 3.10, all dependencies, and dev versions of key dependencies (no CASA) on Windows
-            toxenv: py310-test-all-dev
+            python-version: 3.11
+            name: Python 3.11, all dependencies, and dev versions of key dependencies (no CASA) on Windows
+            toxenv: py311-test-all-dev
           - os: ubuntu-latest
-            python-version: 3.9
+            python-version: 3.11
             name: Documentation
             toxenv: build_docs
 
