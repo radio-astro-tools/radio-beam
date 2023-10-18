@@ -11,6 +11,14 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
+            python-version: 3.11
+            name: Python 3.11 with minimal dependencies
+            toxenv: py311-test
+          - os: ubuntu-latest
+            python-version: '3.10'
+            name: Python 3.10 with minimal dependencies
+            toxenv: py310-test
+          - os: ubuntu-latest
             python-version: 3.9
             name: Python 3.9 with minimal dependencies
             toxenv: py39-test
@@ -35,26 +43,26 @@ jobs:
           #   name: Python 3.6, CASA, and dev versions of key dependencies
           #   toxenv: py36-test-casa-dev
           - os: ubuntu-latest
-            python-version: 3.9
-            name: Python 3.9, all dependencies, and dev versions of key dependencies
-            toxenv: py39-test-dev
+            python-version: 3.11
+            name: Python 3.11, all dependencies, and dev versions of key dependencies
+            toxenv: py311-test-dev
           - os: macos-latest
-            python-version: 3.9
-            name: Python 3.9 with all dependencies, and dev versions of key dependencies (no CASA) on MacOS X
-            toxenv: py39-test-all-dev
+            python-version: 3.11
+            name: Python 3.11 with all dependencies, and dev versions of key dependencies (no CASA) on MacOS X
+            toxenv: py311-test-all-dev
           - os: windows-latest
-            python-version: 3.9
-            name: Python 3.9, all dependencies, and dev versions of key dependencies (no CASA) on Windows
-            toxenv: py39-test-all-dev
+            python-version: 3.11
+            name: Python 3.11, all dependencies, and dev versions of key dependencies (no CASA) on Windows
+            toxenv: py311-test-all-dev
           - os: ubuntu-latest
-            python-version: 3.9
+            python-version: 3.11
             name: Documentation
             toxenv: build_docs
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install testing dependencies
@@ -62,6 +70,7 @@ jobs:
     - name: Run tests with ${{ matrix.name }}
       run: tox -v -e ${{ matrix.toxenv }}
     - name: Upload coverage to codecov
-      uses: codecov/codecov-action@v1.0.13
+      if: ${{ contains(matrix.toxenv,'-cov') }}
+      uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
