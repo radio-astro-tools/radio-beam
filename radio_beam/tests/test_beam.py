@@ -147,7 +147,7 @@ def test_jtok():
 
     freq = 1.42 * u.GHz
 
-    conv_factor = u.brightness_temperature(beam.sr, freq)
+    conv_factor = u.brightness_temperature(beam_area=beam.sr, frequency=freq)
 
     assert_quantity_allclose((1 * u.Jy).to(u.K, equivalencies=conv_factor),
                              beam.jtok(freq))
@@ -160,7 +160,7 @@ def test_jtok_equiv():
 
     freq = 1.42 * u.GHz
 
-    conv_factor = u.brightness_temperature(beam.sr, freq)
+    conv_factor = u.brightness_temperature(beam_area=beam.sr, frequency=freq)
     conv_beam_factor = beam.jtok_equiv(freq)
 
     assert_quantity_allclose((1 * u.Jy).to(u.K, equivalencies=conv_factor),
