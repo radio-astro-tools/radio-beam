@@ -1,10 +1,10 @@
-0.3.6 (2023-12-07)
+0.3.7 (2023-12-07)
 ------------------
 - Update rtd build file #121
 - bugfix: brightness_temperature call spec #119
 - pdates to testing and such #117
 
-0.3.5 (2023-10-17)
+0.3.5/0.3.6 (2023-10-17)
 ------------------
 - Add more documentation about common beam convolution by @keflavich in #113
 - remove unused imports that are apparently deprecated anyway by @keflavich in #115
