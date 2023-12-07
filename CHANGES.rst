@@ -1,3 +1,15 @@
+0.3.6 (2023-12-07)
+------------------
+- Update rtd build file #121
+- bugfix: brightness_temperature call spec #119
+- pdates to testing and such #117
+
+0.3.5 (2023-10-17)
+------------------
+- Add more documentation about common beam convolution by @keflavich in #113
+- remove unused imports that are apparently deprecated anyway by @keflavich in #115
+- Clean up _astropy_init.py by @pllim in #116
+
 0.3.4 (2022-09-23)
 ------------------
  - Simplified two-beam common beam determination (https://github.com/radio-astro-tools/radio-beam/pull/102)
@@ -11,7 +23,7 @@
 
  0.3.2 (2019-08-27)
  ------------------
- 
+
 
 0.3.1 (2019-02-20)
 ------------------
