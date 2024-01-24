@@ -529,7 +529,7 @@ class Beam(u.Quantity):
 
         return find_commonbeam_between(self, other_beam)
 
-    def ellipse_to_plot(self, xcen, ycen, pixscale, **kwargs):
+    def ellipse_to_plot(self, xcen, ycen, pixscale):
         """
         Return a matplotlib ellipse for plotting
 
@@ -553,7 +553,7 @@ class Beam(u.Quantity):
                        height=(self.minor.to(u.deg) / pixscale).to(u.dimensionless_unscaled).value,
                        # PA is 90 deg offset from x-y axes by convention
                        # (it is angle from NCP)
-                       angle=(self.pa+90*u.deg).to(u.deg).value, **kwargs)
+                       angle=(self.pa+90*u.deg).to(u.deg).value)
 
     def as_kernel(self, pixscale, **kwargs):
         """
