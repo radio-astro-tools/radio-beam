@@ -4,7 +4,7 @@
 from __future__ import print_function, absolute_import, division
 
 import os
-from distutils.version import LooseVersion
+from setuptools._distutils.version import LooseVersion
 
 # Import casatools and casatasks here if available as they can otherwise
 # cause a segfault if imported later on during tests.
