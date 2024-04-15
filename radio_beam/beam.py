@@ -1,4 +1,3 @@
-import six
 from astropy import units as u
 from astropy.io import fits
 from astropy import constants
@@ -165,7 +164,7 @@ class Beam(u.Quantity):
         # ... given a file try to make a fits header
         # assume a string refers to a filename on disk
         if not isinstance(hdr,fits.Header):
-            if isinstance(hdr, six.string_types):
+            if isinstance(hdr, str):
                 if hdr.lower().endswith(('.fits', '.fits.gz', '.fit',
                                          '.fit.gz', '.fits.Z', '.fit.Z')):
                     hdr = fits.getheader(hdr)
