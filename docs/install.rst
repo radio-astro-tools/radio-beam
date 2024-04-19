@@ -6,10 +6,9 @@ Requirements
 
 This package has the following dependencies:
 
-* `Python <http://www.python.org>`_ 3.6 or later (Python 3.x is supported)
+* `Python <http://www.python.org>`_ 3.6 or later
 * `Numpy <http://www.numpy.org>`_ 1.8 or later
 * `Astropy <http://www.astropy.org>`__ 1.0 or later
-* `six <http://pypi.python.org/pypi/six/>`__
 
 Installation
 ------------
