@@ -383,9 +383,15 @@ class Beam(u.Quantity):
             failure_returns_pointlike
         """
 
-        new_major, new_minor, new_pa = deconvolve_optimized(self.to_header_keywords(),
-                                                            other.to_header_keywords(),
-                                                            failure_returns_pointlike=failure_returns_pointlike)
+        if self == other:
+            # if you're deconvolving the beam from itself, we shouldn't go
+            # through the deconvolution process; 'failure_returns_pointlike'
+            # would return this if set, but we shouldn't give that option in this case
+            new_major, new_minor, new_pa = 0., 0., 0.
+        else:
+            new_major, new_minor, new_pa = deconvolve_optimized(self.to_header_keywords(),
+                                                                other.to_header_keywords(),
+                                                                failure_returns_pointlike=failure_returns_pointlike)
 
         # Keep the units from before
         new_major = (new_major * u.deg).to(self.major.unit)
