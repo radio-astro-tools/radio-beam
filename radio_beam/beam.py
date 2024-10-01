@@ -86,7 +86,7 @@ class Beam(u.Quantity):
             major = _set_default_unit("major", major, default_unit, equiv_unit=u.deg)
 
         if pa is not None:
-            pa = _set_default_unit("pa", pa, default_unit, equiv_unit=u.deg)
+            pa = _set_default_unit("pa", pa, u.deg, equiv_unit=u.deg)
         else:
             pa = 0 * u.deg
 
