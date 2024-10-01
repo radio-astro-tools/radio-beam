@@ -81,20 +81,23 @@ class Beam(u.Quantity):
             minor = rad * SIGMA_TO_FWHM
             pa = 0.0 * u.deg
 
-        else:
-            # give specified values priority
-
+        # give specified values priority
+        if major is not None:
             major = _set_default_unit("major", major, default_unit, equiv_unit=u.deg)
+
+        if pa is not None:
             pa = _set_default_unit("pa", pa, default_unit, equiv_unit=u.deg)
+        else:
+            pa = 0 * u.deg
 
-            # some sensible defaults
-            if minor is None:
-                minor = major
-            else:
-                minor = _set_default_unit("minor", minor, default_unit, equiv_unit=u.deg)
+        # some sensible defaults
+        if minor is None:
+            minor = major
+        else:
+            minor = _set_default_unit("minor", minor, default_unit, equiv_unit=u.deg)
 
-            if minor > major:
-                raise ValueError("Minor axis greater than major axis.")
+        if minor > major:
+            raise ValueError("Minor axis greater than major axis.")
 
         self = super(Beam, cls).__new__(cls, _to_area(major,minor).value, u.sr)
         self._major = major
