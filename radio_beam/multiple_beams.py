@@ -17,7 +17,7 @@ class Beams(u.Quantity):
     """
 
     def __new__(cls, major=None, minor=None, pa=None,
-                areas=None, default_unit=u.arcsec, meta=None,
+                areas=None, default_unit=u.deg, meta=None,
                 beams=None):
         """
         Create a new set of Gaussian beams
