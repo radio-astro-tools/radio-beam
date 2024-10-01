@@ -62,7 +62,7 @@ def test_fits_from_casa():
 
 def test_manual():
     # Instantiate from command line
-    man_beam_val = Beam(0.1, 0.1, 30)
+    man_beam_val = Beam(0.1, 0.1, 30, default_unit=u.deg)
     npt.assert_almost_equal(man_beam_val.value, 3.451589629868801e-06)
     man_beam_rad = Beam(0.1*u.rad, 0.1*u.rad, 30*u.deg)
     npt.assert_almost_equal(man_beam_rad.value, 0.011330900354567986)
