@@ -27,13 +27,23 @@ unit_format = {u.deg: r'\\circ',
                u.arcmin: "'"}
 
 
+def _set_default_unit(type_str, value, unit, equiv_unit=u.deg):
+    if not hasattr(value, 'unit'):
+        return value * unit
+
+    if value.unit.is_equivalent(equiv_unit):
+        return value
+    else:
+        raise u.UnitsError(f"{value.unit} for {type_str} is not equivalent to {equiv_unit}")
+
+
 class Beam(u.Quantity):
     """
     An object to handle single radio beams.
     """
 
     def __new__(cls, major=None, minor=None, pa=None, area=None,
-                default_unit=u.arcsec, meta=None):
+                default_unit=u.deg, meta=None):
         """
         Create a new Gaussian beam
 
@@ -51,6 +61,8 @@ class Beam(u.Quantity):
             Gaussian beam.
         default_unit : :class:`~astropy.units.Unit`
             The unit to impose on major, minor if they are specified as floats
+        meta : dict, optional
+            A dictionary of metadata to store with the beam.
         """
 
         # improve to some kwargs magic later
@@ -69,34 +81,20 @@ class Beam(u.Quantity):
             minor = rad * SIGMA_TO_FWHM
             pa = 0.0 * u.deg
 
-        # give specified values priority
-        if major is not None:
-            if u.deg.is_equivalent(major):
-                major = major
-            else:
-                warnings.warn("Assuming major axis has been specified in degrees")
-                major = major * u.deg
-        if minor is not None:
-            if u.deg.is_equivalent(minor):
-                minor = minor
-            else:
-                warnings.warn("Assuming minor axis has been specified in degrees")
-                minor = minor * u.deg
-        if pa is not None:
-            if u.deg.is_equivalent(pa):
-                pa = pa
-            else:
-                warnings.warn("Assuming position angle has been specified in degrees")
-                pa = pa * u.deg
         else:
-            pa = 0.0 * u.deg
+            # give specified values priority
 
-        # some sensible defaults
-        if minor is None:
-            minor = major
+            major = _set_default_unit("major", major, default_unit, equiv_unit=u.deg)
+            pa = _set_default_unit("pa", pa, default_unit, equiv_unit=u.deg)
 
-        if minor > major:
-            raise ValueError("Minor axis greater than major axis.")
+            # some sensible defaults
+            if minor is None:
+                minor = major
+            else:
+                minor = _set_default_unit("minor", minor, default_unit, equiv_unit=u.deg)
+
+            if minor > major:
+                raise ValueError("Minor axis greater than major axis.")
 
         self = super(Beam, cls).__new__(cls, _to_area(major,minor).value, u.sr)
         self._major = major
