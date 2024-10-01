@@ -321,7 +321,7 @@ def test_extrema_beams(beams, majors, minors, pas):
     assert extrema[1].minor.value == minors[mask].max().value
 
 
-@pytest.mark.parametrize("majors", [[1, 1, 1, 2, np.NaN, 4],
+@pytest.mark.parametrize("majors", [[1, 1, 1, 2, np.nan, 4],
                                     [0, 1, 1, 2, 3, 4]])
 def test_beams_with_invalid(majors):
 
