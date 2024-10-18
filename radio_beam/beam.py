@@ -27,11 +27,11 @@ unit_format = {u.deg: r'\\circ',
                u.arcmin: "'"}
 
 
-def _with_default_unit(type_str, value, unit, equiv_unit=u.deg):
+def _with_default_unit(type_str, value, unit):
     if not hasattr(value, 'unit'):
         return value * unit
 
-    if value.unit.is_equivalent(equiv_unit):
+    if value.unit.is_equivalent(unit):
         return value
     else:
         raise u.UnitsError(f"{value.unit} for {type_str} is not equivalent to {equiv_unit}")
@@ -83,10 +83,10 @@ class Beam(u.Quantity):
 
         # give specified values priority
         if major is not None:
-            major = _with_default_unit("major", major, default_unit, equiv_unit=u.deg)
+            major = _with_default_unit("major", major, default_unit)
 
         if pa is not None:
-            pa = _with_default_unit("pa", pa, u.deg, equiv_unit=u.deg)
+            pa = _with_default_unit("pa", pa, u.deg)
         else:
             pa = 0 * u.deg
 
@@ -94,7 +94,7 @@ class Beam(u.Quantity):
         if minor is None:
             minor = major
         else:
-            minor = _with_default_unit("minor", minor, default_unit, equiv_unit=u.deg)
+            minor = _with_default_unit("minor", minor, default_unit)
 
         if minor > major:
             raise ValueError("Minor axis greater than major axis.")

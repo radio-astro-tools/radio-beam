@@ -61,13 +61,13 @@ class Beams(u.Quantity):
 
         # give specified values priority
         if major is not None:
-            major = _with_default_unit("major", major, default_unit, equiv_unit=u.deg)
+            major = _with_default_unit("major", major, default_unit)
 
 
         if pa is not None:
             if len(pa) != len(major):
                 raise ValueError("Number of position angles must match number of major axis lengths")
-            pa = _with_default_unit("pa", pa, u.deg, equiv_unit=u.deg)
+            pa = _with_default_unit("pa", pa, u.deg)
         else:
             pa = np.zeros(major.shape) * u.deg
 
@@ -77,7 +77,7 @@ class Beams(u.Quantity):
         elif len(minor) != len(major):
             raise ValueError("Minor and major axes must have same number of values")
         else:
-            minor = _with_default_unit("minor", minor, default_unit, equiv_unit=u.deg)
+            minor = _with_default_unit("minor", minor, default_unit)
 
         if np.any(minor > major):
             raise ValueError("Minor axis greater than major axis.")
