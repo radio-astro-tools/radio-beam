@@ -27,6 +27,16 @@ unit_format = {u.deg: r'\\circ',
                u.arcmin: "'"}
 
 
+def _with_default_unit(type_str, value, unit):
+    if not hasattr(value, 'unit'):
+        return value * unit
+
+    if value.unit.is_equivalent(unit):
+        return value
+    else:
+        raise u.UnitsError(f"{value.unit} for {type_str} is not equivalent to {equiv_unit}")
+
+
 class Beam(u.Quantity):
     """
     An object to handle single radio beams.
@@ -51,6 +61,8 @@ class Beam(u.Quantity):
             Gaussian beam.
         default_unit : :class:`~astropy.units.Unit`
             The unit to impose on major, minor if they are specified as floats
+        meta : dict, optional
+            A dictionary of metadata to store with the beam.
         """
 
         # improve to some kwargs magic later
@@ -71,29 +83,18 @@ class Beam(u.Quantity):
 
         # give specified values priority
         if major is not None:
-            if u.deg.is_equivalent(major):
-                major = major
-            else:
-                warnings.warn("Assuming major axis has been specified in degrees")
-                major = major * u.deg
-        if minor is not None:
-            if u.deg.is_equivalent(minor):
-                minor = minor
-            else:
-                warnings.warn("Assuming minor axis has been specified in degrees")
-                minor = minor * u.deg
+            major = _with_default_unit("major", major, default_unit)
+
         if pa is not None:
-            if u.deg.is_equivalent(pa):
-                pa = pa
-            else:
-                warnings.warn("Assuming position angle has been specified in degrees")
-                pa = pa * u.deg
+            pa = _with_default_unit("pa", pa, u.deg)
         else:
-            pa = 0.0 * u.deg
+            pa = 0 * u.deg
 
         # some sensible defaults
         if minor is None:
             minor = major
+        else:
+            minor = _with_default_unit("minor", minor, default_unit)
 
         if minor > major:
             raise ValueError("Minor axis greater than major axis.")

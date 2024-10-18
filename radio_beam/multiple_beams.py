@@ -6,7 +6,7 @@ from astropy import wcs
 import numpy as np
 import warnings
 
-from .beam import Beam, _to_area, SIGMA_TO_FWHM
+from .beam import Beam, _to_area, SIGMA_TO_FWHM, _with_default_unit
 from .commonbeam import commonbeam
 from .utils import InvalidBeamOperationError
 
@@ -30,12 +30,14 @@ class Beams(u.Quantity):
             The FWHM minor axes
         pa : :class:`~astropy.units.Quantity` with angular equivalency
             The beam position angles
-        area : :class:`~astropy.units.Quantity` with steradian equivalency
+        areas : :class:`~astropy.units.Quantity` with steradian equivalency
             The area of the beams.  This is an alternative to specifying the
             major/minor/PA, and will create those values assuming a circular
             Gaussian beam.
         default_unit : :class:`~astropy.units.Unit`
             The unit to impose on major, minor if they are specified as floats
+        meta : dict, optional
+            A dictionary of metadata to include in the header.
         beams : List of :class:`~radio_beam.Beam` objects
             List of individual `Beam` objects. The resulting `Beams` object will
             have major and minor axes in degrees.
@@ -59,33 +61,23 @@ class Beams(u.Quantity):
 
         # give specified values priority
         if major is not None:
-            if u.deg.is_equivalent(major.unit):
-                pass
-            else:
-                warnings.warn("Assuming major axes has been specified in degrees")
-                major = major * u.deg
-        if minor is not None:
-            if u.deg.is_equivalent(minor.unit):
-                pass
-            else:
-                warnings.warn("Assuming minor axes has been specified in degrees")
-                minor = minor * u.deg
+            major = _with_default_unit("major", major, default_unit)
+
+
         if pa is not None:
             if len(pa) != len(major):
                 raise ValueError("Number of position angles must match number of major axis lengths")
-            if u.deg.is_equivalent(pa.unit):
-                pass
-            else:
-                warnings.warn("Assuming position angles has been specified in degrees")
-                pa = pa * u.deg
+            pa = _with_default_unit("pa", pa, u.deg)
         else:
-            pa = np.zeros_like(major.value) * u.deg
+            pa = np.zeros(major.shape) * u.deg
 
         # some sensible defaults
         if minor is None:
             minor = major
         elif len(minor) != len(major):
             raise ValueError("Minor and major axes must have same number of values")
+        else:
+            minor = _with_default_unit("minor", minor, default_unit)
 
         if np.any(minor > major):
             raise ValueError("Minor axis greater than major axis.")

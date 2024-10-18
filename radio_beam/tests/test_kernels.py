@@ -16,7 +16,7 @@ min_astropy_version = parse_version("1.1")
                     reason="Must have astropy version >1.1")
 def test_gauss_kernel():
 
-    fake_beam = radio_beam.Beam(10)
+    fake_beam = radio_beam.Beam(10*u.deg)
 
     # Let pixscale be 0.1 deg/pix
     kernel = fake_beam.as_kernel(0.1*u.deg)
@@ -33,7 +33,7 @@ def test_gauss_kernel():
                     reason="Must have astropy version >1.1")
 def test_tophat_kernel():
 
-    fake_beam = radio_beam.Beam(10)
+    fake_beam = radio_beam.Beam(10*u.deg)
 
     # Let pixscale be 0.1 deg/pix
     kernel = fake_beam.as_tophat_kernel(0.1*u.deg)
