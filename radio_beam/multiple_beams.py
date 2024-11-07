@@ -214,7 +214,7 @@ class Beams(u.Quantity):
 
     @classmethod
     def from_casa_image(cls, imagename):
-        '''
+        """
         Instantiate beams from a CASA image. Cannot currently handle beams for
         different polarizations.
 
@@ -224,7 +224,7 @@ class Beams(u.Quantity):
         ----------
         imagename : str
             Name of CASA image.
-        '''
+        """
 
         try:
             from casatools import image as iatool
