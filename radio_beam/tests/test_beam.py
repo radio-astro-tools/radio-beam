@@ -352,9 +352,9 @@ def test_beam_equal(major, minor, pa):
                           (10, 8, -120),
                           (10, 8, 240)])
 def test_beam_equal_noncirc(major, minor, pa):
-    '''
+    """
     Beams with PA +/- 180 deg are equal
-    '''
+    """
 
     beam1 = Beam(10 * u.deg, 8 * u.deg, 60 * u.deg)
 
@@ -401,11 +401,11 @@ def test_major_minor_swap():
 
 
 def test_commonbeam_builtin():
-    '''
+    """
     Test the built in common beam for Beam with a 2nd beam.
 
     This test case should come out to a round common beam of 10 arcsec.
-    '''
+    """
 
     beam1 = Beam(10 * u.arcsec, 8 * u.arcsec, 60 * u.deg)
 

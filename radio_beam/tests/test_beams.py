@@ -400,11 +400,11 @@ def test_beams_iter():
 
 
 def test_common_beam_smallcircular():
-    '''
+    """
     Simple solution if the smallest beam is circular with a radius larger:
     Major axis is from the largest beam, minor axis is the radius of the
     smaller, and the PA is from the largest beam.
-    '''
+    """
 
     for pa in [0., 18., 68., 122.]:
         beams = Beams(major=[3, 4] * u.arcsec,
@@ -427,9 +427,9 @@ def test_commonbeam_notlargest():
 
 
 def test_commonbeam_largest():
-    '''
+    """
     commonbeam is the largest in this set.
-    '''
+    """
 
     beams, majors = symm_beams_for_tests()[:2]
 
@@ -628,10 +628,10 @@ def test_commonbeam_methods(beams, target_beam):
 
 
 def test_catch_common_beam_opt():
-    '''
+    """
     The optimization method is close to working, but requires more testing.
     Ensure it cannot be used.
-    '''
+    """
 
     beams = Beams(major=[4] * 4 * u.arcsec, minor=[2] * 4 * u.arcsec,
                   pa=[0, 20, 40, 60] * u.deg)
@@ -651,7 +651,7 @@ def test_major_minor_swap():
 
 
 def test_common_beam_mve_auto_increase_epsilon():
-    '''
+    """
     Here's a case where the default MVE parameters fail.
     By slowly increasing the epsilon* value, we get a common
     beam the can be deconvolved correctly over the set.
@@ -660,7 +660,7 @@ def test_common_beam_mve_auto_increase_epsilon():
     radius: radius * (1 + epsilon). The solution is then marginally
     larger than the true optimal solution, but close enough for
     effectively all use cases.
-    '''
+    """
 
     major = [8.517199, 8.513563, 8.518497, 8.518434, 8.528561, 8.528236,
              8.530046, 8.530528, 8.530696, 8.533117] * u.arcsec
