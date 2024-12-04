@@ -247,7 +247,7 @@ class Beam(u.Quantity):
 
     @classmethod
     def from_casa_image(cls, imagename):
-        '''
+        """
         Instantiate beam from a CASA image.
 
         ** Must be run in a CASA environment! **
@@ -256,7 +256,7 @@ class Beam(u.Quantity):
         ----------
         imagename : str
             Name of CASA image.
-        '''
+        """
 
         try:
             import casac
@@ -284,7 +284,7 @@ class Beam(u.Quantity):
         return cls(major=major, minor=minor, pa=pa)
 
     def attach_to_header(self, header, copy=True):
-        '''
+        """
         Attach the beam information to the provided header.
 
         Parameters
@@ -299,7 +299,7 @@ class Beam(u.Quantity):
         copy_header : astropy.io.fits.header.Header
             Copy of the input header with the updated beam info when
             `copy=True`.
-        '''
+        """
 
         if copy:
             header = header.copy()
@@ -457,7 +457,7 @@ class Beam(u.Quantity):
         return self.sr*(distance**2)/u.sr
 
     def jtok_equiv(self, freq):
-        '''
+        """
         Return conversion function between Jy/beam to K at the specified
         frequency.
 
@@ -473,7 +473,7 @@ class Beam(u.Quantity):
         Returns
         -------
         u.brightness_temperature
-        '''
+        """
 
         if not isinstance(freq, u.quantity.Quantity):
             raise TypeError("freq must be a Quantity object. "
@@ -513,7 +513,7 @@ class Beam(u.Quantity):
         return u.beam_angular_area(self.sr)
 
     def commonbeam_with(self, other_beam):
-        '''
+        """
         Solve for the common beam with a given `~radio_beam.Beam`.
 
         This common beam operation is only valid for a set of 2 beams.
@@ -524,7 +524,7 @@ class Beam(u.Quantity):
         other_beam : radio_beam.Beam
             The beam to find the common beam with.
 
-        '''
+        """
         from .commonbeam import find_commonbeam_between
 
         return find_commonbeam_between(self, other_beam)
@@ -589,7 +589,7 @@ class Beam(u.Quantity):
                                           **kwargs)
 
     def as_tophat_kernel(self, pixscale, **kwargs):
-        '''
+        """
         Returns an elliptical Tophat kernel of the beam. The area has
         been scaled to match the 2D Gaussian area:
 
@@ -609,7 +609,7 @@ class Beam(u.Quantity):
         pixscale : float
             deg -> pixels
         **kwargs : passed to EllipticalTophat2DKernel
-        '''
+        """
 
         # Based on Gaussian to Tophat area conversion
         # A_gaussian = 2 * pi * sigma^2 / (sqrt(8*log(2))^2

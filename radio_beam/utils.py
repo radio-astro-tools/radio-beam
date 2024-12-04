@@ -200,7 +200,7 @@ def convolve(beam, other):
 
 
 def transform_ellipse(major, minor, pa, x_scale, y_scale):
-    '''
+    """
     Transform an ellipse by scaling in the x and y axes.
 
     Parameters
@@ -224,7 +224,7 @@ def transform_ellipse(major, minor, pa, x_scale, y_scale):
         Minor axis in the transformed frame.
     trans_pa : `~astropy.units.Quantity`
         PA of the major axis in the transformed frame.
-    '''
+    """
 
     # This code is based on the implementation in CASA:
     # https://open-bitbucket.nrao.edu/projects/CASA/repos/casa/browse/code/imageanalysis/ImageAnalysis/CasaImageBeamSet.cc

@@ -17,10 +17,10 @@ __all__ = ['commonbeam', 'common_2beams', 'getMinVolEllipse',
 
 
 def commonbeam(beams, method='pts', **method_kwargs):
-    '''
+    """
     Use analytic method if there are only two beams. Otherwise use constrained
     optimization to find the common beam.
-    '''
+    """
 
     if beams.size == 1:
         return beams[0]
@@ -43,7 +43,7 @@ def commonbeam(beams, method='pts', **method_kwargs):
             raise ValueError("method must be 'pts' or 'opt'.")
 
 def common_2beams(beams, check_deconvolution=True):
-    '''
+    """
     Find a common beam from a `Beams` object with 2 beams. This
     function is based on the CASA implementation `ia.commonbeam`. Note that
     the solution is only valid for 2 beams.
@@ -57,7 +57,7 @@ def common_2beams(beams, check_deconvolution=True):
     -------
     common_beam : `~radio_beam.Beam`
         The smallest common beam in the set of beams.
-    '''
+    """
 
     if beams.size != 2:
         raise BeamError("This method is only valid for two beams.")
@@ -69,7 +69,7 @@ def common_2beams(beams, check_deconvolution=True):
 
 
 def find_commonbeam_between(beam1, beam2, check_deconvolution=True):
-    '''
+    """
     Find the common beam between 2 `~radio_beam.Beam` objects.
 
     This function is based on the CASA implementation `ia.commonbeam` that
@@ -89,7 +89,7 @@ def find_commonbeam_between(beam1, beam2, check_deconvolution=True):
     -------
     common_beam : `~radio_beam.Beam`
         The smallest common beam in the set of beams.
-    '''
+    """
 
     # This code is based on the implementation in CASA:
     # https://open-bitbucket.nrao.edu/projects/CASA/repos/casa/browse/code/imageanalysis/ImageAnalysis/CasaImageBeamSet.cc
@@ -229,10 +229,10 @@ def boundingcircle(bmaj, bmin, bpa):
 
 
 def PtoA(bmaj, bmin, bpa):
-    '''
+    """
     Express the ellipse parameters into
     `center-form <https://en.wikipedia.org/wiki/Matrix_representation_of_conic_sections>`_.
-    '''
+    """
     A = np.zeros((2, 2))
     A[0, 0] = np.cos(bpa)**2 / bmaj**2 + np.sin(bpa)**2 / bmin**2
     A[1, 0] = np.cos(bpa) * np.sin(bpa) * (1 / bmaj**2 - 1 / bmin**2)
@@ -273,7 +273,7 @@ def common_manybeams_opt(beams, p0=None, opt_method='Nelder-Mead',
                                   'maxfev': 5000},
                          verbose=False,
                          brute=False, brute_steps=40):
-    '''
+    """
     Optimize the common beam solution by maximizing the determinant of the
     common beam.
 
@@ -302,7 +302,7 @@ def common_manybeams_opt(beams, p0=None, opt_method='Nelder-Mead',
     -------
     com_beam : `~radio_beam.Beam`
         Common beam.
-    '''
+    """
 
     raise NotImplementedError("This method is not fully tested. Remove this "
                               "line for testing purposes.")
@@ -359,9 +359,9 @@ def common_manybeams_opt(beams, p0=None, opt_method='Nelder-Mead',
 
 
 def fits_in_largest(beams, large_beam=None):
-    '''
+    """
     Test if all beams can be deconvolved by the largest beam
-    '''
+    """
 
     if large_beam is None:
         large_beam = beams.largest_beam()
@@ -498,7 +498,7 @@ def getMinVolEllipse(P, tolerance=1e-5, maxiter=1e5):
 
 
 def ellipse_edges(beam, npts=300, epsilon=1e-3):
-    '''
+    """
     Return the edge points of the beam.
 
     Parameters
@@ -516,7 +516,7 @@ def ellipse_edges(beam, npts=300, epsilon=1e-3):
     -------
     pts : `~numpy.ndarray`
         The x, y coordinates of the ellipse edge.
-    '''
+    """
 
     bpa = beam.pa.to(u.rad).value
     major = beam.major.to(u.deg).value * (1. + epsilon)
@@ -539,7 +539,7 @@ def common_manybeams_mve(beams, tolerance=1e-4, nsamps=200,
                          auto_increase_epsilon=True,
                          max_epsilon=1e-3,
                          max_iter=10):
-    '''
+    """
     Calculate a common beam size using the Khachiyan Algorithm to find the
     minimum enclosing ellipse from all beam edges.
 
@@ -574,7 +574,7 @@ def common_manybeams_mve(beams, tolerance=1e-4, nsamps=200,
     -------
     com_beam : `~radio_beam.Beam`
         The common beam for all beams in the set.
-    '''
+    """
 
     if not HAS_SCIPY:
         raise ImportError("common_manybeams_mve requires scipy.optimize.")
