@@ -214,7 +214,7 @@ class Beams(u.Quantity):
 
     @classmethod
     def from_casa_image(cls, imagename):
-        '''
+        """
         Instantiate beams from a CASA image. Cannot currently handle beams for
         different polarizations.
 
@@ -224,7 +224,7 @@ class Beams(u.Quantity):
         ----------
         imagename : str
             Name of CASA image.
-        '''
+        """
 
         try:
             from casatools import image as iatool
@@ -334,7 +334,7 @@ class Beams(u.Quantity):
                 self.largest_beam(includemask)]
 
     def common_beam(self, includemask=None, method='pts', **kwargs):
-        '''
+        """
         Return the smallest common beam size. For set of two beams,
         the solution is solved analytically. All larger sets solve for the
         minimum volume ellipse using the
@@ -348,8 +348,8 @@ class Beams(u.Quantity):
         this issue, a small `epsilon` correction factor is added to the
         ellipse edges to encourage a valid common beam solution.
         Since `epsilon` is added to all sides, this correction will at most
-        increase the common beam size by :math:`2\times(1+\epsilon)`.
-        The default values of `epsilon` is :math:`5\times10^{-4}`, so this
+        increase the common beam size by :math:`2\\times(1+\\epsilon)`.
+        The default values of `epsilon` is :math:`5\\times10^{-4}`, so this
         will have a very small effect on the size of the common beam.
 
         In some cases, `epsilon` must be increased to find a valid common
@@ -370,7 +370,7 @@ class Beams(u.Quantity):
             Many beam method. Only `pts` is currently available.
         kwargs : Passed to `~radio_beam.commonbeam`.
 
-        '''
+        """
         return commonbeam(self if includemask is None else self[includemask],
                           method=method, **kwargs)
 

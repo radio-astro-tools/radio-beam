@@ -1,11 +1,11 @@
 
-'''
+"""
 
 UNUSED IN CURRENT TESTING SUITE!
 
 Run in a CASA environment to generate the smallest common beam for a range of
 parameters.
-'''
+"""
 
 RUN = False
 
