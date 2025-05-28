@@ -10,6 +10,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
+
+          - os: ubuntu-latest
+            python-version: 3.12
+            name: Python 3.12 with minimal dependencies
+            toxenv: py312-test
           - os: ubuntu-latest
             python-version: 3.11
             name: Python 3.11 with minimal dependencies
@@ -30,25 +35,26 @@ jobs:
             python-version: 3.9
             name: Python 3.9 with all dependencies (except CASA)
             toxenv: py39-test-all
-          # - os: ubuntu-18.04
-          #   python-version: 3.6
-          #   name: Python 3.6 with minimal dependencies and CASA
-          #   toxenv: py36-test-casa
+          - os: ubuntu-latest
+            python-version: 3.12
+            name: Python 3.6 with minimal dependencies and CASA
+            toxenv: py312-test-casa
+
           # - os: ubuntu-18.04
           #   python-version: 3.6
           #   name: Python 3.6, CASA, and dev versions of key dependencies
           #   toxenv: py36-test-casa-dev
           - os: ubuntu-latest
-            python-version: 3.11
-            name: Python 3.11, all dependencies, and dev versions of key dependencies
-            toxenv: py311-test-dev
+            python-version: 3.12
+            name: Python 3.12, all dependencies, and dev versions of key dependencies
+            toxenv: py312-test-dev
           - os: macos-latest
-            python-version: 3.11
-            name: Python 3.11 with all dependencies, and dev versions of key dependencies (no CASA) on MacOS X
-            toxenv: py311-test-all-dev
+            python-version: 3.12
+            name: Python 3.12 with all dependencies, and dev versions of key dependencies (no CASA) on MacOS X
+            toxenv: py312-test-all-dev
           - os: windows-latest
-            python-version: 3.11
-            name: Python 3.11, all dependencies, and dev versions of key dependencies (no CASA) on Windows
+            python-version: 3.12
+            name: Python 3.12, all dependencies, and dev versions of key dependencies (no CASA) on Windows
             toxenv: py311-test-all-dev
           - os: ubuntu-latest
             python-version: 3.11
