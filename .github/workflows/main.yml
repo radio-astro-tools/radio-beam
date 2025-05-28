@@ -37,7 +37,7 @@ jobs:
             toxenv: py39-test-all
           - os: ubuntu-latest
             python-version: 3.12
-            name: Python 3.6 with minimal dependencies and CASA
+            name: Python 3.12 with minimal dependencies and CASA
             toxenv: py312-test-casa
 
           # - os: ubuntu-18.04

@@ -2,7 +2,6 @@
 # by importing them here in conftest.py they are discoverable by py.test
 # no matter how it is invoked within the source tree.
 import os
-from setuptools._distutils.version import LooseVersion
 
 # Import casatools and casatasks here if available as they can otherwise
 # cause a segfault if imported later on during tests.
