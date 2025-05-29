@@ -75,7 +75,7 @@ jobs:
     - name: Run tests with ${{ matrix.name }} (incl. CASA)
       if: ${{ contains(matrix.toxenv,'-casa') }}
       run: |
-          pip install casaconfig pkg_resources
+          pip install casaconfig setuptools
           mkdir ${GITHUB_WORKSPACE}/.casa
           mkdir ${GITHUB_WORKSPACE}/.casa/data
           chmod 777 -R ${GITHUB_WORKSPACE}/.casa
