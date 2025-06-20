@@ -40,20 +40,5 @@ You can also install the latest developer version in a single line with pip::
 
 Installing into CASA
 --------------------
-Installing packages in CASA is fairly straightforward.  The process is
-described `here
-<http://docs.astropy.org/en/stable/install.html#installing-astropy-into-casa>`_.
-In short, you can do the following:
 
-First, we need to make sure `pip <https://pypi.python.org/pypi/pip>`__ is
-installed. Start up CASA as normal, and type::
-
-    CASA <1>: from setuptools.command import easy_install
-
-    CASA <2>: easy_install.main(['--user', 'pip'])
-
-Now, quit CASA and re-open it, then type the following to install ``radio-beam``::
-
-    CASA <1>: import pip
-
-    CASA <2>: pip.main(['install', 'radio-beam', '--user'])
+For use with CASA, please use the modular versions of CASA described `here <https://casadocs.readthedocs.io/en/stable/notebooks/introduction.html#id1>`_.
