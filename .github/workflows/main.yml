@@ -1,82 +1,38 @@
 name: Run tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+    - main
+    tags:
+    - '*'
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   tests:
-    name: ${{ matrix.name}}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v2
+    with:
+      display: true
+      libraries: |
+        apt:
+          - '^libxcb.*-dev'
+          - libxkbcommon-x11-dev
+          - libegl1
+      envs: |
+        - linux: build_docs
+        - linux: py310-test
+        - linux: py310-test-viz
+        - linux: py311-test-viz
+        - linux: py312-test-viz
+        - linux: py312-test-devdeps
+        - linux: py313-test-viz
+        - macos: py310-test-viz
+        - macos: py311-test-viz
+        - macos: py312-test-viz
+        - macos: py313-test-devdeps
+        - windows: py310-test-viz
+        - windows: py311-test-viz
+        - windows: py312-test-viz
+        - windows: py313-test-devdeps
 
-          - os: ubuntu-latest
-            python-version: 3.12
-            name: Python 3.12 with minimal dependencies
-            toxenv: py312-test
-          - os: ubuntu-latest
-            python-version: 3.11
-            name: Python 3.11 with minimal dependencies
-            toxenv: py311-test
-          - os: ubuntu-latest
-            python-version: '3.10'
-            name: Python 3.10 with minimal dependencies
-            toxenv: py310-test
-          - os: ubuntu-latest
-            python-version: 3.9
-            name: Python 3.9 with minimal dependencies
-            toxenv: py39-test
-          - os: ubuntu-latest
-            python-version: 3.8
-            name: Python 3.8 with minimal dependencies
-            toxenv: py38-test
-          - os: ubuntu-latest
-            python-version: 3.9
-            name: Python 3.9 with all dependencies (except CASA)
-            toxenv: py39-test-all
-
-
-          - os: ubuntu-latest
-            python-version: 3.12
-            name: Python 3.12 with minimal dependencies and CASA
-            toxenv: py312-test-casa
-          - os: ubuntu-latest
-            python-version: 3.12
-            name: Python 3.12, CASA, and dev versions of key dependencies
-            toxenv: py312-test-casa-dev
-
-
-          - os: ubuntu-latest
-            python-version: 3.12
-            name: Python 3.12, all dependencies, and dev versions of key dependencies
-            toxenv: py312-test-dev
-          - os: macos-latest
-            python-version: 3.12
-            name: Python 3.12 with all dependencies, and dev versions of key dependencies (no CASA) on MacOS X
-            toxenv: py312-test-all-dev
-          - os: windows-latest
-            python-version: 3.12
-            name: Python 3.12, all dependencies, and dev versions of key dependencies (no CASA) on Windows
-            toxenv: py311-test-all-dev
-          - os: ubuntu-latest
-            python-version: 3.11
-            name: Documentation
-            toxenv: build_docs
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install testing dependencies
-      run: python -m pip install tox codecov
-    - name: Run tests with ${{ matrix.name }}
-      run: tox -v -e ${{ matrix.toxenv }}
-
-    - name: Upload coverage to codecov
-      if: ${{ contains(matrix.toxenv,'-cov') }}
-      uses: codecov/codecov-action@v5
-      with:
-        file: ./coverage.xml
