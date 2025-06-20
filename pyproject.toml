@@ -67,7 +67,7 @@ include-package-data = false
 find = { namespaces = false }
 
 [tool.setuptools.package-data]
-"pvextractor.tests" = [
+"radio_beam.tests" = [
   "data/*",
   "data/*/*",
 ]
