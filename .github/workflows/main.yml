@@ -22,17 +22,17 @@ jobs:
       envs: |
         - linux: build_docs
         - linux: py310-test
-        - linux: py310-test-viz
-        - linux: py311-test-viz
-        - linux: py312-test-viz
-        - linux: py312-test-devdeps
-        - linux: py313-test-viz
-        - macos: py310-test-viz
-        - macos: py311-test-viz
-        - macos: py312-test-viz
-        - macos: py313-test-devdeps
-        - windows: py310-test-viz
-        - windows: py311-test-viz
-        - windows: py312-test-viz
-        - windows: py313-test-devdeps
+        - linux: py310-test-casa
+        - linux: py311-test-casa
+        - linux: py312-test-casa
+        - linux: py312-test-dev
+        - linux: py313-test-all
+        - macos: py310-test-all
+        - macos: py311-test-all
+        - macos: py312-test-all
+        - macos: py313-test-dev
+        - windows: py310-test-all
+        - windows: py311-test-all
+        - windows: py312-test-all
+        - windows: py313-test-dev
 
