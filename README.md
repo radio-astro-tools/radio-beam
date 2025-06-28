@@ -12,4 +12,7 @@ and manipulating beams.  Some example applications include:
 
 See the [documentation](https://radio-beam.readthedocs.io/en/latest/) for more information.
 
-[![Build Status](https://travis-ci.org/radio-astro-tools/radio_beam.svg?branch=master)](https://travis-ci.org/radio-astro-tools/radio_beam)
+ [![astropy](http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat)](http://www.astropy.org/) 
+ [![Coverage Status](https://coveralls.io/repos/radio-astro-tools/radio-beam/badge.svg?branch=master)](https://coveralls.io/r/radio-astro-tools/radio-beam?branch=master)
+ [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.15677957.svg)](https://doi.org/10.5281/zenodo.15677957)
+  
