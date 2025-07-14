@@ -6,9 +6,9 @@ dynamic = [
 description = "Operations for radio astronomy beams with astropy."
 readme = "README.rst"
 authors = [
-    { name = "Eric Koch", email = "koch.eric.w@gmail.com" },
-    { name = "Adam Ginsburg", email = "adam.g.ginsburg@gmail.com" },
-    { name = "Tom Robitaille" },
+    { name = "Eric Koch"},
+    { name = "Adam Ginsburg"},
+    { name = "Tom Robitaille"},
     { name = 'Erik Rosolowsky'},
     { name = 'Adam Leroy'},
 ]
