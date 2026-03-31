@@ -1,7 +1,6 @@
 # this contains imports plugins that configure py.test for astropy tests.
 # by importing them here in conftest.py they are discoverable by py.test
 # no matter how it is invoked within the source tree.
-import os
 
 # Import casatools and casatasks here if available as they can otherwise
 # cause a segfault if imported later on during tests.
@@ -17,7 +16,7 @@ if astropy_version < '3.0':
     from astropy.tests.pytest_plugins import *
     del pytest_report_header
 else:
-    from pytest_astropy_header.display import PYTEST_HEADER_MODULES, TESTED_VERSIONS
+    from pytest_astropy_header.display import PYTEST_HEADER_MODULES
 
 
 def pytest_configure(config):
