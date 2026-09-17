@@ -1,3 +1,7 @@
+0.3.11 (unreleased)
+-------------------
+- Test CASA on Python 3.13; build distributions with Python 3.13 (#156)
+
 0.3.10 (2026-09-03)
 -------------------
 - Update minimum package dependencies in docs (#138)
