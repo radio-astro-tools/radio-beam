@@ -6,5 +6,8 @@ from .beam import (Beam, EllipticalGaussian2DKernel,
                    EllipticalTophat2DKernel)
 from .multiple_beams import Beams
 
+from .source_deconvolution import deconvolve_source
+
 __all__ = ['Beam', 'EllipticalTophat2DKernel',
-           'EllipticalGaussian2DKernel', 'Beams']
+           'EllipticalGaussian2DKernel', 'Beams',
+           'deconvolve_source']
