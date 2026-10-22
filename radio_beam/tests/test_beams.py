@@ -51,6 +51,25 @@ def test_beam_areas():
     assert np.all(beams.value == beams.sr.value)
 
 
+@pytest.mark.parametrize('unit', [u.sr, u.deg**2, u.arcsec**2])
+def test_beams_from_areas(unit):
+    areas = ([0.25, 1., 4.] * u.arcsec**2).to(unit)
+    beams = Beams(areas=areas)
+
+    npt.assert_allclose(beams.sr.to_value(unit), areas.value)
+    npt.assert_allclose(beams.major.to_value(u.arcsec),
+                        np.sqrt(np.array([0.25, 1., 4.]) * 4 * np.log(2) / np.pi))
+    npt.assert_array_equal(beams.major, beams.minor)
+    npt.assert_array_equal(beams.pa.to_value(u.deg), [0., 0., 0.])
+    npt.assert_allclose(beams[1].sr.to_value(unit), areas[1].value)
+
+
+def test_beams_from_unitless_areas():
+    areas = np.array([0.25, 1., 4.])
+    beams = Beams(areas=areas)
+    npt.assert_allclose(beams.sr.to_value(u.deg**2), areas)
+
+
 def test_beams_pixels_per_beam():
 
     from astropy import wcs as apwcs
