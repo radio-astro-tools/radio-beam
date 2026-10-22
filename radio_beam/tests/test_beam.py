@@ -101,6 +101,18 @@ def test_bintable():
                             45.10050065568665, decimal=4)
 
 
+@pytest.mark.parametrize('angles, expected', [
+    ([89., -89.], 90.), ([15., 195.], 15.), ([-10., 170.], -10.)])
+def test_bintable_axial_pa(angles, expected):
+    table = fits.BinTableHDU.from_columns([
+        fits.Column(name='BMAJ', format='D', array=[2., 2.]),
+        fits.Column(name='BMIN', format='D', array=[1., 1.]),
+        fits.Column(name='BPA', format='D', array=angles)])
+    result = Beam.from_fits_bintable(table)
+    difference = (result.pa.to_value(u.deg) - expected + 90.) % 180. - 90.
+    npt.assert_allclose(difference, 0., atol=1e-10)
+
+
 @pytest.mark.skipif("not HAS_CASA")
 def test_from_casa_image():
     # Extract from tar

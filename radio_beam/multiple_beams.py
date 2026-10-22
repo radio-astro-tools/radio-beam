@@ -310,10 +310,11 @@ class Beams(u.Quantity):
         else:
             includemask = np.logical_and(includemask, self.isfinite)
 
+        # Double angles before averaging to respect the 180-degree period.
         new_beam = Beam(major=self.major[includemask].mean(),
                         minor=self.minor[includemask].mean(),
-                        pa=circmean(self.pa[includemask],
-                        weights=(self.major / self.minor)[includemask]))
+                        pa=circmean(2*self.pa[includemask],
+                        weights=(self.major / self.minor)[includemask])/2)
 
         if raise_for_nan and np.any(np.isnan(new_beam)):
             raise ValueError("NaNs after averaging.  This is a bug.")
