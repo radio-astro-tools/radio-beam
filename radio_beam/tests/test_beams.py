@@ -293,6 +293,20 @@ def test_average_beams():
                   majors[mask].mean().value)
 
 
+@pytest.mark.parametrize('angles, expected', [
+    ([89., -89.], 90.), ([15., 195.], 15.), ([-10., 170.], -10.)])
+@pytest.mark.parametrize('unit', [u.deg, u.rad])
+def test_average_beams_axial_pa(angles, expected, unit):
+    angles = (angles + [0.]) * u.deg
+    beams = Beams(major=[2., 2., 8.] * u.arcsec,
+                  minor=[1., 1., 1.] * u.arcsec, pa=angles.to(unit))
+    result = beams.average_beam(includemask=np.array([True, True, False]))
+    difference = (result.pa.to_value(u.deg) - expected + 90.) % 180. - 90.
+    npt.assert_allclose(difference, 0., atol=1e-10)
+    npt.assert_allclose(result.major.to_value(u.arcsec), 2.)
+    npt.assert_allclose(result.minor.to_value(u.arcsec), 1.)
+
+
 @pytest.mark.parametrize(("beams", "majors", "minors", "pas"),
                          [symm_beams_for_tests(), asymm_beams_for_tests()])
 def test_largest_beams(beams, majors, minors, pas):

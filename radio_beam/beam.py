@@ -152,8 +152,9 @@ class Beam(u.Quantity):
             warnings.warn("Metadata was averaged for keywords "
                           "{0}".format(",".join([key for key in meta])))
 
+        # Position angles describe axes: directions 180 degrees apart agree.
         return cls(major=bmaj.mean()*unit, minor=bmin.mean()*unit,
-                   pa=circmean(bpa*u.deg, weights=bmaj/bmin))
+                   pa=circmean(2*bpa*u.deg, weights=bmaj/bmin)/2)
 
     @classmethod
     def from_fits_header(cls, hdr, unit=u.deg):

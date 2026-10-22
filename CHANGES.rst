@@ -1,5 +1,6 @@
 0.3.11 (unreleased)
 -------------------
+- Respect the 180-degree period when averaging beam position angles.
 - Test CASA on Python 3.13; build distributions with Python 3.13 (#156)
 - Install nightly numpy, pyerfa and astropy in ``dev`` CI jobs (#157)
 
