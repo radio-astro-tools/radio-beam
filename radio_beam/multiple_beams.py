@@ -54,10 +54,11 @@ class Beams(u.Quantity):
 
         # ... given an area make a round beam assuming it is Gaussian
         if areas is not None:
-            rad = np.sqrt(areas / (2 * np.pi)) * u.deg
+            areas = _with_default_unit("areas", areas, u.deg**2)
+            rad = np.sqrt(areas / (2 * np.pi))
             major = rad * SIGMA_TO_FWHM
             minor = rad * SIGMA_TO_FWHM
-            pa = np.zeros_like(areas) * u.deg
+            pa = np.zeros(areas.shape) * u.deg
 
         # give specified values priority
         if major is not None:
